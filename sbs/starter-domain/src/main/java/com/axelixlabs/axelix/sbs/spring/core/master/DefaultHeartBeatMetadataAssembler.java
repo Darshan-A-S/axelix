@@ -90,7 +90,8 @@ public class DefaultHeartBeatMetadataAssembler implements HeartBeatMetadataAssem
                 .healthStatus(healthDetectionFunction.get())
                 .memoryDetails(new MemoryDetails()
                         .heap(memoryMXBean.getHeapMemoryUsage().getUsed()))
-                .transactions(insightsInfoProvider.getTransactions());
+                .transactions(insightsInfoProvider.getTransactions())
+                .scheduledTaskExecutions(insightsInfoProvider.getScheduledTaskExecutions());
     }
 
     private String generateNamePostfix() {

@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
+package com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,34 +23,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.core.annotation.AliasFor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 
 /**
- * Specialized replacement for {@link AutoConfiguration} that additionally
- * applies {@link ConditionalOnAxelixStarterEnabled}.
+ * Composite {@code @Conditional} annotation that matches only if Hibernate is
+ * active in the application context.
  *
- * @author Ilya Naumov
+ * <p>This annotation should be used on configuration classes or components
+ * that require an active {@code EntityManagerFactory} bean to perform
+ * Hibernate-specific operations.
+ *
+ * @since 22.06.2026
+ * @author Vyacheslav Yanin
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@AutoConfiguration
-@ConditionalOnAxelixStarterEnabled
-public @interface AxelixAutoConfiguration {
-    /**
-     * The auto-configuration classes that should have already been applied.
-     *
-     * @return the classes
-     */
-    @AliasFor(annotation = AutoConfiguration.class, attribute = "after")
-    Class<?>[] after() default {};
-
-    /**
-     * The names of the auto-configuration classes that should have already been applied.
-     *
-     * @return the class names
-     */
-    @AliasFor(annotation = AutoConfiguration.class, attribute = "afterName")
-    String[] afterName() default {};
-}
+@ConditionalOnClass(name = {"org.hibernate.Session"})
+@ConditionalOnBean(type = "jakarta.persistence.EntityManagerFactory")
+public @interface ConditionalOnHibernateActive {}

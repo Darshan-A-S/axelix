@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate;
+package com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations;
 
 import java.util.Map;
 
@@ -34,6 +34,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
  * when a specific logging implementation is missing from the classpath.
  *
  * @author Vyacheslav Yanin
+ * @author Mikhail Polivakha
  */
 public class OnLoggingSystemCondition implements Condition {
 
@@ -55,19 +56,16 @@ public class OnLoggingSystemCondition implements Condition {
         }
 
         LoggingSystem loggingSystem = LoggingSystem.get(getClass().getClassLoader());
-        switch (requiredSystem) {
-            case LOGBACK:
-                return isInstance(LOGBACK_LOGGING_SYSTEM_CLASS_NAME, loggingSystem);
-            case LOG4J2:
-                return isInstance(LOG4J2_LOGGING_SYSTEM_FULL_CLASS_NAME, loggingSystem);
-            default:
-                return false;
-        }
+
+        return switch (requiredSystem) {
+            case LOGBACK -> isInstance(LOGBACK_LOGGING_SYSTEM_CLASS_NAME, loggingSystem);
+            case LOG4J2 -> isInstance(LOG4J2_LOGGING_SYSTEM_FULL_CLASS_NAME, loggingSystem);
+        };
     }
 
-    private static boolean isInstance(String loggingSystemClassName, LoggingSystem loggingSystem) {
+    private static boolean isInstance(String logbackLoggingSystemClassName, LoggingSystem loggingSystem) {
         try {
-            return Class.forName(loggingSystemClassName).isInstance(loggingSystem);
+            return Class.forName(logbackLoggingSystemClassName).isInstance(loggingSystem);
         } catch (ClassNotFoundException | LinkageError e) {
             // if we were not able to load the LoggingSystem class, then LoggingSystem used by Spring Boot is definitely
             // not the one that we're checking.

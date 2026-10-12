@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.utils.DefaultPropertyNameNormalizer;
 import com.axelixlabs.axelix.common.utils.PropertyNameNormalizer;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.auth.RequiredAuthorityCheckService;
 import com.axelixlabs.axelix.sbs.spring.core.config.EndpointsConfigurationProperties;
 import com.axelixlabs.axelix.sbs.spring.core.configprops.SmartSanitizingFunction;

@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.gclog.DefaultGcLogService;
 import com.axelixlabs.axelix.sbs.spring.core.gclog.DiagnosticCommandExecutor;
 import com.axelixlabs.axelix.sbs.spring.core.gclog.GcLogService;

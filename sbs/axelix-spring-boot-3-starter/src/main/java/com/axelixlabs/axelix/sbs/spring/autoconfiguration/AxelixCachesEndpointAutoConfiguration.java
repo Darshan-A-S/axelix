@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.cache.AxelixCachesEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.cache.CacheManagerBeanPostProcessor;
 import com.axelixlabs.axelix.sbs.spring.core.cache.CacheOperationsDispatcher;

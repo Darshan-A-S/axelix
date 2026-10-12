@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate;
+package com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,32 +23,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Conditional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 
 /**
- * {@link Conditional} annotation that restricts configuration components to a specific
- * underlying logging subsystem active in the current application context.
+ * Composite {@code @Conditional} annotation that matches only if Hibernate is
+ * active in the application context.
  *
- * <p>Usage example:
- * <pre>{@code
- * @Configuration
- * @ConditionalOnLoggingSystem(ConditionalOnLoggingSystem.System.LOG4J2)
- * public class MyLog4j2Configuration { ... }
- * }</pre>
+ * <p>This annotation should be used on configuration classes or components
+ * that require an active {@code EntityManagerFactory} bean to perform
+ * Hibernate-specific operations.
  *
+ * @since 22.06.2026
  * @author Vyacheslav Yanin
- * @see OnLoggingSystemCondition
  */
-@Documented
-@Conditional(OnLoggingSystemCondition.class)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ConditionalOnLoggingSystem {
-
-    System value();
-
-    enum System {
-        LOGBACK,
-        LOG4J2
-    }
-}
+@Documented
+@ConditionalOnClass(name = {"org.hibernate.Session"})
+@ConditionalOnBean(type = "javax.persistence.EntityManagerFactory")
+public @interface ConditionalOnHibernateActive {}

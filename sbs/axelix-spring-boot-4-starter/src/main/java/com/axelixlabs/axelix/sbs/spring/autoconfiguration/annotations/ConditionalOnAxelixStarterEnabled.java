@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate;
+package com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,23 +23,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
- * Composite {@code @Conditional} annotation that matches only if Hibernate is
- * active in the application context.
+ * Global kill-switch for the Axelix starter.
+ * When {@code axelix.sbs.enabled} is {@code false}, the annotated auto-configuration is skipped entirely.
  *
- * <p>This annotation should be used on configuration classes or components
- * that require an active {@code EntityManagerFactory} bean to perform
- * Hibernate-specific operations.
- *
- * @since 22.06.2026
- * @author Vyacheslav Yanin
+ * @author Nikita Kirillov
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ConditionalOnClass(name = {"org.hibernate.Session"})
-@ConditionalOnBean(type = "jakarta.persistence.EntityManagerFactory")
-public @interface ConditionalOnHibernateActive {}
+@ConditionalOnProperty(prefix = "axelix.sbs", name = "enabled", matchIfMissing = true)
+public @interface ConditionalOnAxelixStarterEnabled {}

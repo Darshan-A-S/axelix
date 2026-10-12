@@ -25,6 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.config.HeartBeatConfigurationProperties;
 import com.axelixlabs.axelix.sbs.spring.core.log.SLF4JLogger;
 import com.axelixlabs.axelix.sbs.spring.core.master.BasicRegistrationMetadataAssembler;

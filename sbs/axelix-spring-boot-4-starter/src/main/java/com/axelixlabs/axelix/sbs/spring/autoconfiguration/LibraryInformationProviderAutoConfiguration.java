@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 
 import org.springframework.context.annotation.Bean;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultLibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 

@@ -24,6 +24,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
 import com.axelixlabs.axelix.common.utils.PropertyNameNormalizer;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.auth.RequiredAuthorityCheckService;
 import com.axelixlabs.axelix.sbs.spring.core.configprops.ConfigurationPropertiesService;
 import com.axelixlabs.axelix.sbs.spring.core.configprops.SmartSanitizingFunction;

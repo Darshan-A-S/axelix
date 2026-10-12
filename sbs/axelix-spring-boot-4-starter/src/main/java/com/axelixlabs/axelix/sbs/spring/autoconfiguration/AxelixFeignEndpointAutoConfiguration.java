@@ -29,6 +29,7 @@ import org.springframework.cloud.openfeign.FeignClientFactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.integrations.feign.AxelixFeignEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.integrations.feign.FeignClientIntegrationDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.integrations.feign.NoOpDiscoveryClient;

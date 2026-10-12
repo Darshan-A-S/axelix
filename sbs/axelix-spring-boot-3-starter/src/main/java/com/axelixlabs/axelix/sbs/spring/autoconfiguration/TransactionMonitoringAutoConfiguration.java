@@ -39,6 +39,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.web.client.RestTemplate;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.ConditionalOnHibernateActive;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.ConditionalOnLoggingSystem;
 import com.axelixlabs.axelix.sbs.spring.core.config.TransactionMonitoringConfigurationProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.JpaEntitiesProfileProvider;
 import com.axelixlabs.axelix.sbs.spring.core.metrics.AxelixMetricsPublisher;
@@ -47,11 +50,9 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.TransactionMonitoringBe
 import com.axelixlabs.axelix.sbs.spring.core.persistence.TranssactionStackCleanupFilter;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.entities.DefaultJpaEntitiesProfileProvider;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.entities.EntityMappingScanner;
-import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.ConditionalOnHibernateActive;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.NPlusOneCollectionLoadListener;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.NPlusOneEntityLoadListener;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.NPlusOneIntegrator;
-import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.pagination.ConditionalOnLoggingSystem;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.pagination.Log4j2InMemoryPaginationAppenderRegistrar;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.pagination.LogbackInMemoryPaginationAppenderRegistrar;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.http.ExternalCallRestTemplateCustomizer;

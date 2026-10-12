@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.context.annotation.Bean;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.heapdump.AxelixHeapDumpEndpoint;
 
 /**

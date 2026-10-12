@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Bean;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.common.domain.version.CachingAxelixVersionDiscoverer;
 import com.axelixlabs.axelix.common.domain.version.PropertiesAxelixVersionDiscoverer;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.sbs.spring.core.gclog.GcLogService;
 import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;

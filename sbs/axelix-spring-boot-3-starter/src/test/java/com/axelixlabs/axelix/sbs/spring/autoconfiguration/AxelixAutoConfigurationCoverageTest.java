@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
+
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 /**

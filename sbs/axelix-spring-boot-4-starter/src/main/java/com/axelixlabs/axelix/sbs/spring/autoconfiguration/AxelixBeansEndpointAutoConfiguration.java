@@ -21,6 +21,7 @@ import org.springframework.boot.actuate.autoconfigure.endpoint.condition.Conditi
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.beans.AxelixBeansEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.beans.BeanMetaInfoExtractor;
 import com.axelixlabs.axelix.sbs.spring.core.beans.BeansFeedBuilder;

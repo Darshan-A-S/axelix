@@ -259,75 +259,89 @@ The starter exposes the following endpoints:
     <tr>
         <th>Endpoint</th>
         <th>Purpose</th>
+        <th>Since</th>
     </tr>
     </thead>
     <tbody>
     <tr>
         <td><code>axelix-metadata</code> <span className={styles.required}>required</span></td>
         <td>Service metadata; the one Master probes first</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-details</code></td>
         <td>Summary information about the instance</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-beans</code></td>
         <td>Context beans</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-caches</code></td>
         <td>Caches (when a <code>CacheManager</code> is present)</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-conditions</code></td>
         <td>Auto-configuration conditions report</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-configprops</code></td>
         <td><code>@ConfigurationProperties</code></td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-env</code></td>
         <td>Environment and property sources</td>
-    </tr>
-    <tr>
-        <td><code>axelix-feign</code></td>
-        <td>Feign clients (when Feign is on the classpath)</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-gc</code></td>
         <td>Garbage collection</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-heap-dump</code></td>
         <td>Heap dump</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-loggers</code></td>
         <td>Logging levels</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-metrics</code></td>
         <td>Metrics</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-scheduled-tasks</code></td>
         <td>Scheduled tasks</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-thread-dump</code></td>
         <td>Thread dump</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-dependencies</code></td>
         <td>Dependency SBOM</td>
+        <td><code>1.2.0</code></td>
     </tr>
     </tbody>
 </table>
 
+The **Since** column names the Axelix starter release an endpoint first shipped in. `1.0.0` is the first Axelix release,
+so an endpoint marked `1.0.0` has been there from the very beginning. A version marked _upcoming_ is not released yet:
+the endpoint will become available in the next Axelix release, whether that is a minor or a major one.
+
 Endpoints that don't apply to your application stay inert — the starter activates each one only when its prerequisites
-are met (for example, `axelix-feign` without Feign on the classpath or `axelix-caches` without a `CacheManager` never
-come up).
+are met (for example, `axelix-caches` without a `CacheManager` never comes up).
 
 As of Axelix **1.2.0** the native `health` and `info` endpoints are no longer required, so the starter never exposes
 them on its own (before 1.2.0 Axelix depended on them, and the starter force-exposed both). Only the endpoints you
@@ -391,7 +405,6 @@ management:
           - axelix-configprops
           - axelix-details
           - axelix-env
-          - axelix-feign
           - axelix-gc
           - axelix-heap-dump
           - axelix-loggers
@@ -404,7 +417,7 @@ management:
   <Tab value="application.properties">
 
 ```properties
-management.endpoints.web.exposure.include=axelix-metadata,axelix-beans,axelix-caches,axelix-conditions,axelix-configprops,axelix-details,axelix-env,axelix-feign,axelix-gc,axelix-heap-dump,axelix-loggers,axelix-metrics,axelix-scheduled-tasks,axelix-thread-dump
+management.endpoints.web.exposure.include=axelix-metadata,axelix-beans,axelix-caches,axelix-conditions,axelix-configprops,axelix-details,axelix-env,axelix-gc,axelix-heap-dump,axelix-loggers,axelix-metrics,axelix-scheduled-tasks,axelix-thread-dump
 ```
 
   </Tab>

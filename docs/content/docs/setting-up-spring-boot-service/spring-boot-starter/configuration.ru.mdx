@@ -266,74 +266,89 @@ Axelix ниже 1.2.0](#открытие-эндпоинтов-на-axelix-ниж
     <tr>
         <th>Эндпоинт</th>
         <th>Назначение</th>
+        <th>С версии</th>
     </tr>
     </thead>
     <tbody>
     <tr>
         <td><code>axelix-metadata</code> <span className={styles.required}>обязательный</span></td>
         <td>Метаданные сервиса; Master опрашивает его первым</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-details</code></td>
         <td>Сводная информация об инстансе</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-beans</code></td>
         <td>Бины контекста</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-caches</code></td>
         <td>Кэши (при наличии <code>CacheManager</code>)</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-conditions</code></td>
         <td>Отчёт об условиях автоконфигурации</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-configprops</code></td>
         <td><code>@ConfigurationProperties</code></td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-env</code></td>
         <td>Окружение и источники свойств</td>
-    </tr>
-    <tr>
-        <td><code>axelix-feign</code></td>
-        <td>Feign-клиенты (при наличии Feign в classpath)</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-gc</code></td>
         <td>Сборка мусора</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-heap-dump</code></td>
         <td>Heap dump</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-loggers</code></td>
         <td>Уровни логирования</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-metrics</code></td>
         <td>Метрики</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-scheduled-tasks</code></td>
         <td>Запланированные задачи</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-thread-dump</code></td>
         <td>Thread dump</td>
+        <td><code>1.0.0</code></td>
     </tr>
     <tr>
         <td><code>axelix-dependencies</code></td>
         <td>SBOM зависимостей</td>
+        <td><code>1.2.0</code></td>
     </tr>
     </tbody>
 </table>
 
+В колонке **С версии** указан релиз стартера Axelix, в котором эндпоинт появился впервые. `1.0.0` — первый релиз Axelix,
+то есть эндпоинт с такой отметкой существует с самого начала. Версия с пометкой _скоро_ ещё не выпущена: эндпоинт
+станет доступен в следующем релизе Axelix — минорном или мажорном, смотря какой выйдет раньше.
+
 Эндпоинты, неприменимые к вашему сервису, остаются неактивными — стартер активирует каждый только при выполнении его
-предусловий (например, `axelix-feign` без Feign в classpath или `axelix-caches` без `CacheManager` не поднимаются).
+предусловий (например, `axelix-caches` без `CacheManager` не поднимается).
 
 Начиная с Axelix **1.2.0** стандартные эндпоинты `health` и `info` больше не требуются, поэтому стартер сам их не
 открывает (до 1.2.0 Axelix зависел от них, и стартер принудительно открывал оба). Открытыми будут только эндпоинты,
@@ -397,7 +412,6 @@ management:
           - axelix-configprops
           - axelix-details
           - axelix-env
-          - axelix-feign
           - axelix-gc
           - axelix-heap-dump
           - axelix-loggers
@@ -410,7 +424,7 @@ management:
   <Tab value="application.properties">
 
 ```properties
-management.endpoints.web.exposure.include=axelix-metadata,axelix-beans,axelix-caches,axelix-conditions,axelix-configprops,axelix-details,axelix-env,axelix-feign,axelix-gc,axelix-heap-dump,axelix-loggers,axelix-metrics,axelix-scheduled-tasks,axelix-thread-dump
+management.endpoints.web.exposure.include=axelix-metadata,axelix-beans,axelix-caches,axelix-conditions,axelix-configprops,axelix-details,axelix-env,axelix-gc,axelix-heap-dump,axelix-loggers,axelix-metrics,axelix-scheduled-tasks,axelix-thread-dump
 ```
 
   </Tab>

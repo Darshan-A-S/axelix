@@ -22,6 +22,15 @@ runtime-компонент, который общается с Master, а пла
 Во время выполнения [стартер](../spring-boot-starter/what-is-spring-boot-starter.mdx) читает этот файл и передаёт
 координаты в Master в составе метаданных регистрации сервиса.
 
+## Git worktrees
+
+<UpcomingReleaseNotice />
+
+Плагин читает Git-метаданные, когда сборка выполняется внутри [linked worktree](https://git-scm.com/docs/git-worktree) -
+рабочего каталога, созданного командой `git worktree add`. Записываются коммит, ветка и автор того worktree, в котором
+идёт сборка, а не основного рабочего каталога. Если worktree находится в состоянии detached `HEAD`, вместо имени ветки
+записывается идентификатор коммита. Gradle- и Maven-плагин ведут себя одинаково.
+
 ## SBOM зависимостей (Gradle)
 
 <ReleasedInNotice version="1.2.0" />

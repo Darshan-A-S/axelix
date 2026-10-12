@@ -20,6 +20,15 @@ At build time the plugin generates `META-INF/axelix-info.properties` and records
 At runtime the [starter](../spring-boot-starter/what-is-spring-boot-starter.mdx) reads this file and sends the
 coordinates to Master as part of the instance's registration metadata.
 
+## Git worktrees
+
+<UpcomingReleaseNotice />
+
+The plugin reads Git metadata when the build runs inside a [linked worktree](https://git-scm.com/docs/git-worktree) -
+a working directory created with `git worktree add`. The recorded commit, branch, and author are those of the worktree
+the build runs in, not of the main checkout. If the worktree is on a detached `HEAD`, the commit id is recorded in
+place of the branch name. This works the same way in the Gradle and the Maven plugin.
+
 ## Dependency SBOM (Gradle)
 
 <ReleasedInNotice version="1.2.0" />

@@ -219,6 +219,58 @@ class ProjectInfoGeneratorFunctionalTest extends AbstractAxelixPluginFunctionalT
         assertThat(loadProperties().getProperty("git.commit.id")).isEqualTo(nextCommit);
     }
 
+    @ParameterizedTest
+    @MethodSource("gradleVersionsUnderTest")
+    void regeneratesGitInfoWhenOnlyPackedRefsChange(String gradleVersion) throws IOException, InterruptedException {
+        // given.
+        setupProject("properties/build-info.gradle.kts");
+        initGitRepository();
+
+        assertGitInfoIsRegeneratedWhenOnlyPackedRefsChange(gradleVersion);
+    }
+
+    @ParameterizedTest
+    @MethodSource("gradleVersionsUnderTest")
+    void regeneratesGitInfoWhenOnlyPackedRefsChangeInLinkedWorktree(String gradleVersion)
+            throws IOException, InterruptedException {
+        // given.
+        setupProject("properties/build-info.gradle.kts");
+        initGitRepository();
+        Path worktree = projectDir.resolve("linked-worktree");
+        runGit("worktree", "add", "-b", "worktree-test", worktree.toString());
+        projectDir = worktree;
+
+        assertGitInfoIsRegeneratedWhenOnlyPackedRefsChange(gradleVersion);
+    }
+
+    private void assertGitInfoIsRegeneratedWhenOnlyPackedRefsChange(String gradleVersion)
+            throws IOException, InterruptedException {
+        // given. the branch lives in packed-refs only, there is no loose ref for it.
+        runGit("pack-refs", "--all");
+        createRunner(gradleVersion, GENERATE_TASK_NAME, "--stacktrace").build();
+        assertThat(loadProperties().getProperty("git.commit.id")).isEqualTo(runGit("rev-parse", "HEAD"));
+
+        // when.
+        BuildResult unchangedBuild =
+                createRunner(gradleVersion, GENERATE_TASK_NAME, "--stacktrace").build();
+
+        // then.
+        assertThat(unchangedBuild.task(":" + GENERATE_TASK_NAME).getOutcome()).isEqualTo(TaskOutcome.UP_TO_DATE);
+
+        // given. the new commit is packed right away, so HEAD and the refs directory look exactly.
+        runGit("commit", "--allow-empty", "-m", "packed commit");
+        runGit("pack-refs", "--all");
+        String packedCommit = runGit("rev-parse", "HEAD");
+
+        // when.
+        BuildResult nextBuild =
+                createRunner(gradleVersion, GENERATE_TASK_NAME, "--stacktrace").build();
+
+        // then.
+        assertThat(nextBuild.task(":" + GENERATE_TASK_NAME).getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
+        assertThat(loadProperties().getProperty("git.commit.id")).isEqualTo(packedCommit);
+    }
+
     private void setupProject(String buildGradleFixture) throws IOException {
         writeFile("settings.gradle", "rootProject.name = 'axelix-plugin-test'\n");
         String buildFileName = buildGradleFixture.endsWith(".kts") ? "build.gradle.kts" : "build.gradle";

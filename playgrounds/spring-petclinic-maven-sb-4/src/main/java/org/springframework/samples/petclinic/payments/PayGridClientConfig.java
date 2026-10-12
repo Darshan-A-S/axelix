@@ -19,16 +19,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.restclient.autoconfigure.RestClientSsl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.client.RestClient;
 
 /**
  * Wires the {@link RestClient} used to talk to the external PayGrid payment provider. The
- * base URL comes from the {@code paygrid.host} property (resolved per datacenter), the
- * client certificate from the {@code paygrid} SSL bundle (PayGrid requires mutual TLS),
- * and the API token from whichever {@link ApiTokenInterceptor} is in effect for the
- * current environment.
+ * base URL comes from the {@code paygrid.host} property, which several property sources
+ * define (the built-in {@code paygrid-defaults.properties},
+ * {@code application.properties}, the profile-specific file and the per-datacenter
+ * {@code PAYGRID_HOST} env var), the client certificate from the {@code paygrid} SSL
+ * bundle (PayGrid requires mutual TLS), and the API token from whichever
+ * {@link ApiTokenInterceptor} is in effect for the current environment.
  */
 @Configuration(proxyBeanMethods = false)
+@PropertySource("classpath:paygrid-defaults.properties")
 class PayGridClientConfig {
 
 	@Bean

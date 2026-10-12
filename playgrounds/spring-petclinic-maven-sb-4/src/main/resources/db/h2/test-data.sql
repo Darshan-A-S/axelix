@@ -28,3 +28,21 @@ INSERT INTO projects (id, title) VALUES (1, 'Project Alpha'), (2, 'Project Beta'
 INSERT INTO employee_projects (employee_id, project_id) VALUES 
 (1, 1), (1, 2), (2, 2), (3, 1), (3, 3), (4, 3),
 (5, 1), (6, 2), (7, 3), (8, 1), (9, 2), (10, 3), (11, 1), (12, 2);
+
+INSERT INTO payments (id, payee, amount, currency, status) VALUES 
+(1, 'Acme Veterinary Supplies', 157.17, 'EUR', 'PENDING'), (2, 'Northwind Pharma', 194.34, 'EUR', 'PENDING'),
+(3, 'Globex Diagnostics', 231.51, 'EUR', 'PENDING'), (4, 'Initech Lab Services', 268.68, 'EUR', 'PENDING'),
+(5, 'Umbrella Pet Foods', 305.85, 'EUR', 'PENDING'), (6, 'Stark Medical Devices', 342.02, 'EUR', 'PENDING'),
+(7, 'Wayne Animal Insurance', 379.19, 'EUR', 'PENDING'), (8, 'Hooli Cloud Hosting', 416.36, 'EUR', 'PENDING'),
+(9, 'Soylent Nutrition', 453.53, 'EUR', 'PENDING'), (10, 'Wonka Treats', 490.70, 'EUR', 'PENDING'),
+(11, 'Cyberdyne Imaging', 527.87, 'EUR', 'PENDING'), (12, 'Tyrell Genetics', 564.04, 'EUR', 'PENDING'),
+(13, 'Acme Veterinary Supplies', 601.21, 'EUR', 'PROCESSED'), (14, 'Northwind Pharma', 638.38, 'EUR', 'PROCESSED'),
+(15, 'Globex Diagnostics', 675.55, 'EUR', 'PROCESSED'), (16, 'Initech Lab Services', 712.72, 'EUR', 'PROCESSED');
+
+INSERT INTO payment_invoices (payment_id, invoice_number) VALUES 
+(1, 'INV-2026-0001'), (1, 'INV-2026-0002'), (2, 'INV-2026-0003'), (3, 'INV-2026-0004'),
+(3, 'INV-2026-0005'), (4, 'INV-2026-0006'), (5, 'INV-2026-0007'), (5, 'INV-2026-0008'),
+(6, 'INV-2026-0009'), (7, 'INV-2026-0010'), (7, 'INV-2026-0011'), (8, 'INV-2026-0012'),
+(9, 'INV-2026-0013'), (9, 'INV-2026-0014'), (10, 'INV-2026-0015'), (11, 'INV-2026-0016'),
+(11, 'INV-2026-0017'), (12, 'INV-2026-0018'), (13, 'INV-2026-0019'), (13, 'INV-2026-0020'),
+(14, 'INV-2026-0021'), (15, 'INV-2026-0022'), (15, 'INV-2026-0023'), (16, 'INV-2026-0024');

@@ -36,6 +36,9 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.profiles }}"
+            # PayGrid stand-in hosted by the application itself (PayGridSandboxController)
+            - name: PAYGRID_HOST
+              value: "http://localhost:{{ .Values.service.port }}/paygrid-sandbox"
             - name: AXELIX_SBS_AUTH_JWT_ALGORITHM
               value: {{ .Values.axelix.sbs.auth.jwt.algorithm | quote }}
             - name: AXELIX_SBS_AUTH_JWT_SIGNING_KEY

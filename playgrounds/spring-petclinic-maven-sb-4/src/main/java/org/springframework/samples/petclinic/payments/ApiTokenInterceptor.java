@@ -21,8 +21,9 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
  * Attaches the PayGrid API token to every outgoing request so PayGrid can classify the
  * caller. There is deliberately more than one implementation on the classpath; which one
  * is actually in effect depends on the runtime environment - see
- * {@link VaultApiTokenInterceptor} (production) and {@link NoOpApiTokenInterceptor}
- * (test/sandbox).
+ * {@link VaultApiTokenInterceptor} (production), {@link StaticApiTokenInterceptor}
+ * (staging), {@link MountedSecretApiTokenInterceptor} (datacenters without Vault) and
+ * {@link NoOpApiTokenInterceptor} (test/sandbox).
  */
 interface ApiTokenInterceptor extends ClientHttpRequestInterceptor {
 

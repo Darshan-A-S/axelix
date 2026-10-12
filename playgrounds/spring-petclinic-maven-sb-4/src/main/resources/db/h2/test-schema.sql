@@ -43,3 +43,18 @@ CREATE TABLE documents (
     employee_id BIGINT,
     FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
+
+CREATE TABLE payments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    payee VARCHAR(255) NOT NULL,
+    amount DECIMAL(12, 2) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
+    status VARCHAR(16) NOT NULL
+);
+
+CREATE TABLE payment_invoices (
+    payment_id BIGINT NOT NULL,
+    invoice_number VARCHAR(32) NOT NULL,
+    PRIMARY KEY (payment_id, invoice_number),
+    FOREIGN KEY (payment_id) REFERENCES payments(id)
+);

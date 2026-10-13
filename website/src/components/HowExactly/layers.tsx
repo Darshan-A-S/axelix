@@ -128,7 +128,7 @@ export const LAYERS = [
                 description: (
                     <>
                         There are a lot of bad properties that people still use in production for various purposes, and{" "}
-                        <code>spring.jpq.show-sql=true</code> is one of them. It is bad, since it arranges the
+                        <code>spring.jpa.show-sql=true</code> is one of them. It is bad, since it arranges the
                         synchronous output to stdout, which bypasses the logging system and degrades performance. There
                         are other, more reliable and safe ways to log SQL queries.
                     </>

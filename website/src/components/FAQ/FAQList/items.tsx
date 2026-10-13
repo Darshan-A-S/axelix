@@ -81,7 +81,7 @@ export const FAQ_ITEMS: IFAQItem[] = [
             <p>
                 Currently we support Spring Boot 2, 3 and 4 through dedicated starter artifacts (
                 <code>axelix-spring-boot-2-starter</code>, <code>-3-starter</code>, <code>-4-starter</code>) and a
-                specific build plugin (for Maven or Gradle, it is the same for all Spring Boot versions). The master
+                specific build plugin (for Maven or Gradle, it is the same for all Spring Boot versions). The master requires
                 Java 25. <em>No JVM agent, no flags, no custom boot order.</em>
             </p>
         ),

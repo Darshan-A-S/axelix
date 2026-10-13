@@ -20,7 +20,6 @@ package com.axelixlabs.axelix.sbs.spring.core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixBeansEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixCachesEndpointAutoConfiguration;
@@ -30,7 +29,6 @@ import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixCoreNamingAutoCo
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixDependenciesEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixDetailsEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixEnvironmentEndpointAutoConfiguration;
-import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixFeignEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixGcEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixHeapDumpEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixInfoPropertiesAutoConfiguration;
@@ -72,7 +70,6 @@ import com.axelixlabs.axelix.sbs.spring.autoconfiguration.ValidationListenerAuto
             AxelixGcEndpointAutoConfiguration.class,
             AxelixCoreNamingAutoConfiguration.class,
             GarbageCollectionAutoConfiguration.class,
-            AxelixFeignEndpointAutoConfiguration.class,
             JwtAuthAutoConfiguration.class,
             HeartBeatAutoConfiguration.class,
             ScheduledTaskManagementAutoConfiguration.class,
@@ -85,7 +82,6 @@ import com.axelixlabs.axelix.sbs.spring.autoconfiguration.ValidationListenerAuto
             ValidationListenerAutoConfiguration.class,
         })
 @EnableCaching
-@EnableFeignClients
 public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);

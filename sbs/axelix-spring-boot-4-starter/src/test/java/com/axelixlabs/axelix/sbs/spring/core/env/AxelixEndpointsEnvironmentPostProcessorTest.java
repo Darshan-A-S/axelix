@@ -47,7 +47,6 @@ class AxelixEndpointsEnvironmentPostProcessorTest {
             "axelix-dependencies",
             "axelix-details",
             "axelix-env",
-            "axelix-feign",
             "axelix-gc",
             "axelix-heap-dump",
             "axelix-loggers",

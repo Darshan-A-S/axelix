@@ -182,7 +182,7 @@ plugin](../../setting-up-spring-boot-service/build-plugin/configuration.mdx).
 ### Transitive dependencies
 
 The starter is built to add as little as possible to your classpath. Everything it integrates with — Spring Boot,
-Actuator, Spring Cloud OpenFeign, Spring Kafka, Micrometer, Caffeine, Jackson — is compiled against but **not** brought
+Actuator, Spring Kafka, Micrometer, Caffeine, Jackson — is compiled against but **not** brought
 in: the starter uses whatever your application already has. The only libraries it brings in transitively are:
 
 | Dependency | Why it is there |
@@ -347,6 +347,21 @@ As of Axelix **1.2.0** the native `health` and `info` endpoints are no longer re
 them on its own (before 1.2.0 Axelix depended on them, and the starter force-exposed both). Only the endpoints you
 list in `management.endpoints.web.exposure.include` plus the Axelix ones are exposed — add `health` and `info` to the
 list yourself when you need them, including the `health` endpoint that Spring Boot would otherwise expose by default.
+
+#### The `axelix-feign` endpoint is removed
+
+<UpcomingReleaseNotice />
+
+Up to and including Axelix 1.2.x, the Spring Boot 3 and Spring Boot 4 starters also contributed an `axelix-feign`
+endpoint that listed the Spring Cloud OpenFeign clients of the application. It was never part of the table above:
+Axelix Master has never used it to render anything, and it stayed around only as a leftover from the early days of
+the project. Starting with Axelix 1.3.0 the endpoint is removed from the starters, together with everything in Master
+that was able to call it.
+
+There is nothing to do when you upgrade. The only visible difference is that `/actuator/axelix-feign` no longer
+exists on a service running starter 1.3.0 or newer, so if your own tooling calls that URL directly, it will get a
+`404`. If you list the Axelix endpoints in `management.endpoints.web.exposure.include` by hand and `axelix-feign` is
+among them, you can drop it from the list — leaving it there is harmless.
 
 ### Adding your own endpoints
 

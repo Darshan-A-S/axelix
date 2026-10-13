@@ -280,11 +280,4 @@ public class EndpointProbersAutoConfiguration {
         return new CachingEndpointProber<>(new ProxyingEndpointProber(
                 instanceRegistry, ActuatorEndpoints.GET_DEPENDENCIES_SBOM, securityContextExecutor));
     }
-
-    // Feign Client
-    @Bean
-    public ProxyingEndpointProber getFeignClientEndpointProber() {
-        return new ProxyingEndpointProber(
-                instanceRegistry, ActuatorEndpoints.GET_FEIGN_CLIENT, securityContextExecutor);
-    }
 }

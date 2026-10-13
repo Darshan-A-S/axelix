@@ -20,7 +20,6 @@ package com.axelixlabs.axelix.sbs.spring.core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixBeansEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixCachesEndpointAutoConfiguration;
@@ -84,7 +83,6 @@ import com.axelixlabs.axelix.sbs.spring.autoconfiguration.ValidationListenerAuto
             ValidationListenerAutoConfiguration.class,
         })
 @EnableCaching
-@EnableFeignClients
 public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);

@@ -64,6 +64,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("javax.cache:cache-api")
   implementation("jakarta.xml.bind:jakarta.xml.bind-api")
+  // Deliberately a discontinued dependency (demo): Janino's repository is archived, so Axelix reports it
+  // as SUNSET. Note: the dependency health check needs Axelix 1.2.0+, so it only surfaces once this
+  // playground moves off the 1.1.0 pin.
+  implementation("org.codehaus.janino:janino")
 
   runtimeOnly("org.springframework.boot:spring-boot-starter-actuator")
   runtimeOnly("org.webjars:webjars-locator-lite:$webjarsLocatorLiteVersion")

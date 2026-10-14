@@ -20,6 +20,7 @@
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <springdoc.version>2.8.9</springdoc.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
+        <spring-statemachine.version>4.0.2</spring-statemachine.version>
         <spotless-maven-plugin.version>3.7.0</spotless-maven-plugin.version>
     </properties>
     <dependencies>
@@ -81,11 +82,28 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Pinned to 1.1 until Axelix reaches 1.5 (compatibility window) -->
+        <!-- Pinned to the released 1.2.0 (compatibility window playground). 1.2.0 is the first version
+             whose starter + build plugin ship the dependency SBOM that Axelix's dependency health
+             check reads, which the Spring Statemachine dependency below is here to demonstrate. -->
         <dependency>
             <groupId>com.axelixlabs</groupId>
             <artifactId>axelix-spring-boot-3-starter</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.0</version>
+        </dependency>
+
+        <!-- Deliberately a discontinued dependency (demo): Spring Statemachine was moved to the Spring
+             attic and its repository is archived, so Axelix reports it as SUNSET. It drives the
+             Release lifecycle (see ReleaseStateMachine). -->
+        <dependency>
+            <groupId>org.springframework.statemachine</groupId>
+            <artifactId>spring-statemachine-core</artifactId>
+            <version>${spring-statemachine.version}</version>
+        </dependency>
+        <!-- Deliberately a maintenance-mode dependency (demo): Gson is officially in maintenance mode, so
+             Axelix reports it as MAINTENANCE. -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
         </dependency>
 
         <dependency>
@@ -205,11 +223,11 @@
                     </image>
                 </configuration>
             </plugin>
-            <!-- Pinned to 1.1 until Axelix reaches 1.5 (compatibility window) -->
+            <!-- Pinned to the released 1.2.0, in lockstep with the starter above -->
             <plugin>
                 <groupId>com.axelixlabs</groupId>
                 <artifactId>axelix-maven-plugin</artifactId>
-                <version>1.1.0</version>
+                <version>1.2.0</version>
                 <executions>
                     <execution>
                         <goals>

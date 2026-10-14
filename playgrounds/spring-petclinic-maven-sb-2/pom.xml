@@ -103,6 +103,13 @@
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
     </dependency>
+    <!-- Deliberately a discontinued dependency (demo): the Ehcache 2.x line is archived in favour of
+         Ehcache 3, so Axelix reports it as SUNSET. There is no ehcache.xml, so Spring Boot does not
+         pick it as the cache provider. -->
+    <dependency>
+      <groupId>net.sf.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+    </dependency>
 
     <!-- Webjars -->
     <dependency>

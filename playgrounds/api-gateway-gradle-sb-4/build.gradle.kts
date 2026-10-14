@@ -39,6 +39,9 @@ dependencies {
     // outbound calls with it (and this exercises Axelix's outbound-call monitoring, which stays
     // active without spring-tx).
     implementation("org.springframework.boot:spring-boot-restclient")
+    // Deliberately a maintenance-mode dependency (demo): Apache HttpClient 4.x only receives security
+    // fixes now that HttpClient 5 is the active line, so Axelix reports it as MAINTENANCE.
+    implementation("org.apache.httpcomponents:httpclient:4.5.14")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

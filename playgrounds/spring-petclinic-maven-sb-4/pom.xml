@@ -130,6 +130,13 @@
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
     </dependency>
+    <!-- Deliberately a discontinued dependency (demo): RxJava 2 reached end of life, so Axelix
+         reports it as SUNSET. -->
+    <dependency>
+      <groupId>io.reactivex.rxjava2</groupId>
+      <artifactId>rxjava</artifactId>
+      <version>2.2.21</version>
+    </dependency>
 
     <!-- Webjars -->
     <dependency>

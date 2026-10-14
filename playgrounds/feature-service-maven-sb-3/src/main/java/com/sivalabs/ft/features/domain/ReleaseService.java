@@ -20,16 +20,19 @@ public class ReleaseService {
     private final ProductRepository productRepository;
     private final FeatureRepository featureRepository;
     private final ReleaseMapper releaseMapper;
+    private final ReleaseStateMachine releaseStateMachine;
 
     ReleaseService(
             ReleaseRepository releaseRepository,
             ProductRepository productRepository,
             FeatureRepository featureRepository,
-            ReleaseMapper releaseMapper) {
+            ReleaseMapper releaseMapper,
+            ReleaseStateMachine releaseStateMachine) {
         this.releaseRepository = releaseRepository;
         this.productRepository = productRepository;
         this.featureRepository = featureRepository;
         this.releaseMapper = releaseMapper;
+        this.releaseStateMachine = releaseStateMachine;
     }
 
     @Transactional(readOnly = true)
@@ -70,6 +73,7 @@ public class ReleaseService {
     @Transactional
     public void updateRelease(UpdateReleaseCommand cmd) {
         Release release = releaseRepository.findByCode(cmd.code()).orElseThrow();
+        releaseStateMachine.validateTransition(release.getCode(), release.getStatus(), cmd.status());
         release.setDescription(cmd.description());
         release.setStatus(cmd.status());
         release.setReleasedAt(cmd.releasedAt());

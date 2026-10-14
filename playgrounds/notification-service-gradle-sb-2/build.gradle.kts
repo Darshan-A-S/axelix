@@ -73,6 +73,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.kafka:spring-kafka")
+    // Deliberately a maintenance-mode dependency (demo): Gson is officially in maintenance mode, so
+    // Axelix reports it as MAINTENANCE.
+    implementation("com.google.code.gson:gson")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     runtimeOnly("com.h2database:h2")

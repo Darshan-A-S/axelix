@@ -299,6 +299,11 @@ The starter exposes the following endpoints:
         <td><code>1.0.0</code></td>
     </tr>
     <tr>
+        <td><code>axelix-feign</code> <em>legacy</em></td>
+        <td>Feign clients (when Feign is on the classpath). Removed in <code>1.3.0</code>, see below</td>
+        <td><code>1.0.0</code></td>
+    </tr>
+    <tr>
         <td><code>axelix-gc</code></td>
         <td>Garbage collection</td>
         <td><code>1.0.0</code></td>
@@ -353,9 +358,8 @@ list yourself when you need them, including the `health` endpoint that Spring Bo
 <UpcomingReleaseNotice />
 
 Up to and including Axelix 1.2.x, the Spring Boot 3 and Spring Boot 4 starters also contributed an `axelix-feign`
-endpoint that listed the Spring Cloud OpenFeign clients of the application. It was never part of the table above:
-Axelix Master has never used it to render anything, and it stayed around only as a leftover from the early days of
-the project. Starting with Axelix 1.3.0 the endpoint is removed from the starters, together with everything in Master
+endpoint that listed the Spring Cloud OpenFeign clients of the application. Axelix Master has never used it to
+render anything, and it stayed around only as a leftover from the early days of the project. Starting with Axelix 1.3.0 the endpoint is removed from the starters, together with everything in Master
 that was able to call it.
 
 There is nothing to do when you upgrade. The only visible difference is that `/actuator/axelix-feign` no longer
@@ -437,6 +441,9 @@ management.endpoints.web.exposure.include=axelix-metadata,axelix-beans,axelix-ca
 
   </Tab>
 </Tabs>
+
+These starter versions also contribute the legacy `axelix-feign` endpoint. It is left out of the list on purpose:
+Master never reads it, and the endpoint is removed in Axelix 1.3.0 — see [above](#what-the-starter-exposes).
 
 ## Export Axelix metrics through Micrometer
 

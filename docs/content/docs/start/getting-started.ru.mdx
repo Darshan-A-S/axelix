@@ -340,6 +340,10 @@ management.endpoints.web.exposure.include=axelix-metadata,axelix-beans,axelix-ca
 
   </Tab>
 </Tabs>
+
+Эти версии стартера также добавляют устаревший эндпоинт `axelix-feign`. В список он не включён намеренно: Master его
+никогда не читает, а в Axelix 1.3.0 эндпоинт удалён — см. [Эндпоинт `axelix-feign`
+удалён](../setting-up-spring-boot-service/spring-boot-starter/configuration.mdx#эндпоинт-axelix-feign-удалён).
 :::
 
 Раскатывайте их сервис за сервисом. Как только сервис передеплоивается в тестовое окружение, он появляется в тестовом

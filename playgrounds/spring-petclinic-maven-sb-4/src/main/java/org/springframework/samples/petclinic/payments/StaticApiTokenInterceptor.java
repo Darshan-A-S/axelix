@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * staging tenant. Registered only when {@code environment=staging}.
  */
 @Component
-@ConditionalOnProperty(name = "environment", havingValue = "staging")
+@ConditionalOnProperty(name = "deploy.env", havingValue = "staging")
 class StaticApiTokenInterceptor implements ApiTokenInterceptor {
 
 	private final String apiToken;

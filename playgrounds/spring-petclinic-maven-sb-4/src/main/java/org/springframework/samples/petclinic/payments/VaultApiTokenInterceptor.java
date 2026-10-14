@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
  * is skipped, and {@link NoOpApiTokenInterceptor} takes over instead.
  */
 @Component
-@ConditionalOnProperty(name = "environment", havingValue = "production")
+@ConditionalOnProperty(name = "deploy.env", havingValue = "production")
 class VaultApiTokenInterceptor implements ApiTokenInterceptor {
 
 	private final String apiToken;

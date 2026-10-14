@@ -46,3 +46,9 @@ INSERT INTO payment_invoices (payment_id, invoice_number) VALUES
 (9, 'INV-2026-0013'), (9, 'INV-2026-0014'), (10, 'INV-2026-0015'), (11, 'INV-2026-0016'),
 (11, 'INV-2026-0017'), (12, 'INV-2026-0018'), (13, 'INV-2026-0019'), (13, 'INV-2026-0020'),
 (14, 'INV-2026-0021'), (15, 'INV-2026-0022'), (15, 'INV-2026-0023'), (16, 'INV-2026-0024');
+
+INSERT INTO risk_flags (id, code) VALUES
+(1, 'LARGE_AMOUNT'), (2, 'NEW_PAYEE'), (3, 'NIGHT_TIME'), (4, 'FOREIGN_CURRENCY');
+
+INSERT INTO payment_risk_flags (payment_id, risk_flag_id) VALUES
+(1, 2), (2, 1), (2, 3), (4, 2), (6, 1), (7, 1), (7, 2), (9, 3), (11, 1), (12, 1), (12, 3);

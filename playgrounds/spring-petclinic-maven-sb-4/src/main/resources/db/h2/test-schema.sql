@@ -58,3 +58,15 @@ CREATE TABLE payment_invoices (
     PRIMARY KEY (payment_id, invoice_number),
     FOREIGN KEY (payment_id) REFERENCES payments(id)
 );
+
+CREATE TABLE risk_flags (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(32) NOT NULL
+);
+
+CREATE TABLE payment_risk_flags (
+    payment_id BIGINT NOT NULL,
+    risk_flag_id BIGINT NOT NULL,
+    FOREIGN KEY (payment_id) REFERENCES payments(id),
+    FOREIGN KEY (risk_flag_id) REFERENCES risk_flags(id)
+);

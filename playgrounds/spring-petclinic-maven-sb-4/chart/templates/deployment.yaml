@@ -39,6 +39,12 @@ spec:
             # PayGrid stand-in hosted by the application itself (PayGridSandboxController)
             - name: PAYGRID_HOST
               value: "http://localhost:{{ .Values.service.port }}/paygrid-sandbox"
+            # Injected by the platform into every pod to tag logs and metrics. Spring relaxed binding
+            # exposes it as "deploy.env", which the payment interceptors silently depend on. The
+            # platform renamed "production" to "prod", so VaultApiTokenInterceptor no longer matches
+            # and the no-op (test) interceptor wins - see the payments package.
+            - name: DEPLOY_ENV
+              value: "prod"
             - name: AXELIX_SBS_AUTH_JWT_ALGORITHM
               value: {{ .Values.axelix.sbs.auth.jwt.algorithm | quote }}
             - name: AXELIX_SBS_AUTH_JWT_SIGNING_KEY

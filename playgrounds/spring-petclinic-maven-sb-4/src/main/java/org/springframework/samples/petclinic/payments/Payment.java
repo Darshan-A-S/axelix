@@ -16,7 +16,9 @@
 package org.springframework.samples.petclinic.payments;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.CollectionTable;
@@ -29,6 +31,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 /**
@@ -56,6 +60,11 @@ public class Payment {
 	@Column(name = "invoice_number")
 	private Set<String> invoices = new HashSet<>();
 
+	@ManyToMany
+	@JoinTable(name = "payment_risk_flags", joinColumns = @JoinColumn(name = "payment_id"),
+			inverseJoinColumns = @JoinColumn(name = "risk_flag_id"))
+	private List<RiskFlag> riskFlags = new ArrayList<>();
+
 	public Long getId() {
 		return id;
 	}
@@ -78,6 +87,10 @@ public class Payment {
 
 	public Set<String> getInvoices() {
 		return invoices;
+	}
+
+	public List<RiskFlag> getRiskFlags() {
+		return riskFlags;
 	}
 
 	void markProcessed() {

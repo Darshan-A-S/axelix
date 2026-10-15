@@ -38,5 +38,5 @@ public interface HeartBeatMetadataAssembler {
     /**
      * @return the lightweight metadata sent to the master once the instance has been registered.
      */
-    HeartBeatMetadataV2 assembleHeartBeat();
+    HeartBeatMetadataV2 assembleHeartBeatV2();
 }

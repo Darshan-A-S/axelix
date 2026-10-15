@@ -84,7 +84,7 @@ public class DefaultHeartBeatMetadataAssembler implements HeartBeatMetadataAssem
     }
 
     @Override
-    public HeartBeatMetadataV2 assembleHeartBeat() {
+    public HeartBeatMetadataV2 assembleHeartBeatV2() {
         return new HeartBeatMetadataV2()
                 .instanceId(instanceId)
                 .healthStatus(healthDetectionFunction.get())

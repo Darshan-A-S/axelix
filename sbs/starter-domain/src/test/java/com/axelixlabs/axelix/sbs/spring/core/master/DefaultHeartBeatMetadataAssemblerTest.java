@@ -20,7 +20,6 @@ package com.axelixlabs.axelix.sbs.spring.core.master;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,10 +43,8 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.heartbeatv2.HeartBeatMetad
 import com.axelixlabs.axelix.sbs.spring.core.contract.initialregistrationrequest.InitialSelfRegistrationRequest;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
-import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HotSpotInsights;
-import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.Insights;
-import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.PersistenceInsights;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 
 import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -128,14 +125,7 @@ class DefaultHeartBeatMetadataAssemblerTest {
 
         @Bean
         InsightsInfoProvider insightsInfoProvider() {
-            return () -> new Insights()
-                    .hotSpot(new HotSpotInsights()
-                            .projectLeyden(List.of())
-                            .gc(List.of())
-                            .projectLilliputh(List.of()))
-                    .springFramework(List.of())
-                    .persistenceInsights(new PersistenceInsights().transactions(List.of()))
-                    .scheduledTaskExecutions(List.of());
+            return new TestInsightsInfoProvider();
         }
 
         @Bean
@@ -164,7 +154,7 @@ class DefaultHeartBeatMetadataAssemblerTest {
     }
 
     @Test
-    void shouldAssembleTheHeartBeatMetadataAboutGivenService() {
+    void shouldAssembleInitialRegistrationRequestGivenService() {
         // when.
         InitialSelfRegistrationRequest metadata = subject.assembleRegistrationRequest();
         BasicRegistrationMetadata basicMetadata = metadata.getBasicRegistrationMetadata();
@@ -186,9 +176,9 @@ class DefaultHeartBeatMetadataAssemblerTest {
     }
 
     @Test
-    void shouldAssembleTheLightweightHeartBeatOfGivenService() {
+    void shouldAssembleHeartBeatV2OfGivenService() {
         // when.
-        HeartBeatMetadataV2 heartBeat = subject.assembleHeartBeat();
+        HeartBeatMetadataV2 heartBeat = subject.assembleHeartBeatV2();
 
         // then.
         assertThat(heartBeat.getInstanceId())

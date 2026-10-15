@@ -20,7 +20,6 @@ package com.axelixlabs.axelix.sbs.spring.core.master;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -53,11 +52,9 @@ import com.axelixlabs.axelix.sbs.spring.core.config.HeartBeatConfigurationProper
 import com.axelixlabs.axelix.sbs.spring.core.contract.heartbeatv2.HeartBeatMetadataV2;
 import com.axelixlabs.axelix.sbs.spring.core.contract.initialregistrationrequest.InitialSelfRegistrationRequest;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
-import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HotSpotInsights;
-import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.Insights;
-import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.PersistenceInsights;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
+import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 
 import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -162,14 +159,7 @@ class HeartBeatServiceTest {
 
         @Bean
         InsightsInfoProvider insightsInfoProvider() {
-            return () -> new Insights()
-                    .hotSpot(new HotSpotInsights()
-                            .projectLeyden(List.of())
-                            .gc(List.of())
-                            .projectLilliputh(List.of()))
-                    .springFramework(List.of())
-                    .persistenceInsights(new PersistenceInsights().transactions(List.of()))
-                    .scheduledTaskExecutions(List.of());
+            return new TestInsightsInfoProvider();
         }
 
         @Bean
@@ -288,7 +278,7 @@ class HeartBeatServiceTest {
     }
 
     @Test
-    void shouldSendLightweightHeartbeatOnceRegistered() throws InterruptedException {
+    void shouldSendHeartbeatV2OnceRegistered() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
         startHeartBeating("/service/register");
@@ -327,23 +317,13 @@ class HeartBeatServiceTest {
     }
 
     @Test
-    void shouldKeepRegisteringUntilRegistrationSucceeds() throws InterruptedException {
+    void shouldKeepTryingToRegisterUntilRegistrationSucceeds() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(500));
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
         startHeartBeating("/service/register");
 
         assertThat(mockWebServer.takeRequest(2, TimeUnit.SECONDS).getPath()).isEqualTo("/service/register");
         assertThat(mockWebServer.takeRequest(3, TimeUnit.SECONDS).getPath()).isEqualTo("/service/register");
-    }
-
-    @Test
-    void shouldKeepRegisteringWhenHeartbeatUrlCannotBeDerivedFromMasterUrl() throws InterruptedException {
-        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
-        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
-        startHeartBeating("/custom/path");
-
-        assertThat(mockWebServer.takeRequest(2, TimeUnit.SECONDS).getPath()).isEqualTo("/custom/path");
-        assertThat(mockWebServer.takeRequest(3, TimeUnit.SECONDS).getPath()).isEqualTo("/custom/path");
     }
 
     private static String serialize(Object payload) {

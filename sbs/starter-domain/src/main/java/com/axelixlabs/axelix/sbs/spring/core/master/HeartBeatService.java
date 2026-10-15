@@ -107,7 +107,7 @@ public class HeartBeatService implements Closeable {
             String heartbeatUrl = this.heartbeatUrl;
 
             if (registered && heartbeatUrl != null) {
-                int statusCode = sendRequest(heartBeatMetadataAssembler.assembleHeartBeat(), heartbeatUrl)
+                int statusCode = sendRequest(heartBeatMetadataAssembler.assembleHeartBeatV2(), heartbeatUrl)
                         .statusCode();
 
                 if (is2xxSuccessful(statusCode)) {

@@ -38,7 +38,5 @@ public interface InsightsInfoProvider {
     /**
      * @return the aggregated information about the transactions inside the instance.
      */
-    default List<TransactionAggregatedProfile> getTransactions() {
-        return getInsight().getPersistenceInsights().getTransactions();
-    }
+    List<TransactionAggregatedProfile> getTransactions();
 }

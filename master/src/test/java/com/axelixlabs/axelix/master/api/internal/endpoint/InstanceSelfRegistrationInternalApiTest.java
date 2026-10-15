@@ -166,7 +166,7 @@ public class InstanceSelfRegistrationInternalApiTest {
     """.formatted(TEST_INSTANCE_ID);
 
     // language=json
-    private static final String JSON_HEARTBEAT = """
+    private static final String JSON_HEARTBEAT_V2 = """
         {
            "instanceId" : "%s",
            "healthStatus" : "DOWN",
@@ -342,7 +342,7 @@ public class InstanceSelfRegistrationInternalApiTest {
     }
 
     @Test
-    void shouldRefreshInstanceOnHeartbeat() {
+    void shouldRefreshInstanceOnHeartbeatV2() {
         // given.
         restTemplate
                 .withRoleTokenInAuthorizationHeader(DefaultRole.MANAGED_SERVICE)
@@ -351,7 +351,7 @@ public class InstanceSelfRegistrationInternalApiTest {
         // when.
         ResponseEntity<Void> response = restTemplate
                 .withRoleTokenInAuthorizationHeader(DefaultRole.MANAGED_SERVICE)
-                .postForEntity("/api/internal/service/heartbeat/v2", defaultJsonEntity(JSON_HEARTBEAT), Void.class);
+                .postForEntity("/api/internal/service/heartbeat/v2", defaultJsonEntity(JSON_HEARTBEAT_V2), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -413,15 +413,15 @@ public class InstanceSelfRegistrationInternalApiTest {
         return Stream.of(
                 Arguments.of(
                         "instanceId",
-                        JSON_HEARTBEAT.replace("\"instanceId\" : \"%s\",".formatted(TEST_INSTANCE_ID), "")),
-                Arguments.of("healthStatus", JSON_HEARTBEAT.replace("\"healthStatus\" : \"DOWN\",", "")),
-                Arguments.of("memoryDetails", JSON_HEARTBEAT.replaceAll("\"memoryDetails\" : \\{[^}]*},", "")),
-                Arguments.of("heap", JSON_HEARTBEAT.replace("\"heap\" : 34000", "")),
+                        JSON_HEARTBEAT_V2.replace("\"instanceId\" : \"%s\",".formatted(TEST_INSTANCE_ID), "")),
+                Arguments.of("healthStatus", JSON_HEARTBEAT_V2.replace("\"healthStatus\" : \"DOWN\",", "")),
+                Arguments.of("memoryDetails", JSON_HEARTBEAT_V2.replaceAll("\"memoryDetails\" : \\{[^}]*},", "")),
+                Arguments.of("heap", JSON_HEARTBEAT_V2.replace("\"heap\" : 34000", "")),
                 // absent transactions default to an empty list in the generated model, only an explicit null is
                 // missing.
                 Arguments.of(
                         "transactions",
-                        JSON_HEARTBEAT.replaceAll("\"transactions\" : \\[[\\s\\S]*]", "\"transactions\" : null")));
+                        JSON_HEARTBEAT_V2.replaceAll("\"transactions\" : \\[[\\s\\S]*]", "\"transactions\" : null")));
     }
 
     @Test
@@ -429,7 +429,7 @@ public class InstanceSelfRegistrationInternalApiTest {
         // when.
         ResponseEntity<Void> response = restTemplate
                 .withRoleTokenInAuthorizationHeader(DefaultRole.MANAGED_SERVICE)
-                .postForEntity("/api/internal/service/heartbeat/v2", defaultJsonEntity(JSON_HEARTBEAT), Void.class);
+                .postForEntity("/api/internal/service/heartbeat/v2", defaultJsonEntity(JSON_HEARTBEAT_V2), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
@@ -461,7 +461,7 @@ public class InstanceSelfRegistrationInternalApiTest {
     void shouldReturnUnauthorizedOnHeartbeat(String scenario, TestRestTemplate testRestTemplate) {
         // when.
         ResponseEntity<Void> response = testRestTemplate.postForEntity(
-                "/api/internal/service/heartbeat/v2", defaultJsonEntity(JSON_HEARTBEAT), Void.class);
+                "/api/internal/service/heartbeat/v2", defaultJsonEntity(JSON_HEARTBEAT_V2), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);

@@ -23,6 +23,7 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HotSpotInsights;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.InsightFeature;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.Insights;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.PersistenceInsights;
+import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.TransactionAggregatedProfile;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 
 /**
@@ -50,5 +51,10 @@ public final class TestInsightsInfoProvider implements InsightsInfoProvider {
     @Override
     public Insights getInsight() {
         return TEST_INSIGHTS;
+    }
+
+    @Override
+    public List<TransactionAggregatedProfile> getTransactions() {
+        return TEST_INSIGHTS.getPersistenceInsights().getTransactions();
     }
 }

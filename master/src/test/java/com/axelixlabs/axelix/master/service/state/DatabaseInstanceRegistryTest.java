@@ -162,7 +162,7 @@ class DatabaseInstanceRegistryTest {
     }
 
     @Test
-    void refresh_shouldUpdateStatusHeapAndHeartBeatOnly() {
+    void refresh_shouldUpdateStatusHeapAndHeartBeatTimestampOnly() {
         // given.
         Instant staleHeartBeat = Instant.now().minus(1, ChronoUnit.HOURS);
         Instance instance = TestInstanceFactory.createInstanceWithHeartbeat("refresh-id-1", staleHeartBeat);

@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.service.state;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -39,6 +40,7 @@ import com.axelixlabs.axelix.master.utils.database.DatabaseMatrixTest;
 
 import static com.axelixlabs.axelix.master.utils.TestInstanceFactory.withName;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * Base class for integration tests of {@link DatabaseInstanceRegistry}
@@ -89,7 +91,7 @@ class DatabaseInstanceRegistryTest {
                 "Http://localhost:8080/actuator");
 
         // when.
-        instanceRegistry.reload(instance);
+        instanceRegistry.register(instance);
 
         // then.
         Optional<Instance> expectedInstance = instanceRegistry.get(InstanceId.of("test-id-1"));
@@ -124,7 +126,7 @@ class DatabaseInstanceRegistryTest {
                 Instance.InstanceStatus.UP,
                 new MemoryUsage(1234d),
                 "Http://localhost:8080/actuator");
-        instanceRegistry.reload(instance);
+        instanceRegistry.register(instance);
 
         // when.
         Instance updated = new Instance(
@@ -145,7 +147,7 @@ class DatabaseInstanceRegistryTest {
                 new MemoryUsage(1200d),
                 instance.actuatorUrl());
 
-        instanceRegistry.reload(updated);
+        instanceRegistry.register(updated);
 
         // then.
         Optional<Instance> found = instanceRegistry.get(InstanceId.of("test-id-2"));
@@ -160,6 +162,45 @@ class DatabaseInstanceRegistryTest {
     }
 
     @Test
+    void refresh_shouldUpdateStatusHeapAndHeartBeatOnly() {
+        // given.
+        Instant staleHeartBeat = Instant.now().minus(1, ChronoUnit.HOURS);
+        Instance instance = TestInstanceFactory.createInstanceWithHeartbeat("refresh-id-1", staleHeartBeat);
+        Instance untouched = TestInstanceFactory.createInstanceWithHeartbeat("refresh-id-2", staleHeartBeat);
+        instanceRegistry.register(instance);
+        instanceRegistry.register(untouched);
+
+        // when.
+        instanceRegistry.refresh(instance.id(), Instance.InstanceStatus.DOWN, new MemoryUsage(2048d));
+
+        // then.
+        Instance refreshed = instanceRegistry.get(instance.id()).orElseThrow();
+        assertThat(refreshed.status()).isEqualTo(Instance.InstanceStatus.DOWN);
+        assertThat(refreshed.memoryUsage()).isEqualTo(new MemoryUsage(2048d));
+        assertThat(refreshed.latestHeartBeat()).isCloseTo(Instant.now(), within(1, ChronoUnit.MINUTES));
+        assertThat(refreshed)
+                .usingRecursiveComparison()
+                .ignoringFields("status", "memoryUsage")
+                .ignoringFieldsOfTypes(Instant.class)
+                .isEqualTo(instance);
+
+        // and the other instance is left as it was.
+        Instance other = instanceRegistry.get(untouched.id()).orElseThrow();
+        assertThat(other.status()).isEqualTo(untouched.status());
+        assertThat(other.memoryUsage()).isEqualTo(untouched.memoryUsage());
+        assertThat(other.latestHeartBeat()).isCloseTo(staleHeartBeat, within(1, ChronoUnit.SECONDS));
+    }
+
+    @Test
+    void refresh_shouldNotCreateUnknownInstance() {
+        // when.
+        instanceRegistry.refresh(InstanceId.of("unknown-id"), Instance.InstanceStatus.UP, new MemoryUsage(2048d));
+
+        // then.
+        assertThat(instanceRegistry.getAll()).isEmpty();
+    }
+
+    @Test
     void registerAll_shouldPersistAllInstances() {
         // given.
         List<Instance> instances = List.of(
@@ -168,7 +209,7 @@ class DatabaseInstanceRegistryTest {
                 TestInstanceFactory.create("batch-id-3"));
 
         // when
-        instanceRegistry.reload(instances);
+        instanceRegistry.register(instances);
 
         // then.
         assertThat(instanceRegistry.getAll()).hasSize(3);
@@ -178,7 +219,7 @@ class DatabaseInstanceRegistryTest {
     void deRegister_shouldRemoveInstance() {
         // given.
         Instance instance = TestInstanceFactory.create("deregister-id-1");
-        instanceRegistry.reload(instance);
+        instanceRegistry.register(instance);
         assertThat(instanceRegistry.get(InstanceId.of("deregister-id-1"))).isNotEmpty();
 
         // when.
@@ -191,8 +232,8 @@ class DatabaseInstanceRegistryTest {
     @Test
     void deRegisterAll_shouldRemoveAllInstances() {
         // given.
-        instanceRegistry.reload(TestInstanceFactory.create("deregister-all-1"));
-        instanceRegistry.reload(TestInstanceFactory.create("deregister-all-2"));
+        instanceRegistry.register(TestInstanceFactory.create("deregister-all-1"));
+        instanceRegistry.register(TestInstanceFactory.create("deregister-all-2"));
 
         assertThat(instanceRegistry.getAll()).hasSize(2);
 
@@ -206,8 +247,8 @@ class DatabaseInstanceRegistryTest {
     @Test
     void getAll_shouldReturnAllInstances() {
         // given.
-        instanceRegistry.reload(TestInstanceFactory.create("test-id-1"));
-        instanceRegistry.reload(TestInstanceFactory.create("test-id-2"));
+        instanceRegistry.register(TestInstanceFactory.create("test-id-1"));
+        instanceRegistry.register(TestInstanceFactory.create("test-id-2"));
 
         // when. / then.
         assertThat(instanceRegistry.getAll())
@@ -221,8 +262,8 @@ class DatabaseInstanceRegistryTest {
         Instance petclinicInstance = withName("query-id-1", "petclinic-service");
         Instance featureServiceInstance = withName("query-id-2", "feature-service");
 
-        instanceRegistry.reload(petclinicInstance);
-        instanceRegistry.reload(featureServiceInstance);
+        instanceRegistry.register(petclinicInstance);
+        instanceRegistry.register(featureServiceInstance);
 
         // when.
         Set<Instance> result = instanceRegistry.findByQuery("petclinic");

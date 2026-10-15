@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.stereotype.Component;
 
-import com.axelixlabs.axelix.master.contract.heartbeat.HeartBeatMetadata;
+import com.axelixlabs.axelix.master.contract.initialregistrationrequest.InitialSelfRegistrationRequest;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.contract.metadata.ScheduledTaskExecution;
 import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
@@ -54,7 +54,7 @@ public class ScheduledTaskExecutionResultConverter {
                 discoveredInstanceProfile.instance().id().instanceId());
     }
 
-    public Set<ScheduledTaskExecutionResult> convert(HeartBeatMetadata heartBeatMetadata) {
+    public Set<ScheduledTaskExecutionResult> convert(InitialSelfRegistrationRequest heartBeatMetadata) {
         return convert(heartBeatMetadata.getBasicRegistrationMetadata(), heartBeatMetadata.getInstanceId());
     }
 

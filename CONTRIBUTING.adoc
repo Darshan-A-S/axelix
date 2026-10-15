@@ -122,6 +122,58 @@ void yourTestMethod() { … }
 6. Make sure you follow the <<commit-messages>> guidelines.
 7. All external contributors must sign a CLA (Contributor License Agreement) before their changes can be accepted into the Axelix Project.
 
+[[documenting-java-code]]
+=== Documenting Java code
+
+Documentation easily gets out of sync with the code it describes, so we document deliberately, not by default.
+
+*Contracts must be documented.* Javadoc belongs on the contract level, where it outlines clearly what the contract is. Every interface must have a Javadoc, and so must every method declared in it. For example:
+
+[source,java]
+----
+/**
+ * Interface for providing the estimate size of the provided cache (for example, Caffeine, ConcurrentHashMap, Guava, etc.)
+ */
+public interface CacheSizeProvider {
+
+    /**
+     * @param nativeCache the underlying native cache provider.
+     * @return the estimated cache size, or {@code null} if the value cannot be determined, or if the provided cache is not supported.
+     */
+    @Nullable
+    Long getEstimatedCacheSize(@Nullable Object nativeCache);
+}
+----
+
+*The domain model should be documented too*, e.g. classes like `Instance` or `UserEntity`, since they define the concepts the rest of the code is built around.
+
+*Business logic generally should not be documented.* Implementations, private methods, and the rest of the code that actually does things should not carry Javadoc or comments in general. The code itself must tell you everything you need to know. (The class-level Javadoc holding the `@author` tag, see <<quickstart>>, is the only exception.)
+
+A comment in the business logic is appropriate only when the author of the code (or the developer who modified it) thinks it is not obvious _what_ the code does or _why_ it does it that way. In that case, explain the reason, not the mechanics. For example:
+
+[source,java]
+----
+// Yeah, that sucks, but we have to query all services and filter in memory since K8S API
+// does not allow to query by the resource UID for some reason.
+return serviceOperation.list().getItems().stream()
+        .filter(service -> serviceId.equalsIgnoreCase(service.getMetadata().getUid()))
+        .findFirst()
+        .orElse(null);
+----
+
+[source,java]
+----
+@Bean
+public CacheOperationsDispatcher cacheOperationsDispatcher(
+        // we have to inject here by CacheManager rather than by EnhancedCacheManager, since the bean definition
+        // in spring for the EnhancedCacheManager still has CacheManager type.
+        Map<String, CacheManager> managerMap, CacheSizeProvider cacheSizeProvider) {
+    return new DefaultCacheOperationsDispatcher(managerMap, cacheSizeProvider);
+}
+----
+
+Without these comments, a reader would likely "fix" the in-memory filtering or the injection type and break things. That is exactly the kind of knowledge the code alone cannot express.
+
 [[building-from-source]]
 === Building from source
 

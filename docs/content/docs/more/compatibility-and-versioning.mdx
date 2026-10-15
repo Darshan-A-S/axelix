@@ -9,7 +9,7 @@ description: "This page explains how Axelix itself is versioned and how it stays
 
 Axelix is released as a single, coordinated distribution. All components share **exactly the same version**.
 
-When a new distribution of Axelix is released — say **Axelix OSS 3.1.2** — every released component carries that
+When a new distribution of Axelix is released (say **Axelix OSS 3.1.2**), every released component carries that
 same version `3.1.2`:
 
 - The **Spring Boot Starters** (published as Maven artifacts).
@@ -21,17 +21,56 @@ There is no independent versioning per component. If you know the version of one
 of them all in that release.
 
 This holds for **patch releases too**: a patch re-releases the whole fleet under `X.Y.Z`, cut from the minor line's
-patch branch — see [Branching Model](./development/branching-model.mdx) and [Releases](./development/releases.mdx)
+patch branch. See [Branching Model](./development/branching-model.mdx) and [Releases](./development/releases.mdx)
 for how those cuts happen.
+
+## What the version number means
+
+An Axelix version has three parts, `MAJOR.MINOR.PATCH`, for example `1.4.2`. It looks like
+[Semantic Versioning](https://semver.org/), but Axelix doesn't follow it strictly. Under semver, only a major release
+may break anything, while a minor release just adds features. Axelix follows the
+[versioning approach of Spring Boot](https://github.com/spring-projects/spring-boot/wiki/Team-Practices#versioning)
+instead, where a minor release may contain breaking changes too. Spring Boot's
+[Supported Versions](https://github.com/spring-projects/spring-boot/wiki/Supported-Versions) policy says so directly:
+"Minor and major releases might contain back-incompatible API changes."
+
+### Why not strict semantic versioning
+
+The reason is the size of the public API. Axelix, like Spring Boot, is a large project. Its starters run inside your
+application, Master has many configuration properties, and the components talk to each other over their own protocols.
+With a surface that large, almost every change touches something a user could depend on. Under strict semver, nearly
+every release would then have to be a major one, so the major version would stop telling you anything useful.
+
+The Spring Boot team describes exactly this problem in its
+[team practices](https://github.com/spring-projects/spring-boot/wiki/Team-Practices#versioning): "It's not really
+possible for Spring Boot to use semantic versioning since every release would have to be a major."
+
+### The pain index
+
+Instead of promising "no breaking changes at all", Axelix uses the version number as a **pain index**. The part of the
+version that changes tells you how much work the upgrade is likely to cost you. This is the same idea Spring Boot
+[describes](https://github.com/spring-projects/spring-boot/wiki/Team-Practices#versioning) for its own releases: "we try
+to use the version number as an indicator of the amount of pain that an upgrade will cause."
+
+| Upgrade | Example            | What to expect                                                                                                                                                                              |
+|---------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Patch   | `1.4.2` → `1.4.3`  | A drop-in replacement. It carries bug fixes, security fixes, or performance improvements, and you don't need to change anything.                                                           |
+| Minor   | `1.4.x` → `1.5.0`  | New features, and possibly a few breaking changes. In most cases nothing on your side changes. When something does, the adjustment is small.                                                |
+| Major   | `1.x.x` → `2.0.0`  | Many new features and almost certainly breaking changes that affect your setup. Plan time for the migration: each major version has a dedicated migration guide.                           |
+
+Which parts of Axelix may change in a minor release, and which stay fixed until the next major, is spelled out below in
+[Compatibility between components](#compatibility-between-components) and
+[Backward compatibility guarantees between releases](#backward-compatibility-guarantees-between-releases). For the
+upgrade procedure itself, see [Upgrading Axelix](./upgrading.mdx).
 
 ## A dedicated starter per Spring Boot major version
 
 Axelix ships a **dedicated starter for every Spring Boot major version**. There is a standalone, separate artifact for
 each supported major:
 
-- `axelix-spring-boot-2-starter` — for Spring Boot **2.x** services.
-- `axelix-spring-boot-3-starter` — for Spring Boot **3.x** services.
-- `axelix-spring-boot-4-starter` — for Spring Boot **4.x** services.
+- `axelix-spring-boot-2-starter`: for Spring Boot **2.x** services.
+- `axelix-spring-boot-3-starter`: for Spring Boot **3.x** services.
+- `axelix-spring-boot-4-starter`: for Spring Boot **4.x** services.
 
 As of now, Axelix supports Spring Boot **major versions 2 through 4**. Pick the starter that matches your service's
 Spring Boot major version.
@@ -44,7 +83,7 @@ choose from:
 
 :::info[Minimum Spring Boot 2 version is 2.7.x]
 `axelix-spring-boot-2-starter` supports Spring Boot 2 starting from **2.7**, not the whole 2.x line. If your service
-is on an earlier Spring Boot 2.x — some services run as far back as **2.5.15** — you must upgrade to at least
+is on an earlier Spring Boot 2.x (some services run as far back as **2.5.15**), you must upgrade to at least
 **Spring Boot 2.7** before adding Axelix.
 :::
 
@@ -55,12 +94,12 @@ want to run Axelix Master as a JAR. In any other case it will not make a differe
 
 **Starters** follow the Java compatibility of the Spring Boot version they target. Each starter is compatible with **any
 Java version that its Spring Boot major supports**. For example, Spring Boot 3 supports Java **17** at the very least and
-up to Java **25** (with Spring Boot 3.5), depending on the minor version you run — and `axelix-spring-boot-3-starter`
+up to Java **25** (with Spring Boot 3.5), depending on the minor version you run, and `axelix-spring-boot-3-starter`
 follows exactly the same range.
 
 :::info[Minimum Java version is 11]
 The one exception to "follow Spring Boot's Java support" is a hard **floor of Java 11** for Axelix **starters and
-plugins**. Spring Boot 2 users who can theoretically still be on **Java 8** cannot use Axelix — they must upgrade to at
+plugins**. Spring Boot 2 users who can theoretically still be on **Java 8** cannot use Axelix: they must upgrade to at
 least **Java 11**.
 :::
 
@@ -74,37 +113,37 @@ starter while everything else stays put. For those mixed deployments there is a 
 > **Any two Axelix components are guaranteed compatible as long as they share the same `major` and `minor` version. The
 > patch version is irrelevant.**
 
-That is the whole contract. It covers every pairing at once — Master with a starter, a starter with its plugin, all of
-them together — so you never need a compatibility matrix. Just line up `major.minor`.
+That is the whole contract. It covers every pairing at once (Master with a starter, a starter with its plugin, all of
+them together), so you never need a compatibility matrix. Just line up `major.minor`.
 
-- ✅ Master `1.4.2`, starter `1.4.5`, plugin `1.4.0` — all on `1.4`, guaranteed compatible.
-- ✅ Starter `1.4.3` with plugin `1.4.0` — same `1.4`, guaranteed compatible.
-- ⚠️ Master `1.4.2` with starter `1.3.4` — **minor drift**, not guaranteed. It may work; it may break.
-- ⚠️ Starter `3.1.x` with plugin `3.3.x` — **minor drift**, not guaranteed and unsupported.
-- ⚠️ Any **major** drift — not guaranteed, and even less likely to work than a minor drift.
+- ✅ Master `1.4.2`, starter `1.4.5`, plugin `1.4.0`: all on `1.4`, guaranteed compatible.
+- ✅ Starter `1.4.3` with plugin `1.4.0`: same `1.4`, guaranteed compatible.
+- ⚠️ Master `1.4.2` with starter `1.3.4`: **minor drift**, not guaranteed. It may work; it may break.
+- ⚠️ Starter `3.1.x` with plugin `3.3.x`: **minor drift**, not guaranteed and unsupported.
+- ⚠️ Any **major** drift: not guaranteed, and even less likely to work than a minor drift.
 
-If components diverge on the **minor** or **major** version we guarantee **nothing** — the combination may still work,
+If components diverge on the **minor** or **major** version we guarantee **nothing**. The combination may still work,
 but it may break, and it is not tested. The simplest policy, and the one lockstep releasing makes trivial, is to keep
-everything on the exact same `X.Y.Z` — but only `major.minor` is the actual contract.
+everything on the exact same `X.Y.Z`, but only `major.minor` is the actual contract.
 
 ### Why patch drift is safe but minor/major drift is not
 
 The assumption behind this policy is that **all functionality the components expose is meant to be reached through the
 Axelix Master web UI**. There is no scenario in which you would bump a single component's **minor** version on its own to
-unlock some capability — that capability surfaces through Master, not through the component in isolation. Because of
+unlock some capability: that capability surfaces through Master, not through the component in isolation. Because of
 that, we let ourselves **revisit the contracts between components in minor releases**, which keeps the project moving
 fast.
 
 Patch releases are different. As stated by [semver](https://semver.org/), a patch release may carry a **critical CVE
-fix, a bug fix, or a performance improvement** — and those changes are valuable **on their own**. A patch release
-re-publishes the **whole fleet** under the new version, but the actual fix usually touches only some of the components —
-so upgrading just the affected component and leaving the rest on an older patch is a combination you will genuinely
+fix, a bug fix, or a performance improvement**, and those changes are valuable **on their own**. A patch release
+re-publishes the **whole fleet** under the new version, but the actual fix usually touches only some of the components.
+So upgrading just the affected component and leaving the rest on an older patch is a combination you will genuinely
 run, and we guarantee it stays compatible.
 
 :::warning[Minor and major drift may break the interaction protocols]
-We **may** — this does **not** mean we **will**, but we **may** — revisit the protocols between components (Master ↔
+We **may** (this does **not** mean we **will**, but we **may**) revisit the protocols between components (Master ↔
 starter, plugin ↔ starter) between **minor** releases, let alone **major** ones. That means any combination that crosses
-a minor boundary **may** break. It does not mean it **would** — but it **may**, and we do not guarantee otherwise. Keep
+a minor boundary **may** break. It does not mean it **would**, but it **may**, and we do not guarantee otherwise. Keep
 every component on the same major **and** minor version, and only let the patch versions drift.
 :::
 
@@ -112,18 +151,18 @@ every component on the same major **and** minor version, and only let the patch 
 
 ### Axelix Master
 
-Axelix Master is a Java application meant to be **run as a standalone process** — in Kubernetes, in Docker, or as a
+Axelix Master is a Java application meant to be **run as a standalone process**: in Kubernetes, in Docker, or as a
 plain JAR. It is **not** meant to be consumed as a library. Because of that, we **do not** treat the Java public
 surface as a public contract: **public classes, public methods, constructors, fields, enums, and constants are all
 considered internal**.
 
 In practice this means we may change that public Java API in **minor or even patch** releases. The assumption is that
 nobody depends on Master as a library, so mutating its Java API freely lets us **move development faster**. It is a
-deliberate trade-off that realistically affects almost no one — a big win for the pace of the project.
+deliberate trade-off that realistically affects almost no one, and a big win for the pace of the project.
 
 What we **do** treat as Master's public contract is its **configuration**:
 
-- The **names** of properties — both for the Axelix Master **Helm chart** and for Axelix Master run as a **standalone
+- The **names** of properties, both for the Axelix Master **Helm chart** and for Axelix Master run as a **standalone
   JAR**.
 - Their **default values**.
 - Their **types**.
@@ -131,13 +170,13 @@ What we **do** treat as Master's public contract is its **configuration**:
 These will change **only in major releases**.
 
 :::info[Rule of thumb for Master]
-Depend on Master's **properties** (names, defaults, types) — those are stable within a major version. Do **not** depend
-on Master's Java classes, methods, or other code-level members — those can change in any release.
+Depend on Master's **properties** (names, defaults, types): those are stable within a major version. Do **not** depend
+on Master's Java classes, methods, or other code-level members: those can change in any release.
 :::
 
 ### Starters
 
-Starters **are** consumed as libraries — they are Spring Boot starters, so they bring auto-configurations with beans
+Starters **are** consumed as libraries. They are Spring Boot starters, so they bring auto-configurations with beans
 into your application (bootstrap wiring, the internal proxying strategy, and so on). That reality shapes two rules.
 
 **Do not override Axelix beans.** We intentionally **do not** allow end users to override the internal beans Axelix
@@ -147,13 +186,13 @@ as possible; letting you override beans like `BeanPostProcessor`s or `ProxyFacto
 to subtle bugs and worse performance. So please do not try to swap out Axelix's beans.
 
 **Do not depend on a starter's public Java API.** We have to acknowledge that starters run inside real applications, so
-their public Java API *can* technically be reached from your code — but this is **not intended**, and we strongly
+their public Java API *can* technically be reached from your code, but this is **not intended**, and we strongly
 discourage it. To move fast and stay competitive, we **may** change the public Java API of the starters too. We will
 avoid it at all costs, but if we deem it necessary we may change it in a **minor** version bump.
 
 :::tip[Missing a feature? File an issue instead of tinkering]
-The rule of thumb is simple: if you need something, or a feature is missing, **do not tinker with the starter** — open
+The rule of thumb is simple: if you need something, or a feature is missing, **do not tinker with the starter**. Open
 an issue in our [GitHub issue tracker](https://github.com/axelixlabs/axelix/issues). We promise to review it. When we
-add the feature you requested, we will give you a **property** to control that behavior — a stable, supported knob
+add the feature you requested, we will give you a **property** to control that behavior: a stable, supported knob
 rather than a bean override or a code-level dependency.
 :::

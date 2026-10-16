@@ -144,6 +144,29 @@ public class WallboardApiTest extends AbstractProtectedEndpointTest {
         }
 
         @Test
+        void shouldReturnInstancesSortedAlphabeticallyByNameIgnoringCase() {
+            // given.
+            String zetaId = UUID.randomUUID().toString();
+            String betaId = UUID.randomUUID().toString();
+            registry.register(TestInstanceFactory.withName(zetaId, "Zeta-service"));
+            registry.register(TestInstanceFactory.withName(betaId, "beta-service"));
+
+            try {
+                // when.
+                ResponseEntity<String> response = restTemplate.asViewer().getForEntity(GRID_URL, String.class);
+
+                // then.
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                assertThatJson(response.getBody())
+                        .inPath("$.instances[*].name")
+                        .isEqualTo("[\"app-one\", \"app-two\", \"beta-service\", \"Zeta-service\"]");
+            } finally {
+                registry.deRegister(InstanceId.of(zetaId));
+                registry.deRegister(InstanceId.of(betaId));
+            }
+        }
+
+        @Test
         void shouldReturnEmptyGridWhenNoInstancesRegistered() {
             // given.
             registry.deRegister(InstanceId.of(instance1Id));

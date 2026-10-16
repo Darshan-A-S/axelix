@@ -17,7 +17,8 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
-import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -49,7 +50,9 @@ public class WallboardApi {
     @GetMapping(path = ApiPaths.InstancesApi.GRID)
     @SuppressWarnings("NullAway")
     public InstancesGridResponse getInstancesGrid() {
-        Collection<Instance> all = instanceRegistry.getAll();
+        List<Instance> all = instanceRegistry.getAll().stream()
+                .sorted(Comparator.comparing(Instance::name, String.CASE_INSENSITIVE_ORDER))
+                .toList();
         return new InstancesGridResponse(instancesToShortProfileConverter.convertAll(all));
     }
 }

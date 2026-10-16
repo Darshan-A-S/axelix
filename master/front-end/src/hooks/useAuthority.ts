@@ -24,3 +24,11 @@ export const useAuthority = (authority: EAuthorities): boolean => {
     const authorities = useSelector((state: TRootState) => state.authorities);
     return authorities.includes(authority);
 };
+
+export const useAnyAuthority = (requestedAuthorities: EAuthorities[]): boolean => {
+    const authorities = useSelector((state: TRootState) => state.authorities);
+
+    return authorities.some((value) => {
+        return requestedAuthorities.includes(value);
+    });
+};

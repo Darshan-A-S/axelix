@@ -59,7 +59,7 @@ export const UserProfileActions = ({ userId, userOrigin }: IProps) => {
                 setRequestData(StatelessRequest.success());
                 message.success(t("Users.userDeleted"));
                 setIsModalOpen(false);
-                navigate("/users");
+                navigate("/administration/users");
             })
             .catch((error) => {
                 setRequestData(StatelessRequest.error(extractErrorCode(error?.response?.data)));

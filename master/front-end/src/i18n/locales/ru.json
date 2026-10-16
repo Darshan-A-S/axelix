@@ -114,6 +114,7 @@
     "Header": {
         "dashboard": "Дашборд",
         "wallboard": "Панель",
+        "administration": "Администрирование",
         "users": "Пользователи",
         "Help": {
             "title": "Помощь",

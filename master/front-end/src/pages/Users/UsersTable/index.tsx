@@ -54,7 +54,7 @@ export const UsersTable = ({ users }: IProps) => {
 
                         return (
                             <Link
-                                to={`/users/${user.id}`}
+                                to={`/administration/users/${user.id}`}
                                 state={{ user }}
                                 className={`TableRow ${styles.TableRow}`}
                                 key={id}

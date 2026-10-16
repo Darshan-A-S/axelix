@@ -112,6 +112,7 @@
     "Header": {
         "dashboard": "Dashboard",
         "wallboard": "Wallboard",
+        "administration": "Administration",
         "users": "Users",
         "Help": {
             "title": "Help",

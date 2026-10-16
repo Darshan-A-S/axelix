@@ -30,31 +30,26 @@ const { Content, Sider } = Layout;
 
 interface IProps {
     /**
-     * When hideSider is true, sider will be hidden.
-     */
-    hideSider?: boolean;
-
-    /**
      * The content of the sider
      */
     siderContent?: JSX.Element;
 }
 
-export const MainLayout = ({ hideSider, siderContent }: IProps) => {
+export const MainLayout = ({ siderContent }: IProps) => {
     return (
         <>
             <AccessProvider />
             <Layout className={styles.MainWrapper}>
                 <AdminHeader />
 
-                {!hideSider && (
+                {!siderContent && (
                     <Sider width={270} className={styles.Sider}>
                         <div className={styles.SiderScrollContainer}>{siderContent}</div>
                     </Sider>
                 )}
 
                 <Layout className={styles.ContentLayout}>
-                    <Content className={`${styles.Content} ${!hideSider ? styles.WithSider : ""}`}>
+                    <Content className={`${styles.Content} ${!siderContent ? styles.WithSider : ""}`}>
                         {/* License key entry is moving to the Enterprise distro; banner temporarily disabled. */}
                         {/* <LicenseStatusAlert hideSider={hideSider} /> */}
                         <Outlet />

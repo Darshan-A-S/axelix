@@ -50,7 +50,7 @@ const UserProfile = () => {
 
     return (
         <>
-            <Link to="/users" className={styles.BackwardWrapper}>
+            <Link to="/administration/users" className={styles.BackwardWrapper}>
                 <BackwardArrowIcon /> {t("Users.back")}
             </Link>
 

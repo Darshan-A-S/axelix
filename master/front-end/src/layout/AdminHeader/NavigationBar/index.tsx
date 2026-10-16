@@ -27,6 +27,7 @@ export const NavigationBar = () => {
     const { t } = useTranslation();
 
     const settings = useAppSelector((state) => state.settings);
+    // Users is currently the only Administration entry, so the tab is shown only with access to it
     const hasUsersViewAccess = useAuthority(EAuthorities.USERS_VIEW);
 
     return (
@@ -34,10 +35,10 @@ export const NavigationBar = () => {
             <nav data-test="header-links">
                 {hasUsersViewAccess && (
                     <NavLink
-                        to="/users"
+                        to="/administration"
                         className={({ isActive }) => `${styles.Link} ${isActive ? styles.ActiveLink : ""}`}
                     >
-                        {t("Header.users")}
+                        {t("Header.administration")}
                     </NavLink>
                 )}
                 {settings.isMcpServerEnabled && (

@@ -20,8 +20,10 @@ import { Navigate, Route, Routes } from "react-router";
 
 import Loadable from "@/components";
 import { useAppSelector } from "@/hooks";
+import { useAnyAuthority } from "@/hooks/useAuthority.ts";
 import { MainLayout } from "@/layout";
-import { DashboardSiderMenu, InstanceSiderMenu } from "@/layout/siders";
+import { AdministrationSiderMenu, DashboardSiderMenu, InstanceSiderMenu } from "@/layout/siders";
+import { EAuthorities } from "@/models";
 
 const DashboardSpringPortfolio = Loadable(lazy(() => import("@/pages/Dashboard/DashboardSpringPortfolio")));
 const DashboardPersistence = Loadable(lazy(() => import("@/pages/Dashboard/DashboardPersistence")));
@@ -47,11 +49,12 @@ const MCP = Loadable(lazy(() => import("@/pages/MCP")));
 
 export const MainRoutes = () => {
     const settings = useAppSelector((state) => state.settings);
+    const showAdministration = useAnyAuthority([EAuthorities.USERS_VIEW]);
 
     return (
         <>
             <Routes>
-                <Route path="/" element={<MainLayout hideSider />}>
+                <Route path="/" element={<MainLayout />}>
                     <Route index element={<Navigate to="/wallboard" replace />} />
                     <Route path="/wallboard" element={<Wallboard />} />
                     {settings.isMcpServerEnabled && <Route path="/mcp-server" element={<MCP />} />}
@@ -65,9 +68,15 @@ export const MainRoutes = () => {
                     <Route path="persistence" element={<DashboardPersistence />} />
                 </Route>
 
-                <Route path="/" element={<MainLayout hideSider />}>
-                    <Route path="/users" element={<Users />} />
-                    <Route path="/users/:userId" element={<UserProfile />} />
+                <Route
+                    path="/administration"
+                    element={
+                        showAdministration ? <MainLayout siderContent={<AdministrationSiderMenu />} /> : <MainLayout />
+                    }
+                >
+                    <Route index element={<Navigate to="users" replace />} />
+                    <Route path="users" element={<Users />} />
+                    <Route path="users/:userId" element={<UserProfile />} />
                 </Route>
 
                 <Route element={<MainLayout siderContent={<InstanceSiderMenu />} />}>

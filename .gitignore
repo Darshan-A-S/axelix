@@ -68,7 +68,6 @@ apm.lock.yaml
 # since we expect the developer to just 'apm install --target ${TARGET}'
 .claude/
 .cursor/
-.agents/
 .gemini/
 .mcp.json
 openspec

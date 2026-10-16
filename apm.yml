@@ -4,14 +4,14 @@ description: APM project for axelix
 dependencies:
   apm:
   # Custom
-  - ./.agent_skills/backlog-refiner
-  - ./.agent_skills/docs-writer
-  - ./.agent_skills/external-contributor-issues
-  - ./.agent_skills/housekeeper
-  - ./.agent_skills/security-vulnerabilities-patcher
-  - ./.agent_skills/test-reviewer
-  - ./.agent_skills/starter-domain-reviewer
-  - ./.agent_skills/master-frontend
+  - ./.agents/skills/backlog-refiner
+  - ./.agents/skills/docs-writer
+  - ./.agents/skills/external-contributor-issues
+  - ./.agents/skills/housekeeper
+  - ./.agents/skills/security-vulnerabilities-patcher
+  - ./.agents/skills/test-reviewer
+  - ./.agents/skills/starter-domain-reviewer
+  - ./.agents/skills/master-frontend
   # External
   - anthropics/skills/skills/skill-creator
   mcp:

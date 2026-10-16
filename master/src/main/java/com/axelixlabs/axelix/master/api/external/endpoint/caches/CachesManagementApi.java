@@ -19,22 +19,28 @@ package com.axelixlabs.axelix.master.api.external.endpoint.caches;
 
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.http.DefaultHttpPayload;
 import com.axelixlabs.axelix.common.domain.http.HttpPayload;
+import com.axelixlabs.axelix.master.api.error.SimpleApiError;
+import com.axelixlabs.axelix.master.api.error.handle.ApiErrorCodes;
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.api.external.request.caches.CacheBulkStatusChangeRequest;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
+import com.axelixlabs.axelix.master.service.transport.PartiallyUpdatedException;
 
 /**
- * The API for managing cache operations - enabling/disabling caches and cache managers.
+ * The API for enabling and disabling caches across several instances.
  *
  * @since 26.11.2025
  * @author Nikita Kirillov
+ * @author Sergey Cherkasov
  */
 @ExternalApiRestController
 public class CachesManagementApi {
@@ -45,31 +51,37 @@ public class CachesManagementApi {
         this.endpointInvoker = endpointInvoker;
     }
 
-    @PostMapping(ApiPaths.CachesApi.ENABLE_CACHE)
-    public void enableCache(
-            @PathVariable("instanceId") String instanceId,
-            @PathVariable("cacheManagerName") String cacheManagerName,
-            @PathVariable("cacheName") String cacheName) {
+    @PostMapping(ApiPaths.CachesApi.BULK_ENABLE_CACHE)
+    public ResponseEntity<?> enableCache(@RequestBody CacheBulkStatusChangeRequest request) {
+        HttpPayload payload = new DefaultHttpPayload(
+                Map.of("cacheName", request.cacheName(), "cacheManagerName", request.cacheManagerName()));
 
-        endpointInvoker.invokeNoValue(
-                InstanceId.of(instanceId),
-                ActuatorEndpoints.ENABLE_CACHE,
-                createCachePayload(cacheManagerName, cacheName));
+        try {
+            endpointInvoker.invokeNoValueForInstances(request.instanceIds(), ActuatorEndpoints.ENABLE_CACHE, payload);
+            return ResponseEntity.noContent().build();
+        } catch (PartiallyUpdatedException e) {
+            // TODO: A partial update is generally not the client's fault, so 400 Bad Request is not
+            //  really the right status here. We keep it for now since it is a minor issue that should
+            //  rarely happen in practice, but this should be revisited in the future.
+            return ResponseEntity.badRequest()
+                    .body(new SimpleApiError(
+                            ApiErrorCodes.PARTIALLY_UPDATED.getErrorCode(), HttpStatus.BAD_REQUEST.value()));
+        }
     }
 
-    @PostMapping(ApiPaths.CachesApi.DISABLE_CACHE)
-    public void disableCache(
-            @PathVariable("instanceId") String instanceId,
-            @PathVariable("cacheManagerName") String cacheManagerName,
-            @PathVariable("cacheName") String cacheName) {
+    @PostMapping(ApiPaths.CachesApi.BULK_DISABLE_CACHE)
+    public ResponseEntity<?> disableCache(@RequestBody CacheBulkStatusChangeRequest request) {
+        HttpPayload payload = new DefaultHttpPayload(
+                Map.of("cacheName", request.cacheName(), "cacheManagerName", request.cacheManagerName()));
 
-        endpointInvoker.invokeNoValue(
-                InstanceId.of(instanceId),
-                ActuatorEndpoints.DISABLE_CACHE,
-                createCachePayload(cacheManagerName, cacheName));
-    }
-
-    private HttpPayload createCachePayload(String cacheManagerName, String cacheName) {
-        return new DefaultHttpPayload(Map.of("cacheManagerName", cacheManagerName, "cacheName", cacheName));
+        try {
+            endpointInvoker.invokeNoValueForInstances(request.instanceIds(), ActuatorEndpoints.DISABLE_CACHE, payload);
+            return ResponseEntity.noContent().build();
+        } catch (PartiallyUpdatedException e) {
+            // TODO: See the note on the 400 Bad Request status in enableCache.
+            return ResponseEntity.badRequest()
+                    .body(new SimpleApiError(
+                            ApiErrorCodes.PARTIALLY_UPDATED.getErrorCode(), HttpStatus.BAD_REQUEST.value()));
+        }
     }
 }

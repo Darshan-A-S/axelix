@@ -100,10 +100,10 @@ public final class MasterWebEndpoints {
             register("caches:read", HttpMethod.GET, ApiPaths.CachesApi.INSTANCE_ID, null);
     public static final MasterWebEndpoint CACHE_READ_ONE =
             register("cache:read-one", HttpMethod.GET, ApiPaths.CachesApi.CACHE_NAME, null);
-    public static final MasterWebEndpoint CACHE_ENABLE =
-            register("caches:enable", HttpMethod.POST, ApiPaths.CachesApi.ENABLE_CACHE, OssAuthority.CACHES_TOGGLE);
-    public static final MasterWebEndpoint CACHE_DISABLE =
-            register("caches:disable", HttpMethod.POST, ApiPaths.CachesApi.DISABLE_CACHE, OssAuthority.CACHES_TOGGLE);
+    public static final MasterWebEndpoint CACHE_ENABLE = register(
+            "caches:enable", HttpMethod.POST, ApiPaths.CachesApi.BULK_ENABLE_CACHE, OssAuthority.CACHES_TOGGLE);
+    public static final MasterWebEndpoint CACHE_DISABLE = register(
+            "caches:disable", HttpMethod.POST, ApiPaths.CachesApi.BULK_DISABLE_CACHE, OssAuthority.CACHES_TOGGLE);
     public static final MasterWebEndpoint CACHE_CLEAR_ONE = register(
             "caches:clear-one",
             HttpMethod.DELETE,

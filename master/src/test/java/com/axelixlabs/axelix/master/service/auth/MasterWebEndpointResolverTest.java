@@ -58,6 +58,8 @@ class MasterWebEndpointResolverTest {
                 Arguments.of("/users/login", HttpMethod.POST, MasterWebEndpoints.LOCAL_LOGIN),
                 Arguments.of("/caches/clear", HttpMethod.DELETE, MasterWebEndpoints.CACHES_CLEAR_ALL),
                 Arguments.of("/caches/cache/clear", HttpMethod.DELETE, MasterWebEndpoints.CACHE_CLEAR_ONE),
+                Arguments.of("/caches/cache/enable", HttpMethod.POST, MasterWebEndpoints.CACHE_ENABLE),
+                Arguments.of("/caches/cache/disable", HttpMethod.POST, MasterWebEndpoints.CACHE_DISABLE),
 
                 // Single trailing template variable.
                 Arguments.of("/env/feed/42", HttpMethod.GET, MasterWebEndpoints.ENVIRONMENT_READ),
@@ -72,8 +74,6 @@ class MasterWebEndpointResolverTest {
                 // Multiple template variables.
                 Arguments.of("/metrics/42/jvm.memory.used", HttpMethod.GET, MasterWebEndpoints.METRIC_READ_ONE),
                 Arguments.of("/loggers/42/logger/com.foo.Bar", HttpMethod.GET, MasterWebEndpoints.LOGGER_READ_ONE),
-                Arguments.of(
-                        "/caches/42/cacheManager/orders/disable", HttpMethod.POST, MasterWebEndpoints.CACHE_DISABLE),
 
                 // Multiple template variables followed by a static segment.
                 Arguments.of("/loggers/42/logger/com.foo.Bar/reset", HttpMethod.POST, MasterWebEndpoints.LOGGER_RESET));
@@ -86,7 +86,7 @@ class MasterWebEndpointResolverTest {
 
                 // Known path, but wrong HTTP method.
                 Arguments.of("/users/login", HttpMethod.GET),
-                Arguments.of("/caches/42/cacheManager/orders/disable", HttpMethod.GET),
+                Arguments.of("/caches/cache/disable", HttpMethod.GET),
 
                 // Known prefix, but the path does not match any pattern in full.
                 Arguments.of("/caches", HttpMethod.GET),

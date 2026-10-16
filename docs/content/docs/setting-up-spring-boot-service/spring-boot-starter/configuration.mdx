@@ -189,7 +189,6 @@ in: the starter uses whatever your application already has. The only libraries i
 |---|---|
 | `org.slf4j:slf4j-api` | Logging. Already present in every Spring Boot application. |
 | `io.jsonwebtoken:jjwt-api`, `jjwt-impl`, `jjwt-jackson` | Verifying the JWT that Master sends with every request. |
-| `org.jspecify:jspecify` | Nullness annotations. |
 
 This list is meant to shrink. The starter is the one Axelix component that runs inside your services, and every
 library it brings in is one more thing on your classpath to scan, patch, and keep compatible with the rest of your
@@ -242,6 +241,55 @@ dependencies {
 </Tabs>
 
 Tests are not affected: `spring-boot-starter-test` brings in JsonPath on its own.
+
+#### JSpecify is no longer included
+
+<UpcomingReleaseNotice />
+
+Up to and including Axelix 1.2.x, the starter also brought in `org.jspecify:jspecify`. The starter uses JSpecify only
+for its nullness annotations, and it needs them only at compile time. Starting with Axelix 1.3.0, the dependency is
+removed, as the next step towards the dependency-free starter described in
+[axelixlabs/axelix#1748](https://github.com/axelixlabs/axelix/issues/1748).
+
+The starter keeps working without JSpecify on the classpath, because the JVM ignores annotations whose classes are
+missing at runtime. On Spring Boot 4 nothing changes at all, since Spring Framework 7 depends on JSpecify itself.
+
+If your own code uses the JSpecify annotations and has been getting them only through the Axelix starter, declare the
+dependency explicitly when you upgrade. Spring Boot 2 and 3 do not manage its version, so specify it:
+
+<Tabs groupId="build-tool" items={['Gradle (Kotlin DSL)', 'Gradle (Groovy)', 'Maven']}>
+  <Tab value="Gradle (Kotlin DSL)">
+
+```kotlin title="build.gradle.kts"
+dependencies {
+    implementation("org.jspecify:jspecify:1.0.0")
+}
+```
+
+  </Tab>
+  <Tab value="Gradle (Groovy)">
+
+```groovy title="build.gradle"
+dependencies {
+    implementation 'org.jspecify:jspecify:1.0.0'
+}
+```
+
+  </Tab>
+  <Tab value="Maven">
+
+```xml title="pom.xml"
+<dependencies>
+  <dependency>
+    <groupId>org.jspecify</groupId>
+    <artifactId>jspecify</artifactId>
+    <version>1.0.0</version>
+  </dependency>
+</dependencies>
+```
+
+  </Tab>
+</Tabs>
 
 ## Actuator endpoints
 

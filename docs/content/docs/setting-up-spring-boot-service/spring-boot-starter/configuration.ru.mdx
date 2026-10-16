@@ -196,7 +196,6 @@ Actuator, Spring Kafka, Micrometer, Caffeine, Jackson — используетс
 |---|---|
 | `org.slf4j:slf4j-api` | Логирование. Уже есть в любом приложении на Spring Boot. |
 | `io.jsonwebtoken:jjwt-api`, `jjwt-impl`, `jjwt-jackson` | Проверка JWT, который Master отправляет с каждым запросом. |
-| `org.jspecify:jspecify` | Аннотации nullness. |
 
 Этот список будет сокращаться. Стартер — единственный компонент Axelix, который работает внутри ваших сервисов, и
 каждая библиотека, которую он приносит, — это ещё одна зависимость в вашем classpath, которую нужно сканировать на
@@ -249,6 +248,55 @@ dependencies {
 </Tabs>
 
 Тесты это не затрагивает: `spring-boot-starter-test` подключает JsonPath самостоятельно.
+
+#### JSpecify больше не подключается
+
+<UpcomingReleaseNotice />
+
+До Axelix 1.2.x включительно стартер также подтягивал `org.jspecify:jspecify`. Стартер использует JSpecify только ради
+аннотаций nullness, и нужны они ему только при компиляции. Начиная с Axelix 1.3.0 эта зависимость удалена — это
+следующий шаг к стартеру без внешних зависимостей, описанному в
+[axelixlabs/axelix#1748](https://github.com/axelixlabs/axelix/issues/1748).
+
+Стартер продолжает работать без JSpecify в classpath, потому что JVM игнорирует аннотации, классы которых отсутствуют
+во время выполнения. На Spring Boot 4 ничего не меняется вовсе: Spring Framework 7 сам зависит от JSpecify.
+
+Если ваш собственный код использует аннотации JSpecify и получал их только через стартер Axelix, при обновлении
+объявите зависимость явно. Spring Boot 2 и 3 не управляют её версией, поэтому укажите её:
+
+<Tabs items={['Gradle (Kotlin DSL)', 'Gradle (Groovy)', 'Maven']}>
+  <Tab value="Gradle (Kotlin DSL)">
+
+```kotlin title="build.gradle.kts"
+dependencies {
+    implementation("org.jspecify:jspecify:1.0.0")
+}
+```
+
+  </Tab>
+  <Tab value="Gradle (Groovy)">
+
+```groovy title="build.gradle"
+dependencies {
+    implementation 'org.jspecify:jspecify:1.0.0'
+}
+```
+
+  </Tab>
+  <Tab value="Maven">
+
+```xml title="pom.xml"
+<dependencies>
+  <dependency>
+    <groupId>org.jspecify</groupId>
+    <artifactId>jspecify</artifactId>
+    <version>1.0.0</version>
+  </dependency>
+</dependencies>
+```
+
+  </Tab>
+</Tabs>
 
 ## Actuator-эндпоинты
 

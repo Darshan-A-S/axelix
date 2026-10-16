@@ -55,7 +55,7 @@ public class ConditionsMcpServerTools {
             Use this when user asks about auto-configuration, conditions or why a bean is either missing and user expects it to
             be there, or the bean is present, but the user expects this bean to not be bootstrapped.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
         """,
             annotations =

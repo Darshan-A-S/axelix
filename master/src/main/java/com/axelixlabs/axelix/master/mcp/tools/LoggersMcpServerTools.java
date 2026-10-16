@@ -77,7 +77,7 @@ public class LoggersMcpServerTools {
             Use this ONLY when when you want to understand what logging levels are available.
             Do NOT use this to browse loggers — use "Find Loggers" instead.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =
@@ -100,7 +100,7 @@ public class LoggersMcpServerTools {
 
             Do NOT use this when the user mentions a specific group name — use "Find Loggers Group" instead.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =
@@ -125,7 +125,7 @@ public class LoggersMcpServerTools {
             Do NOT use this when the user mentions a specific logger by name — use "Find Logger" instead.
             Do NOT use this for logger groups — use "Logger Groups Feed" instead.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =
@@ -156,7 +156,7 @@ public class LoggersMcpServerTools {
             given name were found and suggest to try a different name.
             Do NOT summarize or truncate the results.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =
@@ -204,7 +204,7 @@ public class LoggersMcpServerTools {
             For each group, clearly list its name, configured level, and all members belonging to that group.
             Do NOT summarize or truncate the results.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =
@@ -263,7 +263,7 @@ public class LoggersMcpServerTools {
             of available levels, present them to the user as a numbered list, and ask them to choose one before
             calling this tool.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =
@@ -314,7 +314,7 @@ public class LoggersMcpServerTools {
             of available levels, present them to the user as a numbered list, and ask them to choose one before
             calling this tool.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =
@@ -360,7 +360,7 @@ public class LoggersMcpServerTools {
                before retrying the invocation.
             4. If no loggers are found, inform the user that no such logger exists.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =

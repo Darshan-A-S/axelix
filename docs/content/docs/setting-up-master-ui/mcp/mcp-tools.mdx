@@ -62,15 +62,26 @@ Related: [Wallboard UI guide](../../ui-guide/wallboard.mdx).
 
 | Title          | Tool name      | Since | Tags                                                                                                                                                                                                                                                | Allowed roles                                       | Description                                                                                                                                                                          |
 |----------------|----------------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Instances Feed | `getWallboard` | `1.0.0`| read-only: <span className={styles.TagTrue}>true</span><br/>idempotent: <span className={styles.TagTrue}>true</span><br/>destructive: <span className={styles.TagFalse}>false</span><br/>open-world: <span className={styles.TagFalse}>false</span> | `VIEWER`<br/>`EDITOR`<br/>`ADMIN`<br/>`SUPER_ADMIN` | Snapshot of every managed instance: human-readable service names mapped to `instanceId`, real-time status (UP/DOWN), Spring Boot/Java versions, deployment duration, Git commit SHA. |
+| Instances Feed | `getInstances` | `1.0.0`| read-only: <span className={styles.TagTrue}>true</span><br/>idempotent: <span className={styles.TagTrue}>true</span><br/>destructive: <span className={styles.TagFalse}>false</span><br/>open-world: <span className={styles.TagFalse}>false</span> | `VIEWER`<br/>`EDITOR`<br/>`ADMIN`<br/>`SUPER_ADMIN` | Snapshot of every managed instance: human-readable service names mapped to `instanceId`, real-time status (UP/DOWN), Spring Boot/Java versions, deployment duration, Git commit SHA. |
 
 </div>
+
+#### `getWallboard` is renamed to `getInstances`
+
+<UpcomingReleaseNotice />
+
+Up to and including Axelix 1.2.x, this tool was called `getWallboard`. Starting with Axelix 1.3.0, it is called
+`getInstances`, and `getWallboard` no longer exists. The tool's behavior, parameters, and response are unchanged.
+
+AI agents discover tools from the MCP server on connect, so they pick up the new name on their own. If you call the tool
+by name directly, for example from your own scripts or from agent instructions, replace `getWallboard` with
+`getInstances`.
 
 ### Instance introspection
 
 Read-only views of a single Spring Boot instance: its Spring beans, environment properties, `@ConfigurationProperties`
 beans, auto-configuration report, and registered scheduled tasks. Every tool in this group takes an `instanceId`
-resolved via `getWallboard`.
+resolved via `getInstances`.
 
 Related: [Beans](../../features/spring-framework/beans.mdx), [Environment Properties](../../features/spring-framework/properties.mdx), [Configuration Properties](../../features/spring-framework/configuration-properties.mdx), [Conditions](../../features/spring-framework/conditions.mdx), [Scheduled Tasks](../../features/spring-framework/scheduled-tasks.mdx), [Service profile UI guide](../../ui-guide/service-profile.mdx).
 

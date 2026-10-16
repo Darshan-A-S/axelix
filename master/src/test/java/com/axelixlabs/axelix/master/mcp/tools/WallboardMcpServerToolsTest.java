@@ -55,7 +55,7 @@ class WallboardMcpServerToolsTest {
                             TestInstanceFactory.create("instance-1"), TestInstanceFactory.create("instance-2")));
 
             // when.
-            String result = subject.getWallboard(null);
+            String result = subject.getInstances(null);
 
             // then.
             assertThatJson(result).isArray().hasSize(2);
@@ -69,7 +69,7 @@ class WallboardMcpServerToolsTest {
             when(instanceRegistry.getAll()).thenReturn(List.of(TestInstanceFactory.create("instance-1")));
 
             // when.
-            String result = subject.getWallboard("   ");
+            String result = subject.getInstances("   ");
 
             // then.
             assertThatJson(result).isArray().hasSize(1);
@@ -84,7 +84,7 @@ class WallboardMcpServerToolsTest {
                     .thenReturn(Set.of(TestInstanceFactory.withName("instance-1", "invoice-internal-process")));
 
             // when.
-            String result = subject.getWallboard("invoice");
+            String result = subject.getInstances("invoice");
 
             // then.
             assertThatJson(result).isArray().hasSize(1);

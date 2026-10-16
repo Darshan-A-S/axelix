@@ -70,7 +70,7 @@ class McpToolsE2ETest {
                         "getInstanceConfigProps",
                         "getInstanceConditions",
                         "getInstanceScheduledTasks",
-                        "getWallboard",
+                        "getInstances",
                         "getAllCaches",
                         "clearAllCaches",
                         "clearSpecificCacheEntity",

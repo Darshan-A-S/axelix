@@ -74,7 +74,7 @@ public class LogsMcpServerTools {
             The instance keeps only a bounded amount of the most recent entries in memory (since its startup),
             so fewer entries than requested may be returned.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
         """,
             annotations =

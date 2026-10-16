@@ -57,7 +57,7 @@ public class BeansMcpServerTools {
             Use this when the user asks about application context, specific beans,
             dependencies, or services of a given instance.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
             """,
             annotations =

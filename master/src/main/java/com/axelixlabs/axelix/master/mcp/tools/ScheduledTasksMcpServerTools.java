@@ -54,7 +54,7 @@ public class ScheduledTasksMcpServerTools {
             Returns cron tasks, fixed-rate tasks, fixed-delay tasks and custom tasks.
             Use this when user asks about scheduled or cron tasks of an instance.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
             tool to first retrieve the instances feed.
         """,
             annotations =

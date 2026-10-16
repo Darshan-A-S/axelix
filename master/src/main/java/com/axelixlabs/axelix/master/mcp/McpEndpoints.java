@@ -32,7 +32,7 @@ public final class McpEndpoints {
     public static final String CONFIG_PROPS_FEED_TOOL_NAME = "getInstanceConfigProps";
     public static final String CONDITIONS_FEED_TOOL_NAME = "getInstanceConditions";
     public static final String SCHEDULED_TASKS_FEED_TOOL_NAME = "getInstanceScheduledTasks";
-    public static final String WALLBOARD_TOOL_NAME = "getWallboard";
+    public static final String WALLBOARD_TOOL_NAME = "getInstances";
     public static final String CACHES_FEED_TOOL_NAME = "getAllCaches";
     public static final String CLEAR_ALL_CACHES_TOOL_NAME = "clearAllCaches";
     public static final String CLEAR_SPECIFIC_CACHE_TOOL_NAME = "clearSpecificCacheEntity";

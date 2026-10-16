@@ -61,8 +61,8 @@ public class WallboardMcpServerTools {
             3. Identify technical metadata: service versions, Spring Boot and Java versions.
             4. Check deployment duration ('deployedFor') and Git commit SHAs.
 
-            NOTE: This is a dynamic 'Wallboard' state. If a user asks about 'the grid', 'active services',
-            or 'current instances', call this tool.
+            NOTE: This is a dynamic state of the instances. If a user asks about 'the wallboard', 'the grid',
+            'active services', or 'current instances', call this tool.
             If you suspect an ID is stale or a service just restarted, refresh by calling this again.
         """,
             annotations =
@@ -72,7 +72,7 @@ public class WallboardMcpServerTools {
                             destructiveHint = false,
                             idempotentHint = true,
                             openWorldHint = false))
-    public String getWallboard(@McpToolParam(required = false, description = """
+    public String getInstances(@McpToolParam(required = false, description = """
             Query string by which to search for an instance insides the instances list.
             This query string MUST be a part of the service name, for instance if the service
             name is 'invoice-internal-process', then the query string may be 'invoice', 'InVoiCe'

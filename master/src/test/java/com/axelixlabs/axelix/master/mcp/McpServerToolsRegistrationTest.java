@@ -53,7 +53,7 @@ class McpServerToolsRegistrationTest {
                         "getInstanceConfigProps",
                         "getInstanceConditions",
                         "getInstanceScheduledTasks",
-                        "getWallboard",
+                        "getInstances",
                         "getAllCaches",
                         "clearAllCaches",
                         "clearSpecificCacheEntity",

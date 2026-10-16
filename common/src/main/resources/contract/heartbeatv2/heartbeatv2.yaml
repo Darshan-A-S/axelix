@@ -57,6 +57,46 @@ components:
           x-axelix-introduced-in: 1.3.0
           items:
             $ref: '#/components/schemas/TransactionAggregatedProfile'
+        scheduledTaskExecutions:
+          type: array
+          description: The results of the scheduled task executions. Absent when there are none to report.
+          x-axelix-introduced-in: 1.3.0
+          items:
+            $ref: '#/components/schemas/ScheduledTaskExecution'
+    ScheduledTaskExecution:
+      type: object
+      description: The result of a single execution of a scheduled task.
+      required:
+        - taskId
+        - startedAt
+        - durationMillis
+        - success
+      properties:
+        taskId:
+          type: string
+          description: The id of the scheduled task.
+          x-axelix-introduced-in: 1.3.0
+        startedAt:
+          type: string
+          description: The timestamp the task execution started at.
+          x-axelix-introduced-in: 1.3.0
+        durationMillis:
+          type: integer
+          format: int64
+          description: The duration of the task execution, in milliseconds.
+          x-axelix-introduced-in: 1.3.0
+        success:
+          type: boolean
+          description: Whether the task execution succeeded.
+          x-axelix-introduced-in: 1.3.0
+        errorType:
+          type: string
+          description: The name of the exception thrown by the task execution, or absent when it succeeded.
+          x-axelix-introduced-in: 1.3.0
+        errorMessage:
+          type: string
+          description: The message of the exception thrown by the task execution, or absent when it succeeded.
+          x-axelix-introduced-in: 1.3.0
     HealthStatus:
       type: string
       description: The health status of the given instance during registration.

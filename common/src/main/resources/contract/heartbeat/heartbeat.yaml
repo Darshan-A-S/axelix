@@ -228,12 +228,6 @@ components:
           description: The persistence-related insights.
           x-axelix-introduced-in: 1.2.0
           $ref: '#/components/schemas/PersistenceInsights'
-        scheduledTaskExecutions:
-          type: array
-          description: The results of the scheduled task executions. Absent when there are none to report.
-          x-axelix-introduced-in: 1.2.0
-          items:
-            $ref: '#/components/schemas/ScheduledTaskExecution'
     HotSpotInsights:
       type: object
       description: HotSpot-specific insight groups.
@@ -274,40 +268,6 @@ components:
         enabled:
           type: boolean
           description: The enabled state of the insight feature.
-          x-axelix-introduced-in: 1.2.0
-    ScheduledTaskExecution:
-      type: object
-      description: The result of a single execution of a scheduled task.
-      required:
-        - taskId
-        - startedAt
-        - durationMillis
-        - success
-      properties:
-        taskId:
-          type: string
-          description: The id of the scheduled task.
-          x-axelix-introduced-in: 1.2.0
-        startedAt:
-          type: string
-          description: The timestamp the task execution started at.
-          x-axelix-introduced-in: 1.2.0
-        durationMillis:
-          type: integer
-          format: int64
-          description: The duration of the task execution, in milliseconds.
-          x-axelix-introduced-in: 1.2.0
-        success:
-          type: boolean
-          description: Whether the task execution succeeded.
-          x-axelix-introduced-in: 1.2.0
-        errorType:
-          type: string
-          description: The name of the exception thrown by the task execution, or absent when it succeeded.
-          x-axelix-introduced-in: 1.2.0
-        errorMessage:
-          type: string
-          description: The message of the exception thrown by the task execution, or absent when it succeeded.
           x-axelix-introduced-in: 1.2.0
     PersistenceInsights:
       type: object

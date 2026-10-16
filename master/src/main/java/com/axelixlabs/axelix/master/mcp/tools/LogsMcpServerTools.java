@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.master.mcp.tools;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.ObjectMapper;
 
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.http.DefaultHttpPayload;
+import com.axelixlabs.axelix.common.domain.http.QueryParameter;
 import com.axelixlabs.axelix.common.domain.http.SingleValueQueryParameter;
 import com.axelixlabs.axelix.master.contract.logs.LogEntriesTail;
 import com.axelixlabs.axelix.master.domain.InstanceId;
@@ -84,12 +86,16 @@ public class LogsMcpServerTools {
                             openWorldHint = false))
     public String getInstanceLogs(
             @McpToolParam(description = "The instance ID") String instanceId,
-            @McpToolParam(description = "The maximum amount of the most recent log entries to return") int limit) {
+            @McpToolParam(required = false, description = """
+                    The maximum amount of the most recent log entries to return. If absent, all the entries
+                    the instance keeps in memory are returned.
+                    """) @Nullable Integer limit) {
+        List<QueryParameter<?>> queryParameters =
+                limit == null ? List.of() : List.of(new SingleValueQueryParameter("limit", String.valueOf(limit)));
         byte[] body = endpointInvoker.invoke(
                 InstanceId.of(instanceId),
                 ActuatorEndpoints.GET_LOG_ENTRIES_TAIL,
-                new DefaultHttpPayload(
-                        List.of(new SingleValueQueryParameter("limit", String.valueOf(limit))), Map.of()));
+                new DefaultHttpPayload(queryParameters, Map.of()));
         return logEntriesTailConverter.convertInternal(objectMapper.readValue(body, LogEntriesTail.class));
     }
 }

@@ -108,15 +108,37 @@ class AxelixLogsEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getEntries()).hasSize(2);
+        assertThat(response.getBody().getEntries())
+                .anyMatch(entry ->
+                        "axelix.logs.test.another".equals(entry.getLogger()) && "three".equals(entry.getMessage()));
     }
 
     @Test
-    void shouldReturnBadRequest_WhenLimitIsMissing() {
+    void shouldReturnBadRequest_WhenLimitIsLessThanOne() {
         // when.
-        ResponseEntity<String> response = restTemplate.asViewer().getForEntity("/actuator/axelix-logs", String.class);
+        ResponseEntity<String> response =
+                restTemplate.asViewer().getForEntity("/actuator/axelix-logs?limit=0", String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void shouldReturnAllBufferedEntries_WhenLimitIsMissing() {
+        // given.
+        Logger unlimitedLogger = LoggerFactory.getLogger("axelix.logs.test.unlimited");
+        unlimitedLogger.info("unlimited");
+
+        // when.
+        ResponseEntity<LogEntriesTail> response =
+                restTemplate.asViewer().getForEntity("/actuator/axelix-logs", LogEntriesTail.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getEntries())
+                .anyMatch(entry -> "axelix.logs.test.unlimited".equals(entry.getLogger())
+                        && "unlimited".equals(entry.getMessage()));
     }
 
     @ProtectedEndpointTests(method = HttpMethod.GET, path = "/actuator/axelix-logs?limit=1")

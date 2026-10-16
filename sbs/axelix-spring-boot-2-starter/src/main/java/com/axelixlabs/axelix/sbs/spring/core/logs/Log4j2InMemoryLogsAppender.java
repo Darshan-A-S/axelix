@@ -63,6 +63,8 @@ public class Log4j2InMemoryLogsAppender extends AbstractAppender {
         Appender previous = logger.getAppenders().get(APPENDER_NAME);
         if (previous != null) {
             logger.removeAppender(previous);
+            context.getConfiguration().getAppenders().remove(APPENDER_NAME);
+            previous.stop();
         }
 
         Log4j2InMemoryLogsAppender appender = new Log4j2InMemoryLogsAppender(logEntries);

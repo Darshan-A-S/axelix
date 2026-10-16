@@ -20,8 +20,10 @@ package com.axelixlabs.axelix.sbs.spring.core.logs;
 import java.util.List;
 
 import org.springframework.boot.actuate.endpoint.web.annotation.RestControllerEndpoint;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.axelixlabs.axelix.sbs.spring.core.SlidingWindow;
 import com.axelixlabs.axelix.sbs.spring.core.contract.logs.LogEntriesTail;
@@ -42,9 +44,18 @@ public class AxelixLogsEndpoint {
     }
 
     @GetMapping
-    public LogEntriesTail tail(@RequestParam int limit) {
+    public LogEntriesTail tail(@RequestParam(required = false) Integer limit) {
         List<LogEntry> entries = logEntries.get();
-        int from = Math.max(0, entries.size() - Math.max(0, limit));
+
+        if (limit == null) {
+            return new LogEntriesTail().entries(entries);
+        }
+
+        if (limit < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The limit must be at least 1");
+        }
+
+        int from = Math.max(0, entries.size() - limit);
         return new LogEntriesTail().entries(entries.subList(from, entries.size()));
     }
 }

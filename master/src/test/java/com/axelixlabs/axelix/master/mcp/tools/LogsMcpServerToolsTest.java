@@ -76,4 +76,24 @@ class LogsMcpServerToolsTest {
                 .singleElement()
                 .satisfies(parameter -> assertThat(parameter.toEncodedString()).isEqualTo("limit=25"));
     }
+
+    @Test
+    void shouldNotSendTheLimit_WhenItIsAbsent() {
+        // given.
+        when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_LOG_ENTRIES_TAIL), any()))
+                .thenReturn("{\"entries\":[]}".getBytes(StandardCharsets.UTF_8));
+
+        // when.
+        subject.getInstanceLogs(INSTANCE_ID, null);
+
+        // then.
+        ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
+        verify(endpointInvoker)
+                .invoke(
+                        eq(InstanceId.of(INSTANCE_ID)),
+                        eq(ActuatorEndpoints.GET_LOG_ENTRIES_TAIL),
+                        payloadCaptor.capture());
+
+        assertThat(payloadCaptor.getValue().queryParameters()).isEmpty();
+    }
 }

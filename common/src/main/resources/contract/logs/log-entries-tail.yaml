@@ -17,10 +17,10 @@ paths:
       parameters:
         - name: limit
           in: query
-          required: true
+          required: false
           description: >-
             The maximum amount of the most recent log entries to return. Fewer entries are returned
-            if the starter has buffered less than that.
+            if the starter has buffered less than that. If absent, all the buffered entries are returned. 
           schema:
             type: integer
             format: int32

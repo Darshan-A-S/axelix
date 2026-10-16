@@ -27,6 +27,7 @@ import org.jspecify.annotations.NullMarked;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
+import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 
 import static com.axelixlabs.axelix.master.domain.Instance.InstanceStatus;
 
@@ -96,4 +97,13 @@ public interface InstanceRegistry {
      * @return {@link Instance}
      */
     Set<Instance> findByQuery(String query);
+
+    /**
+     * Get all instances that belong to the same application as the given instance, including the instance itself.
+     *
+     * @param instanceId the id of the instance whose siblings to get.
+     * @return all instances of the given instance's application, sorted by name ignoring case.
+     * @throws InstanceNotFoundException if there is no instance with the given id.
+     */
+    List<Instance> findSiblings(InstanceId instanceId) throws InstanceNotFoundException;
 }

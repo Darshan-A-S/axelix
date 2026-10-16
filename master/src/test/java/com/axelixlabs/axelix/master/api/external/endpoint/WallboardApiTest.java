@@ -30,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
@@ -50,6 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class WallboardApiTest extends AbstractProtectedEndpointTest {
 
     private static final String GRID_URL = "/api/external/applications/grid";
+    private static final String SIBLINGS_URL = "/api/external/applications/siblings/{instanceId}";
 
     @Autowired
     private TestRestTemplateBuilder restTemplate;
@@ -191,8 +193,95 @@ public class WallboardApiTest extends AbstractProtectedEndpointTest {
         }
     }
 
+    @Nested
+    class GetInstanceSiblings {
+
+        private final ApplicationId petclinic = ApplicationId.of("com.axelixlabs", "petclinic");
+
+        @BeforeEach
+        @AfterEach
+        void prepare() {
+            registry.getAll().forEach(instance -> registry.deRegister(instance.id()));
+        }
+
+        @Test
+        void shouldReturnAllInstancesOfTheSameApplicationSortedByName() {
+            // given.
+            registry.register(petclinicInstance("petclinic-1", "petclinic-b"));
+            registry.register(petclinicInstance("petclinic-2", "Petclinic-a"));
+            registry.register(TestInstanceFactory.create("other-1", "com.axelixlabs", "other-app"));
+
+            // when.
+            var viewer = restTemplate.asViewer();
+            ResponseEntity<String> response = viewer.getForEntity(SIBLINGS_URL, String.class, "petclinic-1");
+
+            // then.
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
+            assertThatJson(response.getBody())
+                    .inPath("$.instances[*].instanceId")
+                    .isEqualTo("[\"petclinic-2\", \"petclinic-1\"]");
+            assertThatJson(response.getBody())
+                    .inPath("$.instances[*].name")
+                    .isEqualTo("[\"Petclinic-a\", \"petclinic-b\"]");
+            assertSuccessfulCallback(MasterWebEndpoints.INSTANCE_SIBLINGS_READ, viewer.getActor());
+        }
+
+        @Test
+        void shouldReturnOnlyTheInstanceItselfWhenItHasNoSiblings() {
+            // given.
+            registry.register(petclinicInstance("petclinic-1", "petclinic"));
+            registry.register(TestInstanceFactory.create("other-1", "com.axelixlabs", "other-app"));
+
+            // when.
+            ResponseEntity<String> response =
+                    restTemplate.asViewer().getForEntity(SIBLINGS_URL, String.class, "petclinic-1");
+
+            // then.
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThatJson(response.getBody())
+                    .inPath("$.instances[*].instanceId")
+                    .isEqualTo("[\"petclinic-1\"]");
+        }
+
+        @Test
+        void shouldRejectUnknownInstance() {
+            // when.
+            ResponseEntity<String> response =
+                    restTemplate.asViewer().getForEntity(SIBLINGS_URL, String.class, "unknown-instance");
+
+            // then.
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).contains("INSTANCE_NOT_FOUND");
+        }
+
+        private Instance petclinicInstance(String id, String name) {
+            Instance base = TestInstanceFactory.withApplicationId(id, petclinic);
+            return new Instance(
+                    base.id(),
+                    base.applicationId(),
+                    name,
+                    base.serviceVersion(),
+                    base.starterVersion(),
+                    base.javaVersion(),
+                    base.springBootVersion(),
+                    base.springFrameworkVersion(),
+                    base.kotlinVersion(),
+                    base.jdkVendor(),
+                    base.commitShaShort(),
+                    base.deployedAt(),
+                    base.latestHeartBeat(),
+                    base.status(),
+                    base.memoryUsage(),
+                    base.actuatorUrl());
+        }
+    }
+
     @Override
     protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
-        return Set.of(new TestableMasterWebEndpoint(MasterWebEndpoints.INSTANCES_READ, GRID_URL));
+        return Set.of(
+                new TestableMasterWebEndpoint(MasterWebEndpoints.INSTANCES_READ, GRID_URL),
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.INSTANCE_SIBLINGS_READ, "/api/external/applications/siblings/any-instance"));
     }
 }

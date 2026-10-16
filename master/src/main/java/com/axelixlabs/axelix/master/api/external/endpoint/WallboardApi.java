@@ -21,11 +21,14 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.response.InstancesGridResponse;
 import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.service.convert.response.InstancesToShortProfileConverter;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 
@@ -54,5 +57,13 @@ public class WallboardApi {
                 .sorted(Comparator.comparing(Instance::name, String.CASE_INSENSITIVE_ORDER))
                 .toList();
         return new InstancesGridResponse(instancesToShortProfileConverter.convertAll(all));
+    }
+
+    @GetMapping(path = ApiPaths.InstancesApi.SIBLINGS)
+    @SuppressWarnings("NullAway")
+    public InstancesGridResponse getInstanceSiblings(@PathVariable("instanceId") String instanceId)
+            throws InstanceNotFoundException {
+        List<Instance> siblings = instanceRegistry.findSiblings(InstanceId.of(instanceId));
+        return new InstancesGridResponse(instancesToShortProfileConverter.convertAll(siblings));
     }
 }

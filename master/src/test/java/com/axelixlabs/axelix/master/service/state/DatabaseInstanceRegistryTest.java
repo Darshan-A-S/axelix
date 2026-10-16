@@ -34,12 +34,14 @@ import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
+import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.repository.InstanceRepository;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.database.DatabaseMatrixTest;
 
 import static com.axelixlabs.axelix.master.utils.TestInstanceFactory.withName;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 /**
@@ -276,5 +278,66 @@ class DatabaseInstanceRegistryTest {
                 .usingRecursiveComparison()
                 .ignoringFieldsOfTypes(Instant.class)
                 .isEqualTo(petclinicInstance);
+    }
+
+    @Test
+    void findSiblings_shouldReturnOnlyInstancesOfTheSameApplicationSortedByName() {
+        // given.
+        ApplicationId petclinic = ApplicationId.of("com.axelixlabs", "petclinic");
+        instanceRegistry.register(withApplicationIdAndName("app-id-1", petclinic, "petclinic-b"));
+        instanceRegistry.register(withApplicationIdAndName("app-id-2", petclinic, "Petclinic-a"));
+        instanceRegistry.register(TestInstanceFactory.create("app-id-3", "com.axelixlabs", "other-app"));
+        instanceRegistry.register(TestInstanceFactory.create("app-id-4", "com.other", "petclinic"));
+
+        // when.
+        List<Instance> result = instanceRegistry.findSiblings(InstanceId.of("app-id-1"));
+
+        // then.
+        assertThat(result).extracting(instance -> instance.id().instanceId()).containsExactly("app-id-2", "app-id-1");
+    }
+
+    @Test
+    void findSiblings_shouldMatchApplicationWithEmptyGroupId() {
+        // given.
+        ApplicationId gradleApp = ApplicationId.of("", "gradle-app");
+        instanceRegistry.register(TestInstanceFactory.withApplicationId("empty-group-id-1", gradleApp));
+        instanceRegistry.register(TestInstanceFactory.create("empty-group-id-2", "com.axelixlabs", "gradle-app"));
+
+        // when.
+        List<Instance> result = instanceRegistry.findSiblings(InstanceId.of("empty-group-id-1"));
+
+        // then.
+        assertThat(result).extracting(instance -> instance.id().instanceId()).containsExactly("empty-group-id-1");
+    }
+
+    @Test
+    void findSiblings_shouldThrowWhenInstanceIsUnknown() {
+        // given.
+        instanceRegistry.register(TestInstanceFactory.create("known-id"));
+
+        // when & then.
+        assertThatThrownBy(() -> instanceRegistry.findSiblings(InstanceId.of("unknown-id")))
+                .isInstanceOf(InstanceNotFoundException.class);
+    }
+
+    private static Instance withApplicationIdAndName(String id, ApplicationId applicationId, String name) {
+        Instance base = TestInstanceFactory.withApplicationId(id, applicationId);
+        return new Instance(
+                base.id(),
+                base.applicationId(),
+                name,
+                base.serviceVersion(),
+                base.starterVersion(),
+                base.javaVersion(),
+                base.springBootVersion(),
+                base.springFrameworkVersion(),
+                base.kotlinVersion(),
+                base.jdkVendor(),
+                base.commitShaShort(),
+                base.deployedAt(),
+                base.latestHeartBeat(),
+                base.status(),
+                base.memoryUsage(),
+                base.actuatorUrl());
     }
 }

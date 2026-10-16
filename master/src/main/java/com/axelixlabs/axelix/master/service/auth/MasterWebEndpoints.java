@@ -74,6 +74,8 @@ public final class MasterWebEndpoints {
     // Instances
     public static final MasterWebEndpoint INSTANCES_READ =
             register("instances:read", HttpMethod.GET, ApiPaths.InstancesApi.GRID, null);
+    public static final MasterWebEndpoint INSTANCE_SIBLINGS_READ =
+            register("instances:read-siblings", HttpMethod.GET, ApiPaths.InstancesApi.SIBLINGS, null);
 
     // Metrics
     public static final MasterWebEndpoint METRICS_READ =

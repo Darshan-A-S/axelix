@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.jdbc.repository.query.Modifying;
@@ -40,6 +41,16 @@ import static com.axelixlabs.axelix.master.domain.Instance.InstanceStatus;
 public interface InstanceRepository extends ListCrudRepository<Instance, InstanceId> {
 
     Set<Instance> findByNameLikeIgnoreCase(@Param("query") String query);
+
+    @Query("""
+        SELECT siblings.*
+        FROM instances siblings
+        JOIN instances target
+            ON siblings.group_id = target.group_id
+            AND siblings.artifact_id = target.artifact_id
+        WHERE target.instance_id = :instanceId
+        """)
+    List<Instance> findSiblings(@Param("instanceId") String instanceId);
 
     @Modifying
     @Query("DELETE FROM instances WHERE latest_heart_beat IS NOT NULL AND latest_heart_beat < :threshold")

@@ -86,6 +86,12 @@ public final class ApiPaths {
     public static final class InstancesApi {
 
         public static final String GRID = "/applications/grid";
+
+        /**
+         * Endpoint to retrieve all the instances of the application that the given instance belongs to,
+         * including the given instance itself.
+         */
+        public static final String SIBLINGS = "/applications/siblings/{instanceId}";
     }
 
     public static final class BeansApi {

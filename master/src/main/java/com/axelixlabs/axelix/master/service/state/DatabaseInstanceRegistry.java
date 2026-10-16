@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.master.service.state;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
+import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.repository.InstanceRepository;
 
 /**
@@ -92,5 +94,19 @@ public class DatabaseInstanceRegistry implements InstanceRegistry {
     @Override
     public Set<Instance> findByQuery(String query) {
         return instanceRepository.findByNameLikeIgnoreCase("%" + query + "%");
+    }
+
+    @Override
+    public List<Instance> findSiblings(InstanceId instanceId) throws InstanceNotFoundException {
+        List<Instance> siblings = instanceRepository.findSiblings(instanceId.instanceId());
+
+        // The siblings always include the instance itself, so nothing found means there is no such instance
+        if (siblings.isEmpty()) {
+            throw new InstanceNotFoundException(instanceId);
+        }
+
+        return siblings.stream()
+                .sorted(Comparator.comparing(Instance::name, String.CASE_INSENSITIVE_ORDER))
+                .toList();
     }
 }

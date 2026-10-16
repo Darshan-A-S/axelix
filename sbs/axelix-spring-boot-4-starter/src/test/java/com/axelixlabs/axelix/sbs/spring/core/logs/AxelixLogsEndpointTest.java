@@ -111,9 +111,21 @@ class AxelixLogsEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getEntries()).hasSize(2);
-        assertThat(response.getBody().getEntries())
-                .anyMatch(entry ->
-                        "axelix.logs.test.another".equals(entry.getLogger()) && "three".equals(entry.getMessage()));
+    }
+
+    @Test
+    void shouldReturnTheMostRecentEntries_WhenLimitIsLessThanBuffered() {
+        // given. A dedicated buffer, since the application's own loggers write into the shared one concurrently.
+        SlidingWindow<LogEntry> logEntries = new SlidingWindow<>(10);
+        logEntries.put(new LogEntry().message("one"));
+        logEntries.put(new LogEntry().message("two"));
+        logEntries.put(new LogEntry().message("three"));
+
+        // when.
+        LogEntriesTail tail = new AxelixLogsEndpoint(logEntries).tail(2);
+
+        // then.
+        assertThat(tail.getEntries()).extracting(LogEntry::getMessage).containsExactly("two", "three");
     }
 
     @Test

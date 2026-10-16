@@ -17,15 +17,22 @@
  */
 package com.axelixlabs.axelix.master.repository;
 
+import java.util.Optional;
+
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
-import com.axelixlabs.axelix.master.domain.ApplicationDependencies.ApplicationDependenciesId;
 
 /**
  * Repository for the {@link ApplicationDependencies} aggregate.
  *
  * @author Nikita Kirillov
  */
-public interface ApplicationDependenciesRepository
-        extends ListCrudRepository<ApplicationDependencies, ApplicationDependenciesId> {}
+public interface ApplicationDependenciesRepository extends ListCrudRepository<ApplicationDependencies, String> {
+
+    @Query("SELECT * FROM application_dependencies WHERE group_id = :groupId AND artifact_id = :artifactId")
+    Optional<ApplicationDependencies> findByApplication(
+            @Param("groupId") String groupId, @Param("artifactId") String artifactId);
+}

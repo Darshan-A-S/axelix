@@ -17,6 +17,7 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -293,6 +294,45 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
                 .isEqualTo("[33.33, 33.33, 33.33]");
         assertThatJson(response.getBody()).node("lastScannedAt").isPresent();
         assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_DEPENDENCIES, viewer.getActor());
+    }
+
+    @Test
+    void shouldReturnEmptyDependenciesDashboardWhenNothingRecorded() {
+        // when.
+        ResponseEntity<String> response =
+                restTemplate.asViewer().getForEntity("/api/external/dashboard/dependencies", String.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThatJson(response.getBody()).node("totalServices").isEqualTo(0);
+        assertThatJson(response.getBody()).node("servicesWithRiskyDependencies").isEqualTo(0);
+        assertThatJson(response.getBody()).node("servicesByStatus").isEqualTo("{}");
+        assertThatJson(response.getBody()).node("trackedProjects").isEqualTo("[]");
+    }
+
+    @Test
+    void shouldSkipUnparsableSbomInDependenciesDashboard() {
+        // given.
+        dependencyAnalysisService.store(
+                ApplicationId.of("com.example", "service-a"),
+                CycloneDxDocuments.of("com.example:service-a:1.0.0", "ch.qos.logback:logback-classic:1.5.18"));
+        // the store() rejects a malformed SBOM, so the row is inserted directly
+        jdbcAggregateTemplate.insert(new ApplicationDependencies(
+                UUID.randomUUID().toString(),
+                ApplicationId.of("com.example", "service-b"),
+                "not a CycloneDX SBOM",
+                Instant.now()));
+
+        // when.
+        ResponseEntity<String> response =
+                restTemplate.asViewer().getForEntity("/api/external/dashboard/dependencies", String.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThatJson(response.getBody()).node("totalServices").isEqualTo(1);
+        assertThatJson(response.getBody())
+                .inPath("trackedProjects[*].softwareProject.id.value")
+                .isEqualTo("[\"logback\"]");
     }
 
     @Override

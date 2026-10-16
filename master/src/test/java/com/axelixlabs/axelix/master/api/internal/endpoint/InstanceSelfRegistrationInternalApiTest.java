@@ -45,7 +45,6 @@ import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.common.domain.insights.GarbageCollector;
 import com.axelixlabs.axelix.master.contract.metadata.TransactionOrigin;
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
-import com.axelixlabs.axelix.master.domain.ApplicationDependencies.ApplicationDependenciesId;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.SnapshotId;
@@ -358,16 +357,14 @@ public class InstanceSelfRegistrationInternalApiTest {
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertThat(jdbcAggregateTemplate.findById(
-                        new ApplicationDependenciesId("org.springframework.samples", "petclinic"),
-                        ApplicationDependencies.class))
-                .isNotNull()
+        assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
+                .singleElement()
                 .extracting(ApplicationDependencies::sbom)
                 .isEqualTo(sbom);
     }
 
     @Test
-    void shouldRegisterWithoutTheSbomWhenItIsMalformed() {
+    void shouldSkipSbomAndStillRegisterWhenSbomIsMalformed() {
         // when.
         ResponseEntity<Void> response = restTemplate
                 .withRoleTokenInAuthorizationHeader(DefaultRole.MANAGED_SERVICE)

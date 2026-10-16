@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import com.axelixlabs.axelix.master.repository.ApplicationDependenciesRepository;
 import com.axelixlabs.axelix.master.repository.HistoricalApplicationSnapshotRepository;
@@ -85,7 +86,8 @@ public class EcosystemAutoConfiguration {
             SbomParser sbomParser,
             SoftwareProjectsCatalog softwareProjectsCatalog,
             PlatformCatalog platformCatalog,
-            InstanceRegistry instanceRegistry) {
+            InstanceRegistry instanceRegistry,
+            PlatformTransactionManager transactionManager) {
         return new DefaultDependencyAnalysisService(
                 endpointInvoker,
                 applicationDependenciesRepository,
@@ -93,7 +95,8 @@ public class EcosystemAutoConfiguration {
                 sbomParser,
                 softwareProjectsCatalog,
                 platformCatalog,
-                instanceRegistry);
+                instanceRegistry,
+                transactionManager);
     }
 
     @Bean

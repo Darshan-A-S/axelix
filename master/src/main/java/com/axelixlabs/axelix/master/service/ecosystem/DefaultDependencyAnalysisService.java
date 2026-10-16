@@ -26,12 +26,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.http.NoHttpPayload;
@@ -41,7 +46,6 @@ import com.axelixlabs.axelix.master.api.external.response.dependencies.AnalyzedD
 import com.axelixlabs.axelix.master.api.external.response.dependencies.AppFrameworkInfo;
 import com.axelixlabs.axelix.master.api.external.response.dependencies.DependencyAnalysisResponse;
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
-import com.axelixlabs.axelix.master.domain.ApplicationDependencies.ApplicationDependenciesId;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
@@ -78,6 +82,7 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
     private final SoftwareProjectsCatalog softwareProjectsCatalog;
     private final PlatformCatalog platformCatalog;
     private final InstanceRegistry instanceRegistry;
+    private final TransactionTemplate nestedTransaction;
 
     public DefaultDependencyAnalysisService(
             EndpointInvoker endpointInvoker,
@@ -86,7 +91,8 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
             SbomParser sbomParser,
             SoftwareProjectsCatalog softwareProjectsCatalog,
             PlatformCatalog platformCatalog,
-            InstanceRegistry instanceRegistry) {
+            InstanceRegistry instanceRegistry,
+            PlatformTransactionManager transactionManager) {
         this.endpointInvoker = endpointInvoker;
         this.applicationDependenciesRepository = applicationDependenciesRepository;
         this.jdbcAggregateTemplate = jdbcAggregateTemplate;
@@ -94,6 +100,8 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
         this.softwareProjectsCatalog = softwareProjectsCatalog;
         this.platformCatalog = platformCatalog;
         this.instanceRegistry = instanceRegistry;
+        this.nestedTransaction = new TransactionTemplate(transactionManager);
+        this.nestedTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_NESTED);
     }
 
     @Override
@@ -130,12 +138,29 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
             return;
         }
 
-        jdbcAggregateTemplate.upsert(
-                new ApplicationDependencies(ApplicationDependenciesId.of(applicationId), sbom, Instant.now()));
+        Optional<ApplicationDependencies> current = applicationDependenciesRepository.findByApplication(
+                applicationId.groupId(), applicationId.artifactId());
+
+        if (current.isPresent()) {
+            jdbcAggregateTemplate.update(
+                    new ApplicationDependencies(current.get().id(), applicationId, sbom, Instant.now()));
+            return;
+        }
+
+        try {
+            // the savepoint keeps the enclosing transaction usable if the insert below fails
+            nestedTransaction.executeWithoutResult(_ -> jdbcAggregateTemplate.insert(
+                    new ApplicationDependencies(UUID.randomUUID().toString(), applicationId, sbom, Instant.now())));
+        } catch (DataAccessException e) {
+            log.warn("Unable to store the dependency SBOM of '{}'", applicationId, e);
+        }
     }
 
     @Override
     public DependenciesDashboardResponse getDashboard() {
+        // TODO: We know that findAll() here is bad, especially since each row holds the full SBOM
+        //  of the application, which is parsed on every request. We're just making it work now,
+        //  then we're going to make it right.
         List<ParsedSbom> sboms = applicationDependenciesRepository.findAll().stream()
                 .map(this::parseOrSkip)
                 .flatMap(Optional::stream)
@@ -175,7 +200,7 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
         try {
             return Optional.of(sbomParser.parse(application.sbom().getBytes(StandardCharsets.UTF_8)));
         } catch (SbomParsingException e) {
-            log.warn("Skipping the unparsable dependency SBOM of '{}'", application.applicationDependenciesId(), e);
+            log.warn("Skipping the unparsable dependency SBOM of '{}'", application.applicationId(), e);
             return Optional.empty();
         }
     }

@@ -14,11 +14,14 @@
     </preConditions>
 
     <createTable tableName="application_dependencies">
-      <column name="group_id" type="TEXT">
+      <column name="id" type="TEXT">
         <constraints nullable="false" primaryKey="true" primaryKeyName="pk_application_dependencies"/>
       </column>
+      <column name="group_id" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
       <column name="artifact_id" type="TEXT">
-        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_application_dependencies"/>
+        <constraints nullable="false"/>
       </column>
       <column name="sbom" type="TEXT">
         <constraints nullable="false"/>
@@ -27,5 +30,10 @@
         <constraints nullable="false"/>
       </column>
     </createTable>
+
+    <createIndex tableName="application_dependencies" indexName="uq_application_dependencies_application" unique="true">
+      <column name="group_id"/>
+      <column name="artifact_id"/>
+    </createIndex>
   </changeSet>
 </databaseChangeLog>

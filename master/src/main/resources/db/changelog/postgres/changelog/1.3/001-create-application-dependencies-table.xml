@@ -14,6 +14,9 @@
     </preConditions>
 
     <createTable tableName="application_dependencies">
+      <column name="id" type="TEXT">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_application_dependencies"/>
+      </column>
       <column name="group_id" type="TEXT">
         <constraints nullable="false"/>
       </column>
@@ -28,9 +31,9 @@
       </column>
     </createTable>
 
-    <addPrimaryKey
-            tableName="application_dependencies"
-            columnNames="group_id, artifact_id"
-            constraintName="pk_application_dependencies"/>
+    <createIndex tableName="application_dependencies" indexName="uq_application_dependencies_application" unique="true">
+      <column name="group_id"/>
+      <column name="artifact_id"/>
+    </createIndex>
   </changeSet>
 </databaseChangeLog>

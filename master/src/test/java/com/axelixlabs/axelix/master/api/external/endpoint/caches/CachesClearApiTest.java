@@ -73,8 +73,8 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
 
     private static MockWebServer mockWebServer;
 
-    private List<String> invokedPaths;
-    private AtomicInteger failingCacheOperationStatusCode;
+    private final List<String> invokedPaths = new CopyOnWriteArrayList<>();
+    private final AtomicInteger failingCacheOperationStatusCode = new AtomicInteger(500);
 
     @Autowired
     private TestRestTemplateBuilder restTemplate;
@@ -95,8 +95,6 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
 
     @BeforeEach
     void prepare() {
-        invokedPaths = new CopyOnWriteArrayList<>();
-        failingCacheOperationStatusCode = new AtomicInteger(500);
         mockWebServer.setDispatcher(new Dispatcher() {
             @Override
             public @NonNull MockResponse dispatch(@NonNull RecordedRequest request) {
@@ -132,6 +130,8 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
         registry.deRegister(InstanceId.of(activeInstanceId));
         registry.deRegister(InstanceId.of(siblingInstanceId));
         registry.deRegister(InstanceId.of(failingInstanceId));
+        invokedPaths.clear();
+        failingCacheOperationStatusCode.set(500);
     }
 
     @Nested

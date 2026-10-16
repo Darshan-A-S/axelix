@@ -59,6 +59,9 @@ public class CachesClearApi {
                     request.instanceIds(), ActuatorEndpoints.CLEAR_ALL_CACHES, NoHttpPayload.INSTANCE);
             return ResponseEntity.noContent().build();
         } catch (PartiallyUpdatedException e) {
+            // TODO: A partial update is generally not the client's fault, so 400 Bad Request is not
+            //  really the right status here. We keep it for now since it is a minor issue that should
+            //  rarely happen in practice, but this should be revisited in the future.
             return ResponseEntity.badRequest()
                     .body(new SimpleApiError(
                             ApiErrorCodes.PARTIALLY_UPDATED.getErrorCode(), HttpStatus.BAD_REQUEST.value()));
@@ -75,6 +78,7 @@ public class CachesClearApi {
                     request.instanceIds(), ActuatorEndpoints.CLEAR_SINGLE_CACHE, payload);
             return ResponseEntity.noContent().build();
         } catch (PartiallyUpdatedException e) {
+            // TODO: See the note on the 400 Bad Request status in clearAllCaches.
             return ResponseEntity.badRequest()
                     .body(new SimpleApiError(
                             ApiErrorCodes.PARTIALLY_UPDATED.getErrorCode(), HttpStatus.BAD_REQUEST.value()));

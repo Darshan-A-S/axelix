@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse;
-import com.axelixlabs.axelix.master.api.external.response.dashboard.JavaDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.LanguagesProfileResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.PersistenceDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.SpringPortfolioResponse;
@@ -54,14 +53,6 @@ public class DashboardApi {
         this.languagesProfileService = languagesProfileService;
         this.databaseHistoricalApplicationSnapshotService = databaseHistoricalApplicationSnapshotService;
         this.dependencyAnalysisService = dependencyAnalysisService;
-    }
-
-    /**
-     * Retrieve the aggregated Java/JVM features adoption across the entire ecosystem.
-     */
-    @GetMapping(path = ApiPaths.DashboardApi.JAVA)
-    public JavaDashboardResponse getJavaDashboard() {
-        return databaseHistoricalApplicationSnapshotService.getJavaDashboard();
     }
 
     /**

@@ -22,7 +22,6 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,10 +31,6 @@ import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.axelixlabs.axelix.common.domain.insights.FeatureId;
-import com.axelixlabs.axelix.common.domain.insights.GarbageCollector;
-import com.axelixlabs.axelix.master.api.external.response.dashboard.AggregatedFeature;
-import com.axelixlabs.axelix.master.api.external.response.dashboard.JavaDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.PersistenceDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.PersistenceDashboardResponse.TreemapEntry;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
@@ -47,8 +42,6 @@ import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.Snapsho
 import com.axelixlabs.axelix.master.domain.Insights;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.repository.HistoricalApplicationSnapshotRepository;
-import com.axelixlabs.axelix.master.repository.HistoricalApplicationSnapshotRepository.GarbageCollectorDistributionAggregate;
-import com.axelixlabs.axelix.master.repository.HistoricalApplicationSnapshotRepository.JavaInsightsAggregate;
 import com.axelixlabs.axelix.master.repository.HistoricalApplicationSnapshotRepository.LatestStarterVersion;
 import com.axelixlabs.axelix.master.repository.HistoricalApplicationSnapshotRepository.ServicePersistenceInsights;
 import com.axelixlabs.axelix.master.service.convert.HistoricalApplicationSnapshotConverter;
@@ -74,34 +67,6 @@ public class DatabaseHistoricalApplicationSnapshotService {
         this.converter = converter;
         this.jdbcAggregateTemplate = jdbcAggregateTemplate;
         this.repository = repository;
-    }
-
-    /**
-     * Builds the aggregated, ecosystem-wide Java/JVM features adoption view used to render the Java dashboard.
-     *
-     * @return the {@link JavaDashboardResponse} with the adoption percentage of every tracked Java/JVM feature.
-     */
-    @Transactional(readOnly = true)
-    public JavaDashboardResponse getJavaDashboard() {
-        JavaInsightsAggregate aggregate = repository.aggregateLatestJavaInsights();
-        long total = aggregate.totalServices();
-
-        List<AggregatedFeature> projectLeyden = List.of(
-                new AggregatedFeature(
-                        FeatureId.APP_CDS.getId(), adoptionPercentage(aggregate.appCdsEnabledCount(), total)),
-                new AggregatedFeature(
-                        FeatureId.AOT_CACHE.getId(), adoptionPercentage(aggregate.aotCacheEnabledCount(), total)));
-
-        List<AggregatedFeature> gc = List.of(new AggregatedFeature(
-                FeatureId.GC_LOGGING_ENABLED.getId(), adoptionPercentage(aggregate.gcLoggingEnabledCount(), total)));
-        Map<GarbageCollector, Double> garbageCollectorDistribution =
-                garbageCollectorDistribution(repository.aggregateLatestGarbageCollectorDistribution(), total);
-
-        List<AggregatedFeature> projectLilliput = List.of(new AggregatedFeature(
-                FeatureId.COMPACT_OBJECT_HEADERS.getId(),
-                adoptionPercentage(aggregate.compactObjectHeadersEnabledCount(), total)));
-
-        return new JavaDashboardResponse(projectLeyden, gc, garbageCollectorDistribution, projectLilliput);
     }
 
     /**
@@ -235,24 +200,5 @@ public class DatabaseHistoricalApplicationSnapshotService {
         return (int) insights.getTransactions().stream()
                 .flatMap(transaction -> transaction.getInMemoryPagination().keySet().stream())
                 .count();
-    }
-
-    private static double adoptionPercentage(long enabledCount, long total) {
-        if (total == 0) {
-            return 0.0;
-        }
-        return (enabledCount * 100.0) / total;
-    }
-
-    private static Map<GarbageCollector, Double> garbageCollectorDistribution(
-            List<GarbageCollectorDistributionAggregate> aggregates, long total) {
-        if (total == 0) {
-            return Map.of();
-        }
-
-        return aggregates.stream()
-                .collect(Collectors.toMap(
-                        aggregate -> GarbageCollector.valueOf(aggregate.gcInUse()),
-                        aggregate -> adoptionPercentage(aggregate.serviceCount(), total)));
     }
 }

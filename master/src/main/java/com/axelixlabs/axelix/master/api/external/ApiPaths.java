@@ -137,11 +137,6 @@ public final class ApiPaths {
     public static final class DashboardApi {
 
         /**
-         * Endpoint to retrieve the aggregated Java/JVM features adoption across the ecosystem.
-         */
-        public static final String JAVA = "/dashboard/java";
-
-        /**
          * Endpoint to retrieve the aggregated persistence problems (N + 1, in-memory pagination) across the ecosystem.
          */
         public static final String PERSISTENCE = "/dashboard/persistence";

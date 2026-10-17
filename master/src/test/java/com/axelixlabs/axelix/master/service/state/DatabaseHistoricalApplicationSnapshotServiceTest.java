@@ -30,10 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 
-import com.axelixlabs.axelix.common.domain.insights.FeatureId;
 import com.axelixlabs.axelix.common.domain.insights.GarbageCollector;
-import com.axelixlabs.axelix.master.api.external.response.dashboard.AggregatedFeature;
-import com.axelixlabs.axelix.master.api.external.response.dashboard.JavaDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.PersistenceDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.PersistenceDashboardResponse.TreemapEntry;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
@@ -303,116 +300,6 @@ class DatabaseHistoricalApplicationSnapshotServiceTest {
 
             // then.
             assertThat(result).isNull();
-        }
-    }
-
-    @Nested
-    class GetJavaDashboard {
-
-        @Test
-        void shouldAggregateJavaFeaturesAdoptionAcrossServices() {
-            // given two distinct services with different Java/JVM features enabled.
-            BasicRegistrationMetadata first =
-                    TestMetadataFactory.withFeatures("com.example", "service-a", true, true, true, false, true);
-            BasicRegistrationMetadata second =
-                    TestMetadataFactory.withFeatures("com.example", "service-b", true, false, false, false, false);
-            subject.reloadCurrentStateBulk(List.of(first, second));
-
-            // when.
-            JavaDashboardResponse dashboard = subject.getJavaDashboard();
-
-            // then.
-            assertThat(dashboard.projectLeyden())
-                    .extracting(AggregatedFeature::featureId, AggregatedFeature::adoptionPercentage)
-                    .containsExactly(tuple(FeatureId.APP_CDS.getId(), 100.0), tuple(FeatureId.AOT_CACHE.getId(), 50.0));
-            assertThat(dashboard.gc())
-                    .extracting(AggregatedFeature::featureId, AggregatedFeature::adoptionPercentage)
-                    .containsExactly(tuple(FeatureId.GC_LOGGING_ENABLED.getId(), 50.0));
-            assertThat(dashboard.garbageCollectorDistribution()).containsEntry(GarbageCollector.G1, 100.0);
-            assertThat(dashboard.garbageCollectorDistribution()).hasSize(1);
-            assertThat(dashboard.projectLilliput())
-                    .extracting(AggregatedFeature::featureId, AggregatedFeature::adoptionPercentage)
-                    .containsExactly(tuple(FeatureId.COMPACT_OBJECT_HEADERS.getId(), 0.0));
-        }
-
-        @Test
-        void shouldAggregateGarbageCollectorDistributionAcrossServices() {
-            // given.
-            BasicRegistrationMetadata first = TestMetadataFactory.withFeatures(
-                    "com.example",
-                    "service-a",
-                    false,
-                    false,
-                    false,
-                    false,
-                    false,
-                    com.axelixlabs.axelix.master.contract.metadata.GarbageCollector.G1);
-            BasicRegistrationMetadata second = TestMetadataFactory.withFeatures(
-                    "com.example",
-                    "service-b",
-                    false,
-                    false,
-                    false,
-                    false,
-                    false,
-                    com.axelixlabs.axelix.master.contract.metadata.GarbageCollector.G1);
-            BasicRegistrationMetadata third = TestMetadataFactory.withFeatures(
-                    "com.example",
-                    "service-c",
-                    false,
-                    false,
-                    false,
-                    false,
-                    false,
-                    com.axelixlabs.axelix.master.contract.metadata.GarbageCollector.ZGC);
-            subject.reloadCurrentStateBulk(List.of(first, second, third));
-
-            // when.
-            JavaDashboardResponse dashboard = subject.getJavaDashboard();
-
-            // then.
-            assertThat(dashboard.garbageCollectorDistribution())
-                    .containsEntry(GarbageCollector.G1, 200.0 / 3)
-                    .containsEntry(GarbageCollector.ZGC, 100.0 / 3);
-        }
-
-        @Test
-        void shouldCountOnlyTheLatestSnapshotPerService() {
-            // given a service whose latest snapshot has AppCDS disabled.
-            BasicRegistrationMetadata staleMetadata =
-                    TestMetadataFactory.withFeatures("com.example", "service-a", true, true, true, true, true);
-            BasicRegistrationMetadata current =
-                    TestMetadataFactory.withFeatures("com.example", "service-a", false, false, false, false, false);
-            subject.reloadCurrentState(staleMetadata);
-            subject.reloadCurrentState(current);
-
-            // when.
-            JavaDashboardResponse dashboard = subject.getJavaDashboard();
-
-            // then.
-            assertThat(dashboard.projectLeyden())
-                    .extracting(AggregatedFeature::featureId, AggregatedFeature::adoptionPercentage)
-                    .containsExactly(tuple(FeatureId.APP_CDS.getId(), 0.0), tuple(FeatureId.AOT_CACHE.getId(), 0.0));
-            assertThat(dashboard.garbageCollectorDistribution()).containsEntry(GarbageCollector.G1, 100.0);
-            assertThat(dashboard.garbageCollectorDistribution()).hasSize(1);
-        }
-
-        @Test
-        void shouldReturnZeroAdoptionWhenNoSnapshotsExist() {
-            // when.
-            JavaDashboardResponse dashboard = subject.getJavaDashboard();
-
-            // then.
-            assertThat(dashboard.projectLeyden())
-                    .extracting(AggregatedFeature::adoptionPercentage)
-                    .containsOnly(0.0);
-            assertThat(dashboard.gc())
-                    .extracting(AggregatedFeature::adoptionPercentage)
-                    .containsOnly(0.0);
-            assertThat(dashboard.projectLilliput())
-                    .extracting(AggregatedFeature::adoptionPercentage)
-                    .containsOnly(0.0);
-            assertThat(dashboard.garbageCollectorDistribution()).isEmpty();
         }
     }
 

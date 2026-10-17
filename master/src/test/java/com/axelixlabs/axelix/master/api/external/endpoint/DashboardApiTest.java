@@ -140,29 +140,6 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
     }
 
     @Test
-    void shouldReturnJavaDashboardWithGarbageCollectorDistribution() {
-        // given.
-        historicalApplicationSnapshotService.reloadCurrentStateBulk(List.of(
-                metadata("com.example", "service-a", GarbageCollector.G1),
-                metadata("com.example", "service-b", GarbageCollector.ZGC)));
-
-        // when.
-        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer.getForEntity("/api/external/dashboard/java", String.class);
-
-        // then.
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
-        assertThatJson(response.getBody())
-                .node("garbageCollectorDistribution.G1")
-                .isEqualTo(50.0);
-        assertThatJson(response.getBody())
-                .node("garbageCollectorDistribution.ZGC")
-                .isEqualTo(50.0);
-        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_JAVA, viewer.getActor());
-    }
-
-    @Test
     void shouldReturnPersistenceDashboardAggregatedAcrossServices() {
         // given one service with an N + 1 problem (plus a single lazy load that does not qualify) and another
         // with in-memory pagination.
@@ -337,8 +314,8 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
 
     @Override
     protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
-        return Set.of(
-                new TestableMasterWebEndpoint(MasterWebEndpoints.DASHBOARD_READ_JAVA, "/api/external/dashboard/java"));
+        return Set.of(new TestableMasterWebEndpoint(
+                MasterWebEndpoints.DASHBOARD_READ_PERSISTENCE, "/api/external/dashboard/persistence"));
     }
 
     private void deRegisterAll() {

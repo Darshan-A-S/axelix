@@ -8,34 +8,50 @@
 
 :root {
     --axelix-header-height: 65px;
-    --axelix-primary-green: #00ab55;
-    --axelix-primary-dark-green: #1db865;
-    --axelix-primary-light-green: #00ab551a;
-    --axelix-extra-light-grey: #fafafa;
-    --axelix-light-grey: #f0f0f0;
-    --axelix-medium-grey: #d9d9d9;
-    --axelix-bold-grey: #838383;
-    --axelix-primary-red: #ff000a;
-    --axelix-primary-light-red: #ff000a1a;
-    --axelix-primary-orange: #faad14;
+
+    /* Colors (--axelix-<hue>-<shade>) and typography (--axelix-font-*, --axelix-line-height-*) are defined in src/theme/tokens.ts */
+
+    /* Spacing scale (4px grid) */
+    --axelix-space-1: 4px;
+    --axelix-space-2: 8px;
+    --axelix-space-3: 12px;
+    --axelix-space-4: 16px;
+    --axelix-space-5: 20px;
+    --axelix-space-6: 24px;
+    --axelix-space-8: 32px;
+    --axelix-space-10: 40px;
+    --axelix-space-12: 48px;
+
+    /* Legacy names, kept as aliases of the src/theme/tokens.ts ramps until the components are migrated */
+    --axelix-primary-green: var(--axelix-green-600);
+    --axelix-primary-dark-green: var(--axelix-green-700);
+    --axelix-primary-light-green: var(--axelix-green-50);
+    --axelix-extra-light-grey: var(--axelix-grey-50);
+    --axelix-light-grey: var(--axelix-grey-100);
+    --axelix-medium-grey: var(--axelix-grey-300);
+    --axelix-bold-grey: var(--axelix-grey-500);
+    --axelix-primary-red: var(--axelix-red-600);
+    --axelix-primary-light-red: var(--axelix-red-50);
+    --axelix-primary-orange: var(--axelix-orange-500);
     --axelix-primary-white: #fff;
-    --axelix-primary-black: #000;
-    --axelix-primary-blue: #1890ff;
-    --axelix-primary-light-blue: #69c0ff;
+    --axelix-primary-black: var(--axelix-grey-900);
+    --axelix-primary-blue: var(--axelix-blue-600);
+    --axelix-primary-light-blue: var(--axelix-blue-400);
     --axelix-border-radius-large: 8px;
     --axelix-border-radius-small: 4px;
+    --axelix-border-radius-pill: 999px;
     --axelix-box-shadow-bold: 4px 6px 14px rgb(15 23 42 / 25%);
     --axelix-box-shadow-light: 0 4px 20px rgb(0 0 0 / 10%);
-    --prop-accent: #16a34a;
-    --prop-accent-strong: #067647;
-    --prop-accent-border: #abefc6;
-    --prop-danger: #b42318;
-    --prop-danger-border: #fecdca;
-    --prop-danger-on-dark: #fda29b;
-    --prop-dep-error: #b54708;
-    --prop-dep-error-surface: #fffaeb;
-    --prop-dep-error-border: #fec84b;
-    --prop-dep-error-on-dark: #fdb022;
+    --prop-accent: var(--axelix-green-600);
+    --prop-accent-strong: var(--axelix-green-700);
+    --prop-accent-border: var(--axelix-green-200);
+    --prop-danger: var(--axelix-red-700);
+    --prop-danger-border: var(--axelix-red-200);
+    --prop-danger-on-dark: var(--axelix-red-300);
+    --prop-dep-error: var(--axelix-orange-700);
+    --prop-dep-error-surface: var(--axelix-orange-50);
+    --prop-dep-error-border: var(--axelix-orange-300);
+    --prop-dep-error-on-dark: var(--axelix-orange-400);
     --prop-dep-warn: #854a0e;
     --prop-dep-warn-surface: #fefbe8;
     --prop-dep-warn-border: #fde68a;
@@ -57,7 +73,7 @@ html {
 }
 
 body {
-    font-family: Golos, Helvetica, Arial, sans-serif;
+    font-family: var(--axelix-font-family);
     color: var(--axelix-primary-black);
 }
 

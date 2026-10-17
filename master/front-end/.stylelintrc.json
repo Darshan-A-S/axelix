@@ -19,6 +19,38 @@
                     "global"
                 ]
             }
+        ],
+        "color-no-hex": [
+            true,
+            {
+                "severity": "warning",
+                "message": "Use a --axelix-* color variable (defined in src/theme/tokens.ts) instead of a hex literal"
+            }
+        ],
+        "color-named": [
+            "never",
+            {
+                "severity": "warning",
+                "message": "Use a --axelix-* color variable (defined in src/theme/tokens.ts) instead of a named color"
+            }
+        ],
+        "declaration-property-value-allowed-list": [
+            {
+                "font-size": ["/^var\\(--axelix-font-size-/", "inherit"],
+                "font-weight": ["/^var\\(--axelix-font-weight-/", "inherit", "100 900"]
+            },
+            {
+                "severity": "warning",
+                "message": "Use the --axelix-font-size-* / --axelix-font-weight-* variables (defined in src/theme/tokens.ts)"
+            }
         ]
-    }
+    },
+    "overrides": [
+        {
+            "files": ["src/index.css"],
+            "rules": {
+                "color-no-hex": null
+            }
+        }
+    ]
 }

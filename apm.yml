@@ -11,9 +11,9 @@ dependencies:
   - ./.agents/skills/security-vulnerabilities-patcher
   - ./.agents/skills/test-reviewer
   - ./.agents/skills/starter-domain-reviewer
-  - ./.agents/skills/master-frontend
   # External
   - anthropics/skills/skills/skill-creator
+  - wondelai/skills/refactoring-ui
   mcp:
   - name: github
     registry: false

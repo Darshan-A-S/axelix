@@ -12,6 +12,6 @@
 
 .Link:hover,
 .ActiveLink {
-    color: var(--axelix-green-600);
+    color: var(--axelix-green-700);
     background-color: var(--axelix-green-50);
 }

@@ -248,8 +248,6 @@
         "disabledTag": "This tag value is not valid, considering the values selected for other tags"
     },
     "Dashboard": {
-        "enabled": "Enabled",
-        "disabled": "Disabled",
         "NoData": {
             "badge": "No data yet",
             "title": "No data to render this dashboard",
@@ -257,20 +255,6 @@
             "oldStarter": "In some rare cases it might be because all applications that got registered in Axelix Master use an old version of Starter & Plugin, in which data for this dashboard is not transferred at all.",
             "readTheDocs": "Read the docs",
             "lastScan": "Last scan {{date}}"
-        },
-        "Java": {
-            "subtitle": "Real-time JVM insights · Project Leyden · Garbage Collection",
-            "gcLoggingChartTitle": "Garbage Collector Logging",
-            "gcLoggingChartSubtitle": "Log output coverage",
-            "lilliputChartTitle": "Project Liliput Adoption",
-            "lilliputChartSubtitle": "Compact object headers",
-            "leydenChartTitle": "Project Leyden Adoption",
-            "leydenChartSubtitle": "JVM optimisation",
-            "leydenChartCentreSubtitle": "Adoption",
-            "leydenChartRestTitle": "No adoption",
-            "gcDistributionChartTitle": "Garbage Collector Distribution",
-            "gcDistributionChartSubtitle": "Runtime profile",
-            "gcDistributionChartCentreSubtitle": "Most used"
         },
         "Languages": {
             "title": "Languages Profile",

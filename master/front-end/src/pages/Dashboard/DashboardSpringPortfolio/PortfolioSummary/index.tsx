@@ -33,7 +33,7 @@ export const PortfolioSummary = ({ applicationsTotal, applicationsFullyOssSuppor
         <>
             <div className={styles.MainWrapper}>
                 <div>
-                    <div className="TextLarge">{applicationsTotal}</div>
+                    <div className="TextDisplay">{applicationsTotal}</div>
                     <div className={`TextUltraSmall ${styles.TotalLabel}`}>
                         {t("Dashboard.SpringPortfolio.applications")}
                     </div>

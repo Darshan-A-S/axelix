@@ -32,7 +32,7 @@ export const LanguagesSummaryCard = ({ applicationsTotal, applicationsOnLts, app
         <>
             <div className={styles.MainWrapper}>
                 <div className={styles.TotalWrapper}>
-                    <span className={`TextLarge ${styles.TotalValue}`}>{applicationsTotal}</span>
+                    <span className={`TextDisplay ${styles.TotalValue}`}>{applicationsTotal}</span>
                     <span className={`TextUltraSmall ${styles.TotalLabel}`}>
                         {t("Dashboard.Languages.applications")}
                     </span>

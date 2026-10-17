@@ -43,7 +43,7 @@ export const FrameworkWindowPanel = ({ framework }: IProps) => {
                             <span className={`TextUltraSmall ${styles.FrameworkName}`}>
                                 {platformFullName(framework.name)}
                             </span>
-                            <span className="TextLarge">{framework.version}</span>
+                            <span className="TextDisplay">{framework.version}</span>
                             <span className={`TextUltraSmall ${styles.Line}`}>
                                 {t("DependenciesAnalyzer.framework.runningLine", {
                                     line: framework.line.line,

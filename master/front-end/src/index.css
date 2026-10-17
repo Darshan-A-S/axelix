@@ -80,26 +80,43 @@ a {
     margin: 0 auto;
 }
 
+/* Key figures, e.g. the totals of a summary card */
+.TextDisplay {
+    font-size: var(--axelix-font-size-display);
+    line-height: var(--axelix-line-height-tight);
+    font-weight: var(--axelix-font-weight-semibold);
+}
+
+/* Page and modal titles */
 .TextLarge {
-    font-size: 32px;
-    line-height: 1.2;
-    font-weight: bold;
+    font-size: var(--axelix-font-size-page-title);
+    line-height: var(--axelix-line-height-tight);
+    font-weight: var(--axelix-font-weight-semibold);
 }
 
 .TextMedium {
-    font-size: 22px;
-    line-height: 1.3;
-    font-weight: 600;
+    font-size: var(--axelix-font-size-title);
+    line-height: var(--axelix-line-height-tight);
+    font-weight: var(--axelix-font-weight-semibold);
 }
 
 .TextSmall {
-    font-size: 14px;
-    line-height: 1.4;
+    font-size: var(--axelix-font-size-body);
+    line-height: var(--axelix-line-height-normal);
 }
 
 .TextUltraSmall {
-    font-size: 12px;
-    line-height: 1.5;
+    font-size: var(--axelix-font-size-caption);
+    line-height: var(--axelix-line-height-normal);
+}
+
+/* Uppercase labels, e.g. the eyebrow above a card title */
+.TextCaps {
+    font-size: var(--axelix-font-size-caption);
+    line-height: var(--axelix-line-height-normal);
+    font-weight: var(--axelix-font-weight-medium);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .AccordionsWrapper {

@@ -31,7 +31,7 @@ export const DashboardCard = ({ title, subtitle, children, isEmpty = false }: IP
         <>
             <div className={styles.MainWrapper}>
                 <div className={styles.HeaderWrapper}>
-                    <p className={`TextUltraSmall ${styles.Subtitle}`}>{subtitle}</p>
+                    <p className={`TextCaps ${styles.Subtitle}`}>{subtitle}</p>
                     <h2 className={`TextSmall ${styles.Title}`}>{title}</h2>
                 </div>
                 {isEmpty ? <EmptyHandler isEmpty={isEmpty} /> : children}

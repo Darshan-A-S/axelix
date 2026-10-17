@@ -44,15 +44,15 @@ export const EntitiesMapSummary = ({ analyzed, problematic, clean }: IProps) => 
             <div className={styles.MainWrapper}>
                 <div className={styles.Card}>
                     <span className={`TextUltraSmall ${styles.Label}`}>{t("EntitiesMap.summary.mapped")}</span>
-                    <span className="TextLarge">{analyzed}</span>
+                    <span className="TextDisplay">{analyzed}</span>
                 </div>
                 <div className={styles.Card}>
                     <span className={`TextUltraSmall ${styles.Label}`}>{t("EntitiesMap.summary.withProblems")}</span>
-                    <span className="TextLarge">{problematic}</span>
+                    <span className="TextDisplay">{problematic}</span>
                 </div>
                 <div className={styles.Card}>
                     <span className={`TextUltraSmall ${styles.Label}`}>{t("EntitiesMap.summary.clean")}</span>
-                    <span className="TextLarge">{clean}</span>
+                    <span className="TextDisplay">{clean}</span>
                 </div>
             </div>
         </>

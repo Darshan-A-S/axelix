@@ -250,8 +250,6 @@
         "disabledTag": "Данное значение тэга не является корретным в контексте значений, выбранных для других тэгов"
     },
     "Dashboard": {
-        "enabled": "Включено",
-        "disabled": "Отключено",
         "NoData": {
             "badge": "Данных пока нет",
             "title": "Нет данных для отображения этого дашборда",
@@ -259,20 +257,6 @@
             "oldStarter": "В редких случаях причина может быть в том, что все приложения, зарегистрированные в Axelix Master, используют старую версию Starter & Plugin, в которой данные для этого дашборда вообще не передаются.",
             "readTheDocs": "Читать документацию",
             "lastScan": "Последнее сканирование {{date}}"
-        },
-        "Java": {
-            "subtitle": "Мониторинг Java экосистемы · Проект Leyden · Сборка мусора",
-            "gcLoggingChartTitle": "Настроенное GC Логирование",
-            "gcLoggingChartSubtitle": "Профиль Среды Выполнения",
-            "lilliputChartTitle": "Внедрение Project Lilliput",
-            "lilliputChartSubtitle": "Компактные заголовки объектов",
-            "leydenChartTitle": "Внедрение Project Leyden",
-            "leydenChartSubtitle": "Оптимизация JVM",
-            "leydenChartCentreSubtitle": "Внедрено",
-            "leydenChartRestTitle": "Не внедрено",
-            "gcDistributionChartTitle": "Распределение используемых GC",
-            "gcDistributionChartSubtitle": "Профиль среды выполнения",
-            "gcDistributionChartCentreSubtitle": "Основной"
         },
         "Languages": {
             "title": "Профиль языков",

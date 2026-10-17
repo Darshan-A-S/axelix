@@ -38,7 +38,7 @@ export const DashboardNoData = () => {
                 <div className={styles.Overlay} />
                 <div className={styles.CardContainer}>
                     <div className={styles.Card}>
-                        <div className={`TextSmall ${styles.Badge}`}>
+                        <div className={`TextCaps ${styles.Badge}`}>
                             <div className={styles.BadgeDot} />
                             {t("Dashboard.NoData.badge")}
                         </div>

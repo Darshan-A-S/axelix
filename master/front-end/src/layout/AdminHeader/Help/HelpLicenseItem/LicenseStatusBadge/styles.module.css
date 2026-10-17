@@ -2,7 +2,7 @@
 .OSSBadge {
     padding: 0 3px;
     border-radius: var(--axelix-border-radius-small);
-    font-weight: 500;
+    font-weight: var(--axelix-font-weight-medium);
 }
 
 .EnterpriseBadge {

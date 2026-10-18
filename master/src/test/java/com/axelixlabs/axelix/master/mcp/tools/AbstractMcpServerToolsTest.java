@@ -59,6 +59,16 @@ abstract class AbstractMcpServerToolsTest {
     @Autowired
     private McpServerStreamableHttpProperties mcpProperties;
 
+    /**
+     * The text the AI agent receives from the tools that do not return anything ({@code void} methods), i.e. the
+     * {@code "Done"} JSON string.
+     * <p>
+     * Neither Axelix nor the MCP specification produces this response. It is the Spring AI MCP server toolkit
+     * that, upon detecting that the {@code @McpTool} method is {@code void}, responds with the {@code "Done"}
+     * string serialized to JSON (hence the quotes), so that the AI agent receives at least something back.
+     */
+    protected static final String DONE_RESPONSE = "\"Done\"";
+
     private McpSyncClient mcpClient;
 
     @BeforeEach

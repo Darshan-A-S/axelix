@@ -37,11 +37,14 @@ class CacheMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
     @Test
     void shouldSendTheCacheManagerAndCacheNameAsThePathVariables() throws InterruptedException {
         // when.
-        callTool(
+        String result = callTool(
                 McpEndpoints.CLEAR_SPECIFIC_CACHE_TOOL_NAME,
                 Map.of("instanceId", INSTANCE_ID, "cacheManager", "cacheManager", "cacheName", "owners"));
 
         // then.
+        assertThat(result).isEqualTo(DONE_RESPONSE);
+
+        // and.
         RecordedRequest request = takeRequest();
         assertThat(request.getMethod()).isEqualTo("DELETE");
         assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-caches/cacheManager/owners/clear");

@@ -70,12 +70,13 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         String result = callTool("getLoggerGroupsFeed", Map.of("instanceId", INSTANCE_ID));
 
         // then.
-        assertThatJson(result).isArray().hasSize(2);
-        assertThatJson(result).node("[0].name").isEqualTo("web");
-        assertThatJson(result).node("[0].configuredLevel").isEqualTo("INFO");
-        assertThatJson(result).node("[0].members").isArray().containsExactly("com.example.app.web");
-        assertThatJson(result).node("[1].name").isEqualTo("sql");
-        assertThatJson(result).node("[1].configuredLevel").isEqualTo(null);
+        // language=json
+        assertThatJson(result).isEqualTo("""
+                [
+                  { "name": "web", "configuredLevel": "INFO", "members": ["com.example.app.web"] },
+                  { "name": "sql", "configuredLevel": null, "members": ["com.example.app.sql"] }
+                ]
+                """);
     }
 
     @Test
@@ -92,12 +93,27 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         String result = callTool("getLoggersFeed", Map.of("instanceId", INSTANCE_ID));
 
         // then.
-        assertThatJson(result).isArray().hasSize(2);
-        assertThatJson(result).node("[0].name").isEqualTo("ROOT");
-        assertThatJson(result).node("[0].configuredLevel").isEqualTo("INFO");
-        assertThatJson(result).node("[0].effectiveLevel").isEqualTo("INFO");
-        assertThatJson(result).node("[1].name").isEqualTo("com.example.app");
-        assertThatJson(result).node("[1].configuredLevel").isEqualTo(null);
+        // language=json
+        assertThatJson(result).isEqualTo("""
+                [
+                  {
+                    "name": "ROOT",
+                    "configuredLevel": "INFO",
+                    "effectiveLevel": "INFO",
+                    "fallbackLevel": null,
+                    "temporaryLevelInitiatedAt": null,
+                    "temporaryLevelRollsBackAt": null
+                  },
+                  {
+                    "name": "com.example.app",
+                    "configuredLevel": null,
+                    "effectiveLevel": "INFO",
+                    "fallbackLevel": null,
+                    "temporaryLevelInitiatedAt": null,
+                    "temporaryLevelRollsBackAt": null
+                  }
+                ]
+                """);
     }
 
     @Nested
@@ -114,11 +130,21 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
                     callTool("findLoggersByName", Map.of("instanceId", INSTANCE_ID, "loggerName", "com.example.app"));
 
             // then.
-            assertThatJson(result).isObject().containsOnlyKeys("com.example.app");
-            assertThatJson(result).node("com\\.example\\.app.name").isEqualTo("com.example.app");
-            assertThatJson(result).node("com\\.example\\.app.configuredLevel").isEqualTo("DEBUG");
-            assertThatJson(result).node("com\\.example\\.app.effectiveLevel").isEqualTo("DEBUG");
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    {
+                      "com.example.app": {
+                        "name": "com.example.app",
+                        "configuredLevel": "DEBUG",
+                        "effectiveLevel": "DEBUG",
+                        "fallbackLevel": null,
+                        "temporaryLevelInitiatedAt": null,
+                        "temporaryLevelRollsBackAt": null
+                      }
+                    }
+                    """);
 
+            // and.
             assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app");
         }
 
@@ -140,11 +166,28 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             String result =
                     callTool("findLoggersByName", Map.of("instanceId", INSTANCE_ID, "loggerName", "com.example.app"));
 
-            // then.
-            assertThatJson(result).isObject().containsOnlyKeys("com.example.app.service", "com.example.app.repository");
-            assertThatJson(result)
-                    .node("com\\.example\\.app\\.service.effectiveLevel")
-                    .isEqualTo("INFO");
+            // then. only the loggers whose name contains the requested one are returned, keyed by the logger name.
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    {
+                      "com.example.app.service": {
+                        "name": "com.example.app.service",
+                        "configuredLevel": null,
+                        "effectiveLevel": "INFO",
+                        "fallbackLevel": null,
+                        "temporaryLevelInitiatedAt": null,
+                        "temporaryLevelRollsBackAt": null
+                      },
+                      "com.example.app.repository": {
+                        "name": "com.example.app.repository",
+                        "configuredLevel": null,
+                        "effectiveLevel": "INFO",
+                        "fallbackLevel": null,
+                        "temporaryLevelInitiatedAt": null,
+                        "temporaryLevelRollsBackAt": null
+                      }
+                    }
+                    """);
         }
 
         @Test
@@ -163,7 +206,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
                     callTool("findLoggersByName", Map.of("instanceId", INSTANCE_ID, "loggerName", "does-not-exist"));
 
             // then.
-            assertThatJson(result).isObject().isEmpty();
+            assertThat(result).isEqualTo("{}");
         }
     }
 
@@ -180,10 +223,14 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             String result = callTool("findGroupsByName", Map.of("instanceId", INSTANCE_ID, "groupName", "web"));
 
             // then.
-            assertThatJson(result).isObject().containsOnlyKeys("web");
-            assertThatJson(result).node("web.name").isEqualTo("web");
-            assertThatJson(result).node("web.configuredLevel").isEqualTo("WARN");
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    {
+                      "web": { "name": "web", "configuredLevel": "WARN", "members": ["com.example.app.web"] }
+                    }
+                    """);
 
+            // and.
             assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/group/web");
         }
 
@@ -201,9 +248,13 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             // when.
             String result = callTool("findGroupsByName", Map.of("instanceId", INSTANCE_ID, "groupName", "w"));
 
-            // then.
-            assertThatJson(result).isObject().containsOnlyKeys("web");
-            assertThatJson(result).node("web.configuredLevel").isEqualTo("INFO");
+            // then. only the groups whose name contains the requested one are returned, keyed by the group name.
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    {
+                      "web": { "name": "web", "configuredLevel": "INFO", "members": ["com.example.app.web"] }
+                    }
+                    """);
         }
 
         @Test
@@ -222,7 +273,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
                     callTool("findGroupsByName", Map.of("instanceId", INSTANCE_ID, "groupName", "does-not-exist"));
 
             // then.
-            assertThatJson(result).isObject().isEmpty();
+            assertThat(result).isEqualTo("{}");
         }
     }
 
@@ -232,7 +283,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         @Test
         void shouldSendTheLoggerNameAsThePathVariableAndTheLevelWithTtlAsTheBody() throws InterruptedException {
             // when.
-            callTool(
+            String result = callTool(
                     "changeLoggingLevelByLoggerName",
                     Map.of(
                             "instanceId",
@@ -245,6 +296,9 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
                             120));
 
             // then.
+            assertThat(result).isEqualTo(DONE_RESPONSE);
+
+            // and.
             RecordedRequest request = takeRequest();
             assertThat(request.getMethod()).isEqualTo("POST");
             assertThat(request.getPath())
@@ -259,11 +313,14 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         @Test
         void shouldSendAPermanentChangeWhenTtlIsOmitted() throws InterruptedException {
             // when.
-            callTool(
+            String result = callTool(
                     "changeLoggingLevelByLoggerName",
                     Map.of("instanceId", INSTANCE_ID, "loggerName", "ROOT", "loggerLevel", "WARN"));
 
             // then.
+            assertThat(result).isEqualTo(DONE_RESPONSE);
+
+            // and.
             RecordedRequest request = takeRequest();
             assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/ROOT/change-level");
 
@@ -280,11 +337,14 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         @Test
         void shouldSendTheGroupNameAsThePathVariableAndAlwaysAPermanentChange() throws InterruptedException {
             // when.
-            callTool(
+            String result = callTool(
                     "changeLoggingLevelByGroupName",
                     Map.of("instanceId", INSTANCE_ID, "groupName", "web", "loggerLevel", "WARN"));
 
             // then.
+            assertThat(result).isEqualTo(DONE_RESPONSE);
+
+            // and.
             RecordedRequest request = takeRequest();
             assertThat(request.getMethod()).isEqualTo("POST");
             assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/group/web/change-level");
@@ -302,11 +362,14 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         @Test
         void shouldSendTheLoggerNameAsThePathVariableAndNoBody() throws InterruptedException {
             // when.
-            callTool(
+            String result = callTool(
                     "resetLoggingLevelByLoggerName",
                     Map.of("instanceId", INSTANCE_ID, "loggerName", "com.example.app"));
 
             // then.
+            assertThat(result).isEqualTo(DONE_RESPONSE);
+
+            // and.
             RecordedRequest request = takeRequest();
             assertThat(request.getMethod()).isEqualTo("POST");
             assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app/reset");

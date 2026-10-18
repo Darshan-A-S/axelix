@@ -55,9 +55,10 @@ class LogsMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         respondWith("/axelix-logs", "{\"entries\":[]}");
 
         // when.
-        callTool(McpEndpoints.LOG_ENTRIES_TAIL_TOOL_NAME, Map.of("instanceId", INSTANCE_ID));
+        String result = callTool(McpEndpoints.LOG_ENTRIES_TAIL_TOOL_NAME, Map.of("instanceId", INSTANCE_ID));
 
         // then.
+        assertThat(result).isEmpty();
         assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-logs");
     }
 }

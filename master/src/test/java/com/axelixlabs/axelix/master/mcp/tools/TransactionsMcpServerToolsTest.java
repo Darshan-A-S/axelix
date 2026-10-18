@@ -87,10 +87,24 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             // when.
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
 
-            // then.
-            assertThatJson(result).isArray().hasSize(2);
-            assertThat(result).contains(METHOD_NAME).contains("loadOwners").doesNotContain("buildReport");
-            assertThat(result).doesNotContain("\"count\"");
+            // then. the clean transaction is left out, and the lazy-loading counts are not exposed.
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "transactionalKey": { "className": "com.example.OrderService", "methodName": "placeOrder" },
+                        "nPlusOne": [
+                          { "ownerEntityClass": "com.example.Order", "associationPropertyName": "items" }
+                        ],
+                        "inMemoryPaginatedEntities": []
+                      },
+                      {
+                        "transactionalKey": { "className": "com.example.OrderService", "methodName": "loadOwners" },
+                        "nPlusOne": [],
+                        "inMemoryPaginatedEntities": ["owners"]
+                      }
+                    ]
+                    """);
         }
     }
 
@@ -110,19 +124,18 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
 
             // then.
-            assertThatJson(result).isArray().hasSize(1);
-            assertThatJson(result).node("[0].transactionalKey.className").isEqualTo(CLASS_NAME);
-            assertThatJson(result).node("[0].transactionalKey.methodName").isEqualTo(METHOD_NAME);
-            assertThatJson(result).node("[0].nPlusOne").isArray().hasSize(1);
-            assertThatJson(result)
-                    .node("[0].nPlusOne[0].associationPropertyName")
-                    .isEqualTo("items");
-            assertThatJson(result).node("[0].nPlusOne[0].ownerEntityClass").isEqualTo("com.example.Order");
-            assertThatJson(result)
-                    .node("[0].inMemoryPaginatedEntities")
-                    .isArray()
-                    .containsExactly("orders");
-            assertThat(result).doesNotContain("\"count\"");
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "transactionalKey": { "className": "com.example.OrderService", "methodName": "placeOrder" },
+                        "nPlusOne": [
+                          { "ownerEntityClass": "com.example.Order", "associationPropertyName": "items" }
+                        ],
+                        "inMemoryPaginatedEntities": ["orders"]
+                      }
+                    ]
+                    """);
         }
 
         @Test
@@ -136,8 +149,16 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
 
             // then.
-            assertThatJson(result).isArray().hasSize(1);
-            assertThatJson(result).node("[0].nPlusOne").isArray().isEmpty();
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "transactionalKey": { "className": "com.example.OrderService", "methodName": "placeOrder" },
+                        "nPlusOne": [],
+                        "inMemoryPaginatedEntities": []
+                      }
+                    ]
+                    """);
         }
 
         @Test
@@ -150,7 +171,9 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
 
             // then.
-            assertThat(result).contains("No transaction found for method");
+            assertThat(result)
+                    .isEqualTo("No transaction found for method 'com.example.OrderService#placeOrder' "
+                            + "in application 'com.example:orders-service'.");
         }
 
         @Test
@@ -162,7 +185,7 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, METHOD_NAME);
 
             // then.
-            assertThat(result).contains("'methodName' can only be provided together with 'className'");
+            assertThat(result).isEqualTo("'methodName' can only be provided together with 'className'.");
         }
     }
 
@@ -186,13 +209,24 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             // when.
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, null);
 
-            // then.
-            assertThatJson(result).isArray().hasSize(2);
-            assertThat(result)
-                    .contains(METHOD_NAME)
-                    .contains("cancelOrder")
-                    .doesNotContain("findOrder")
-                    .doesNotContain("loadOwners");
+            // then. the clean 'findOrder' and the other class's 'loadOwners' are left out.
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "transactionalKey": { "className": "com.example.OrderService", "methodName": "placeOrder" },
+                        "nPlusOne": [
+                          { "ownerEntityClass": "com.example.Order", "associationPropertyName": "items" }
+                        ],
+                        "inMemoryPaginatedEntities": []
+                      },
+                      {
+                        "transactionalKey": { "className": "com.example.OrderService", "methodName": "cancelOrder" },
+                        "nPlusOne": [],
+                        "inMemoryPaginatedEntities": ["orders"]
+                      }
+                    ]
+                    """);
         }
     }
 
@@ -205,7 +239,8 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
 
             // then.
-            assertThat(result).contains("No application found");
+            assertThat(result)
+                    .isEqualTo("No application found with groupId 'com.example' and artifactId 'orders-service'.");
         }
 
         @Test
@@ -217,7 +252,9 @@ class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
 
             // then.
-            assertThat(result).contains("No transactions profile");
+            assertThat(result)
+                    .isEqualTo(
+                            "No transactions profile has been recorded for application 'com.example:orders-service'.");
         }
     }
 

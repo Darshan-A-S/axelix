@@ -81,8 +81,29 @@ class EntitiesMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
 
             // then.
-            assertThatJson(result).isArray().hasSize(2);
-            assertThat(result).contains("Order").contains("Customer");
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "name": "Order",
+                        "table": "orders",
+                        "associationsCount": 2,
+                        "flaggedAssociations": [
+                          {
+                            "association": { "entity": "Order", "field": "items" },
+                            "mapping": "@ManyToOne(fetch = FetchType.EAGER)",
+                            "problems": ["EAGER_FETCHING"]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Customer",
+                        "table": "customers",
+                        "associationsCount": 0,
+                        "flaggedAssociations": []
+                      }
+                    ]
+                    """);
         }
     }
 
@@ -101,18 +122,21 @@ class EntitiesMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, "Order");
 
             // then.
-            assertThatJson(result).node("name").isEqualTo("Order");
-            assertThatJson(result).node("table").isEqualTo("orders");
-            assertThatJson(result).node("associationsCount").isEqualTo(3);
-            assertThatJson(result).node("flaggedAssociations").isArray().hasSize(1);
-            assertThatJson(result)
-                    .node("flaggedAssociations[0].association.field")
-                    .isEqualTo("items");
-            assertThatJson(result)
-                    .node("flaggedAssociations[0].problems")
-                    .isArray()
-                    .containsExactly("EAGER_FETCHING");
-            assertThat(result).doesNotContain("Customer");
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    {
+                      "name": "Order",
+                      "table": "orders",
+                      "associationsCount": 3,
+                      "flaggedAssociations": [
+                        {
+                          "association": { "entity": "Order", "field": "items" },
+                          "mapping": "@ManyToOne(fetch = FetchType.EAGER)",
+                          "problems": ["EAGER_FETCHING"]
+                        }
+                      ]
+                    }
+                    """);
         }
 
         @Test
@@ -124,7 +148,7 @@ class EntitiesMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, "Order");
 
             // then.
-            assertThat(result).contains("No entity named 'Order'");
+            assertThat(result).isEqualTo("No entity named 'Order' found in application 'com.example:orders-service'.");
         }
     }
 
@@ -141,7 +165,17 @@ class EntitiesMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationEntitiesProfile("", ARTIFACT_ID, null);
 
             // then.
-            assertThat(result).contains("Customer");
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "name": "Customer",
+                        "table": "customers",
+                        "associationsCount": 0,
+                        "flaggedAssociations": []
+                      }
+                    ]
+                    """);
         }
 
         @Test
@@ -150,7 +184,8 @@ class EntitiesMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
 
             // then.
-            assertThat(result).contains("No application found");
+            assertThat(result)
+                    .isEqualTo("No application found with groupId 'com.example' and artifactId 'orders-service'.");
         }
 
         @Test
@@ -162,7 +197,8 @@ class EntitiesMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
 
             // then.
-            assertThat(result).contains("No entities map");
+            assertThat(result)
+                    .isEqualTo("No entities map has been recorded for application 'com.example:orders-service'.");
         }
     }
 

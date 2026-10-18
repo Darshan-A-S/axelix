@@ -31,6 +31,7 @@ import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static net.javacrumbs.jsonunit.core.Option.IGNORING_ARRAY_ORDER;
 
 /**
  * Tests for {@link WallboardMcpServerTools}.
@@ -61,7 +62,47 @@ class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = callTool(McpEndpoints.WALLBOARD_TOOL_NAME, Map.of());
 
             // then.
-            assertThatJson(result).isArray().hasSize(2);
+            // language=json
+            assertThatJson(result).when(IGNORING_ARRAY_ORDER).isEqualTo("""
+                    [
+                      {
+                        "id": { "instanceId": "instance-1" },
+                        "applicationId": { "groupId": "com.axelixlabs", "artifactId": "test-object-factory-app" },
+                        "name": "test-object-factory-instance",
+                        "serviceVersion": "1.2.3-classifer-test",
+                        "starterVersion": "1.0.0-SNAPSHOT",
+                        "javaVersion": { "feature": 25, "interim": 0, "update": 0, "patch": 0 },
+                        "springBootVersion": "3.5.2",
+                        "springFrameworkVersion": "6.0.2",
+                        "kotlinVersion": null,
+                        "jdkVendor": "BellSoft",
+                        "commitShaShort": "df027cf",
+                        "deployedAt": "${json-unit.any-string}",
+                        "latestHeartBeat": "${json-unit.any-string}",
+                        "status": "UP",
+                        "memoryUsage": { "heap": 1000.0 },
+                        "actuatorUrl": "http://example.com"
+                      },
+                      {
+                        "id": { "instanceId": "instance-2" },
+                        "applicationId": { "groupId": "com.axelixlabs", "artifactId": "test-object-factory-app" },
+                        "name": "test-object-factory-instance",
+                        "serviceVersion": "1.2.3-classifer-test",
+                        "starterVersion": "1.0.0-SNAPSHOT",
+                        "javaVersion": { "feature": 25, "interim": 0, "update": 0, "patch": 0 },
+                        "springBootVersion": "3.5.2",
+                        "springFrameworkVersion": "6.0.2",
+                        "kotlinVersion": null,
+                        "jdkVendor": "BellSoft",
+                        "commitShaShort": "df027cf",
+                        "deployedAt": "${json-unit.any-string}",
+                        "latestHeartBeat": "${json-unit.any-string}",
+                        "status": "UP",
+                        "memoryUsage": { "heap": 1000.0 },
+                        "actuatorUrl": "http://example.com"
+                      }
+                    ]
+                    """);
         }
 
         @Test
@@ -73,7 +114,29 @@ class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = callTool(McpEndpoints.WALLBOARD_TOOL_NAME, Map.of("query", "   "));
 
             // then.
-            assertThatJson(result).isArray().hasSize(1);
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "id": { "instanceId": "instance-1" },
+                        "applicationId": { "groupId": "com.axelixlabs", "artifactId": "test-object-factory-app" },
+                        "name": "test-object-factory-instance",
+                        "serviceVersion": "1.2.3-classifer-test",
+                        "starterVersion": "1.0.0-SNAPSHOT",
+                        "javaVersion": { "feature": 25, "interim": 0, "update": 0, "patch": 0 },
+                        "springBootVersion": "3.5.2",
+                        "springFrameworkVersion": "6.0.2",
+                        "kotlinVersion": null,
+                        "jdkVendor": "BellSoft",
+                        "commitShaShort": "df027cf",
+                        "deployedAt": "${json-unit.any-string}",
+                        "latestHeartBeat": "${json-unit.any-string}",
+                        "status": "UP",
+                        "memoryUsage": { "heap": 1000.0 },
+                        "actuatorUrl": "http://example.com"
+                      }
+                    ]
+                    """);
         }
 
         @Test
@@ -86,8 +149,29 @@ class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
             String result = callTool(McpEndpoints.WALLBOARD_TOOL_NAME, Map.of("query", "invoice"));
 
             // then.
-            assertThatJson(result).isArray().hasSize(1);
-            assertThatJson(result).node("[0].name").isEqualTo("invoice-internal-process");
+            // language=json
+            assertThatJson(result).isEqualTo("""
+                    [
+                      {
+                        "id": { "instanceId": "instance-1" },
+                        "applicationId": { "groupId": "com.axelixlabs", "artifactId": "test-object-factory-app" },
+                        "name": "invoice-internal-process",
+                        "serviceVersion": "1.2.3-classifer-test",
+                        "starterVersion": "1.0.0-SNAPSHOT",
+                        "javaVersion": { "feature": 25, "interim": 0, "update": 0, "patch": 0 },
+                        "springBootVersion": "3.5.2",
+                        "springFrameworkVersion": "6.0.2",
+                        "kotlinVersion": null,
+                        "jdkVendor": "BellSoft",
+                        "commitShaShort": "df027cf",
+                        "deployedAt": "${json-unit.any-string}",
+                        "latestHeartBeat": "${json-unit.any-string}",
+                        "status": "UP",
+                        "memoryUsage": { "heap": 1000.0 },
+                        "actuatorUrl": "http://example.com"
+                      }
+                    ]
+                    """);
         }
     }
 }

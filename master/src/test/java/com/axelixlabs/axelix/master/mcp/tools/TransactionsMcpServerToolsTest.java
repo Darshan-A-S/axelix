@@ -19,12 +19,17 @@ package com.axelixlabs.axelix.master.mcp.tools;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.json.JsonMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 
 import com.axelixlabs.axelix.common.domain.insights.GarbageCollector;
 import com.axelixlabs.axelix.master.contract.metadata.CountedLazyLoadingTarget;
@@ -34,37 +39,35 @@ import com.axelixlabs.axelix.master.contract.metadata.PersistenceInsights;
 import com.axelixlabs.axelix.master.contract.metadata.TransactionAggregatedProfile;
 import com.axelixlabs.axelix.master.contract.metadata.TransactionOrigin;
 import com.axelixlabs.axelix.master.contract.metadata.TransactionalKey;
-import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.SnapshotId;
 import com.axelixlabs.axelix.master.domain.Insights;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.JdkVendor;
-import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
+import com.axelixlabs.axelix.master.mcp.McpEndpoints;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link TransactionsMcpServerTools}.
+ * Tests for {@link TransactionsMcpServerTools}.
  *
  * @author Mikhail Polivakha
  */
-class TransactionsMcpServerToolsTest {
+class TransactionsMcpServerToolsTest extends AbstractMcpServerToolsTest {
 
     private static final String GROUP_ID = "com.example";
     private static final String ARTIFACT_ID = "orders-service";
     private static final String CLASS_NAME = "com.example.OrderService";
     private static final String METHOD_NAME = "placeOrder";
 
-    private final DatabaseHistoricalApplicationSnapshotService snapshotService =
-            mock(DatabaseHistoricalApplicationSnapshotService.class);
+    @Autowired
+    private JdbcAggregateTemplate jdbcAggregateTemplate;
 
-    private final TransactionsMcpServerTools subject =
-            new TransactionsMcpServerTools(new JsonMapper(), snapshotService);
+    @AfterEach
+    void deleteSnapshots() {
+        jdbcAggregateTemplate.deleteAll(HistoricalApplicationSnapshot.class);
+    }
 
     @Nested
     class WhenMethodNotSpecified {
@@ -82,7 +85,7 @@ class TransactionsMcpServerToolsTest {
                     .transactions(List.of(nPlusOneTransaction, paginationTransaction, cleanTransaction)));
 
             // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
 
             // then.
             assertThatJson(result).isArray().hasSize(2);
@@ -104,7 +107,7 @@ class TransactionsMcpServerToolsTest {
             stubApplication(new PersistenceInsights().transactions(List.of(placeOrder, other)));
 
             // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
 
             // then.
             assertThatJson(result).isArray().hasSize(1);
@@ -130,7 +133,7 @@ class TransactionsMcpServerToolsTest {
             stubApplication(new PersistenceInsights().transactions(List.of(placeOrder)));
 
             // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
 
             // then.
             assertThatJson(result).isArray().hasSize(1);
@@ -144,7 +147,7 @@ class TransactionsMcpServerToolsTest {
                     .transactions(List.of(profile("com.example.OwnerService", "loadOwners", List.of(), Map.of()))));
 
             // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, METHOD_NAME);
 
             // then.
             assertThat(result).contains("No transaction found for method");
@@ -156,7 +159,7 @@ class TransactionsMcpServerToolsTest {
             stubApplication(new PersistenceInsights().transactions(List.of()));
 
             // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, METHOD_NAME);
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, METHOD_NAME);
 
             // then.
             assertThat(result).contains("'methodName' can only be provided together with 'className'");
@@ -181,7 +184,7 @@ class TransactionsMcpServerToolsTest {
                     .transactions(List.of(placeOrder, cancelOrder, cleanOrderMethod, otherClass)));
 
             // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, null);
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, CLASS_NAME, null);
 
             // then.
             assertThatJson(result).isArray().hasSize(2);
@@ -198,11 +201,8 @@ class TransactionsMcpServerToolsTest {
 
         @Test
         void shouldReturnMessageWhenApplicationNotFound() {
-            // given.
-            when(snapshotService.getCurrentRecord(any())).thenReturn(null);
-
-            // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
+            // when. no snapshot of the application is recorded.
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
 
             // then.
             assertThat(result).contains("No application found");
@@ -214,7 +214,7 @@ class TransactionsMcpServerToolsTest {
             stubApplication(new PersistenceInsights().transactions(null));
 
             // when.
-            String result = subject.getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
+            String result = getApplicationTransactionsProfile(GROUP_ID, ARTIFACT_ID, null, null);
 
             // then.
             assertThat(result).contains("No transactions profile");
@@ -222,8 +222,19 @@ class TransactionsMcpServerToolsTest {
     }
 
     private void stubApplication(PersistenceInsights persistenceInsights) {
-        when(snapshotService.getCurrentRecord(ApplicationId.of(GROUP_ID, ARTIFACT_ID)))
-                .thenReturn(snapshot(persistenceInsights));
+        jdbcAggregateTemplate.insert(snapshot(persistenceInsights));
+    }
+
+    private String getApplicationTransactionsProfile(
+            String groupId, String artifactId, @Nullable String className, @Nullable String methodName) {
+        Map<String, Object> arguments = new HashMap<>(Map.of("groupId", groupId, "artifactId", artifactId));
+        if (className != null) {
+            arguments.put("className", className);
+        }
+        if (methodName != null) {
+            arguments.put("methodName", methodName);
+        }
+        return callTool(McpEndpoints.TRANSACTIONS_PROFILE_TOOL_NAME, arguments);
     }
 
     private static TransactionAggregatedProfile profile(

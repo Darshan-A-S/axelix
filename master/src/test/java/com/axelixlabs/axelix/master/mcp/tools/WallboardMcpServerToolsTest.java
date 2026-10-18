@@ -17,32 +17,36 @@
  */
 package com.axelixlabs.axelix.master.mcp.tools;
 
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.json.JsonMapper;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.mcp.McpEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link WallboardMcpServerTools}.
+ * Tests for {@link WallboardMcpServerTools}.
  *
  * @author Nikita Kirillov
  */
-class WallboardMcpServerToolsTest {
+class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
 
-    private final InstanceRegistry instanceRegistry = mock(InstanceRegistry.class);
+    @Autowired
+    private InstanceRegistry instanceRegistry;
 
-    private final WallboardMcpServerTools subject = new WallboardMcpServerTools(new JsonMapper(), instanceRegistry);
+    @AfterEach
+    void deRegisterInstances() {
+        instanceRegistry.deRegister(InstanceId.of("instance-1"));
+        instanceRegistry.deRegister(InstanceId.of("instance-2"));
+    }
 
     @Nested
     class GetWallboard {
@@ -50,47 +54,40 @@ class WallboardMcpServerToolsTest {
         @Test
         void shouldReturnAllInstancesWhenQueryIsNull() {
             // given.
-            when(instanceRegistry.getAll())
-                    .thenReturn(List.of(
-                            TestInstanceFactory.create("instance-1"), TestInstanceFactory.create("instance-2")));
+            instanceRegistry.register(TestInstanceFactory.create("instance-1"));
+            instanceRegistry.register(TestInstanceFactory.create("instance-2"));
 
             // when.
-            String result = subject.getInstances(null);
+            String result = callTool(McpEndpoints.WALLBOARD_TOOL_NAME, Map.of());
 
             // then.
             assertThatJson(result).isArray().hasSize(2);
-            verify(instanceRegistry).getAll();
-            verifyNoMoreInteractions(instanceRegistry);
         }
 
         @Test
         void shouldReturnAllInstancesWhenQueryIsBlank() {
             // given.
-            when(instanceRegistry.getAll()).thenReturn(List.of(TestInstanceFactory.create("instance-1")));
+            instanceRegistry.register(TestInstanceFactory.create("instance-1"));
 
             // when.
-            String result = subject.getInstances("   ");
+            String result = callTool(McpEndpoints.WALLBOARD_TOOL_NAME, Map.of("query", "   "));
 
             // then.
             assertThatJson(result).isArray().hasSize(1);
-            verify(instanceRegistry).getAll();
-            verifyNoMoreInteractions(instanceRegistry);
         }
 
         @Test
         void shouldReturnOnlyMatchingInstancesWhenQueryIsProvided() {
             // given.
-            when(instanceRegistry.findByQuery("invoice"))
-                    .thenReturn(Set.of(TestInstanceFactory.withName("instance-1", "invoice-internal-process")));
+            instanceRegistry.register(TestInstanceFactory.withName("instance-1", "invoice-internal-process"));
+            instanceRegistry.register(TestInstanceFactory.withName("instance-2", "orders-service"));
 
             // when.
-            String result = subject.getInstances("invoice");
+            String result = callTool(McpEndpoints.WALLBOARD_TOOL_NAME, Map.of("query", "invoice"));
 
             // then.
             assertThatJson(result).isArray().hasSize(1);
             assertThatJson(result).node("[0].name").isEqualTo("invoice-internal-process");
-            verify(instanceRegistry).findByQuery("invoice");
-            verifyNoMoreInteractions(instanceRegistry);
         }
     }
 }

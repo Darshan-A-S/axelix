@@ -20,47 +20,29 @@ package com.axelixlabs.axelix.master.mcp.tools;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import tools.jackson.databind.json.JsonMapper;
 
-import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
-import com.axelixlabs.axelix.common.domain.http.HttpPayload;
 import com.axelixlabs.axelix.master.contract.logger.LogLevelChangeRequest;
 import com.axelixlabs.axelix.master.contract.logger.LoggersFeed;
 import com.axelixlabs.axelix.master.contract.logger.LoggersFeedGroup;
 import com.axelixlabs.axelix.master.contract.logger.LoggersFeedLogger;
 import com.axelixlabs.axelix.master.contract.logger.LoggersGroupProfile;
 import com.axelixlabs.axelix.master.contract.logger.SingleLoggerProfile;
-import com.axelixlabs.axelix.master.domain.InstanceId;
-import com.axelixlabs.axelix.master.service.serde.JacksonMessageSerializationStrategy;
-import com.axelixlabs.axelix.master.service.transport.BadRequestException;
-import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link LoggersMcpServerTools}.
+ * Tests for {@link LoggersMcpServerTools}.
  *
  * @author Nikita Kirillov
  */
-class LoggersMcpServerToolsTest {
-
-    private static final String INSTANCE_ID = "instance-1";
-
-    private final EndpointInvoker endpointInvoker = mock(EndpointInvoker.class);
+class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
 
     private final JsonMapper objectMapper = new JsonMapper();
-
-    private final LoggersMcpServerTools subject = new LoggersMcpServerTools(
-            endpointInvoker, new JacksonMessageSerializationStrategy(objectMapper), objectMapper);
 
     @Test
     void shouldReturnAvailableLogLevels() {
@@ -71,7 +53,7 @@ class LoggersMcpServerToolsTest {
                 .groups(List.of()));
 
         // when.
-        String result = subject.getAvailableLoggingLevels(INSTANCE_ID);
+        String result = callTool("getAvailableLoggingLevels", Map.of("instanceId", INSTANCE_ID));
 
         // then.
         assertThat(result).isEqualTo("[OFF, ERROR, WARN, INFO, DEBUG, TRACE]");
@@ -85,7 +67,7 @@ class LoggersMcpServerToolsTest {
         stubAllLoggers(new LoggersFeed().levels(List.of()).loggers(List.of()).groups(List.of(web, sql)));
 
         // when.
-        String result = subject.getLoggerGroupsFeed(INSTANCE_ID);
+        String result = callTool("getLoggerGroupsFeed", Map.of("instanceId", INSTANCE_ID));
 
         // then.
         assertThatJson(result).isArray().hasSize(2);
@@ -107,7 +89,7 @@ class LoggersMcpServerToolsTest {
                 .groups(List.of()));
 
         // when.
-        String result = subject.getLoggersFeed(INSTANCE_ID);
+        String result = callTool("getLoggersFeed", Map.of("instanceId", INSTANCE_ID));
 
         // then.
         assertThatJson(result).isArray().hasSize(2);
@@ -122,14 +104,14 @@ class LoggersMcpServerToolsTest {
     class FindLoggersByName {
 
         @Test
-        void shouldReturnLoggerFoundViaTheDirectEndpoint() {
+        void shouldReturnLoggerFoundViaTheDirectEndpoint() throws InterruptedException {
             // given.
             SingleLoggerProfile appLogger = logger("com.example.app", "DEBUG", "DEBUG");
-            when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_ONE_LOGGER), any()))
-                    .thenReturn(objectMapper.writeValueAsBytes(appLogger));
+            respondWith("/axelix-loggers/logger/com.example.app", objectMapper.writeValueAsString(appLogger));
 
             // when.
-            String result = subject.findLoggersByName(INSTANCE_ID, "com.example.app");
+            String result =
+                    callTool("findLoggersByName", Map.of("instanceId", INSTANCE_ID, "loggerName", "com.example.app"));
 
             // then.
             assertThatJson(result).isObject().containsOnlyKeys("com.example.app");
@@ -137,21 +119,15 @@ class LoggersMcpServerToolsTest {
             assertThatJson(result).node("com\\.example\\.app.configuredLevel").isEqualTo("DEBUG");
             assertThatJson(result).node("com\\.example\\.app.effectiveLevel").isEqualTo("DEBUG");
 
-            ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
-            verify(endpointInvoker)
-                    .invoke(
-                            eq(InstanceId.of(INSTANCE_ID)),
-                            eq(ActuatorEndpoints.GET_ONE_LOGGER),
-                            payloadCaptor.capture());
-            assertThat(payloadCaptor.getValue().pathVariableValues())
-                    .containsExactly(Map.entry("name", "com.example.app"));
+            assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app");
         }
 
         @Test
         void shouldFallBackToFilteringAllLoggersWhenDirectEndpointRespondsWithBadRequest() {
             // given. the exact-name lookup fails - the provided name is only a partial match.
-            when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_ONE_LOGGER), any()))
-                    .thenThrow(new BadRequestException("no such logger"));
+            respondWithBadRequest("/axelix-loggers/logger/com.example.app");
+
+            // and.
             LoggersFeedLogger appService = feedLogger("com.example.app.service", null, "INFO");
             LoggersFeedLogger appRepository = feedLogger("com.example.app.repository", null, "INFO");
             LoggersFeedLogger root = feedLogger("ROOT", "INFO", "INFO");
@@ -161,7 +137,8 @@ class LoggersMcpServerToolsTest {
                     .groups(List.of()));
 
             // when.
-            String result = subject.findLoggersByName(INSTANCE_ID, "com.example.app");
+            String result =
+                    callTool("findLoggersByName", Map.of("instanceId", INSTANCE_ID, "loggerName", "com.example.app"));
 
             // then.
             assertThatJson(result).isObject().containsOnlyKeys("com.example.app.service", "com.example.app.repository");
@@ -173,15 +150,17 @@ class LoggersMcpServerToolsTest {
         @Test
         void shouldReturnEmptyMapWhenNoLoggerMatchesInTheFallback() {
             // given.
-            when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_ONE_LOGGER), any()))
-                    .thenThrow(new BadRequestException("no such logger"));
+            respondWithBadRequest("/axelix-loggers/logger/does-not-exist");
+
+            // and.
             stubAllLoggers(new LoggersFeed()
                     .levels(List.of())
                     .loggers(List.of(feedLogger("ROOT", "INFO", "INFO")))
                     .groups(List.of()));
 
             // when.
-            String result = subject.findLoggersByName(INSTANCE_ID, "does-not-exist");
+            String result =
+                    callTool("findLoggersByName", Map.of("instanceId", INSTANCE_ID, "loggerName", "does-not-exist"));
 
             // then.
             assertThatJson(result).isObject().isEmpty();
@@ -192,41 +171,35 @@ class LoggersMcpServerToolsTest {
     class FindGroupsByName {
 
         @Test
-        void shouldReturnGroupFoundViaTheDirectEndpoint() {
+        void shouldReturnGroupFoundViaTheDirectEndpoint() throws InterruptedException {
             // given.
             LoggersGroupProfile web = group("web", "WARN", List.of("com.example.app.web"));
-            when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_LOGGER_GROUP), any()))
-                    .thenReturn(objectMapper.writeValueAsBytes(web));
+            respondWith("/axelix-loggers/group/web", objectMapper.writeValueAsString(web));
 
             // when.
-            String result = subject.findGroupsByName(INSTANCE_ID, "web");
+            String result = callTool("findGroupsByName", Map.of("instanceId", INSTANCE_ID, "groupName", "web"));
 
             // then.
             assertThatJson(result).isObject().containsOnlyKeys("web");
             assertThatJson(result).node("web.name").isEqualTo("web");
             assertThatJson(result).node("web.configuredLevel").isEqualTo("WARN");
 
-            ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
-            verify(endpointInvoker)
-                    .invoke(
-                            eq(InstanceId.of(INSTANCE_ID)),
-                            eq(ActuatorEndpoints.GET_LOGGER_GROUP),
-                            payloadCaptor.capture());
-            assertThat(payloadCaptor.getValue().pathVariableValues()).containsExactly(Map.entry("name", "web"));
+            assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/group/web");
         }
 
         @Test
         void shouldFallBackToFilteringAllGroupsWhenDirectEndpointRespondsWithBadRequest() {
             // given.
-            when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_LOGGER_GROUP), any()))
-                    .thenThrow(new BadRequestException("no such group"));
+            respondWithBadRequest("/axelix-loggers/group/w");
+
+            // and.
             LoggersFeedGroup web = feedGroup("web", "INFO", List.of("com.example.app.web"));
             LoggersFeedGroup sql = feedGroup("sql", null, List.of("com.example.app.sql"));
             stubAllLoggers(
                     new LoggersFeed().levels(List.of()).loggers(List.of()).groups(List.of(web, sql)));
 
             // when.
-            String result = subject.findGroupsByName(INSTANCE_ID, "w");
+            String result = callTool("findGroupsByName", Map.of("instanceId", INSTANCE_ID, "groupName", "w"));
 
             // then.
             assertThatJson(result).isObject().containsOnlyKeys("web");
@@ -236,15 +209,17 @@ class LoggersMcpServerToolsTest {
         @Test
         void shouldReturnEmptyMapWhenNoGroupMatchesInTheFallback() {
             // given.
-            when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_LOGGER_GROUP), any()))
-                    .thenThrow(new BadRequestException("no such group"));
+            respondWithBadRequest("/axelix-loggers/group/does-not-exist");
+
+            // and.
             stubAllLoggers(new LoggersFeed()
                     .levels(List.of())
                     .loggers(List.of())
                     .groups(List.of(feedGroup("web", "INFO", List.of()))));
 
             // when.
-            String result = subject.findGroupsByName(INSTANCE_ID, "does-not-exist");
+            String result =
+                    callTool("findGroupsByName", Map.of("instanceId", INSTANCE_ID, "groupName", "does-not-exist"));
 
             // then.
             assertThatJson(result).isObject().isEmpty();
@@ -255,43 +230,47 @@ class LoggersMcpServerToolsTest {
     class ChangeLoggingLevelByLoggerName {
 
         @Test
-        void shouldSendTheLoggerNameAsThePathVariableAndTheLevelWithTtlAsTheBody() {
+        void shouldSendTheLoggerNameAsThePathVariableAndTheLevelWithTtlAsTheBody() throws InterruptedException {
             // when.
-            subject.changeLoggingLevelByLoggerName(INSTANCE_ID, "com.example.app", "DEBUG", 120L);
+            callTool(
+                    "changeLoggingLevelByLoggerName",
+                    Map.of(
+                            "instanceId",
+                            INSTANCE_ID,
+                            "loggerName",
+                            "com.example.app",
+                            "loggerLevel",
+                            "DEBUG",
+                            "ttlSeconds",
+                            120));
 
             // then.
-            ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
-            verify(endpointInvoker)
-                    .invokeNoValue(
-                            eq(InstanceId.of(INSTANCE_ID)),
-                            eq(ActuatorEndpoints.SET_ONE_LOGGER),
-                            payloadCaptor.capture());
+            RecordedRequest request = takeRequest();
+            assertThat(request.getMethod()).isEqualTo("POST");
+            assertThat(request.getPath())
+                    .isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app/change-level");
 
-            HttpPayload payload = payloadCaptor.getValue();
-            assertThat(payload.pathVariableValues()).containsExactly(Map.entry("name", "com.example.app"));
-
-            LogLevelChangeRequest request = objectMapper.readValue(payload.requestBody(), LogLevelChangeRequest.class);
-            assertThat(request.getConfiguredLevel()).isEqualTo("DEBUG");
-            assertThat(request.getTtlSeconds()).isEqualTo(120L);
+            LogLevelChangeRequest body =
+                    objectMapper.readValue(request.getBody().readUtf8(), LogLevelChangeRequest.class);
+            assertThat(body.getConfiguredLevel()).isEqualTo("DEBUG");
+            assertThat(body.getTtlSeconds()).isEqualTo(120L);
         }
 
         @Test
-        void shouldSendAPermanentChangeWhenTtlIsOmitted() {
+        void shouldSendAPermanentChangeWhenTtlIsOmitted() throws InterruptedException {
             // when.
-            subject.changeLoggingLevelByLoggerName(INSTANCE_ID, "ROOT", "WARN", null);
+            callTool(
+                    "changeLoggingLevelByLoggerName",
+                    Map.of("instanceId", INSTANCE_ID, "loggerName", "ROOT", "loggerLevel", "WARN"));
 
             // then.
-            ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
-            verify(endpointInvoker)
-                    .invokeNoValue(
-                            eq(InstanceId.of(INSTANCE_ID)),
-                            eq(ActuatorEndpoints.SET_ONE_LOGGER),
-                            payloadCaptor.capture());
+            RecordedRequest request = takeRequest();
+            assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/ROOT/change-level");
 
-            LogLevelChangeRequest request =
-                    objectMapper.readValue(payloadCaptor.getValue().requestBody(), LogLevelChangeRequest.class);
-            assertThat(request.getConfiguredLevel()).isEqualTo("WARN");
-            assertThat(request.getTtlSeconds()).isNull();
+            LogLevelChangeRequest body =
+                    objectMapper.readValue(request.getBody().readUtf8(), LogLevelChangeRequest.class);
+            assertThat(body.getConfiguredLevel()).isEqualTo("WARN");
+            assertThat(body.getTtlSeconds()).isNull();
         }
     }
 
@@ -299,24 +278,21 @@ class LoggersMcpServerToolsTest {
     class ChangeLoggingLevelByGroupName {
 
         @Test
-        void shouldSendTheGroupNameAsThePathVariableAndAlwaysAPermanentChange() {
+        void shouldSendTheGroupNameAsThePathVariableAndAlwaysAPermanentChange() throws InterruptedException {
             // when.
-            subject.changeLoggingLevelByGroupName(INSTANCE_ID, "web", "WARN");
+            callTool(
+                    "changeLoggingLevelByGroupName",
+                    Map.of("instanceId", INSTANCE_ID, "groupName", "web", "loggerLevel", "WARN"));
 
             // then.
-            ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
-            verify(endpointInvoker)
-                    .invokeNoValue(
-                            eq(InstanceId.of(INSTANCE_ID)),
-                            eq(ActuatorEndpoints.SET_FOR_LOGGER_GROUP),
-                            payloadCaptor.capture());
+            RecordedRequest request = takeRequest();
+            assertThat(request.getMethod()).isEqualTo("POST");
+            assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/group/web/change-level");
 
-            HttpPayload payload = payloadCaptor.getValue();
-            assertThat(payload.pathVariableValues()).containsExactly(Map.entry("name", "web"));
-
-            LogLevelChangeRequest request = objectMapper.readValue(payload.requestBody(), LogLevelChangeRequest.class);
-            assertThat(request.getConfiguredLevel()).isEqualTo("WARN");
-            assertThat(request.getTtlSeconds()).isNull();
+            LogLevelChangeRequest body =
+                    objectMapper.readValue(request.getBody().readUtf8(), LogLevelChangeRequest.class);
+            assertThat(body.getConfiguredLevel()).isEqualTo("WARN");
+            assertThat(body.getTtlSeconds()).isNull();
         }
     }
 
@@ -324,27 +300,22 @@ class LoggersMcpServerToolsTest {
     class ResetLoggingLevelByLoggerName {
 
         @Test
-        void shouldSendTheLoggerNameAsThePathVariableAndNoBody() {
+        void shouldSendTheLoggerNameAsThePathVariableAndNoBody() throws InterruptedException {
             // when.
-            subject.resetLoggingLevelByLoggerName(INSTANCE_ID, "com.example.app");
+            callTool(
+                    "resetLoggingLevelByLoggerName",
+                    Map.of("instanceId", INSTANCE_ID, "loggerName", "com.example.app"));
 
             // then.
-            ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
-            verify(endpointInvoker)
-                    .invokeNoValue(
-                            eq(InstanceId.of(INSTANCE_ID)),
-                            eq(ActuatorEndpoints.RESET_FOR_LOGGER),
-                            payloadCaptor.capture());
-
-            HttpPayload payload = payloadCaptor.getValue();
-            assertThat(payload.pathVariableValues()).containsExactly(Map.entry("name", "com.example.app"));
-            assertThat(payload.hasBody()).isFalse();
+            RecordedRequest request = takeRequest();
+            assertThat(request.getMethod()).isEqualTo("POST");
+            assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app/reset");
+            assertThat(request.getBodySize()).isZero();
         }
     }
 
     private void stubAllLoggers(LoggersFeed feed) {
-        when(endpointInvoker.invoke(eq(InstanceId.of(INSTANCE_ID)), eq(ActuatorEndpoints.GET_ALL_LOGGERS), any()))
-                .thenReturn(objectMapper.writeValueAsBytes(feed));
+        respondWith("/axelix-loggers", objectMapper.writeValueAsString(feed));
     }
 
     private static SingleLoggerProfile logger(String name, String configuredLevel, String effectiveLevel) {

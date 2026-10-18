@@ -19,46 +19,31 @@ package com.axelixlabs.axelix.master.mcp.tools;
 
 import java.util.Map;
 
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
-import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
-import com.axelixlabs.axelix.common.domain.http.HttpPayload;
-import com.axelixlabs.axelix.master.domain.InstanceId;
-import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
+import com.axelixlabs.axelix.master.mcp.McpEndpoints;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 /**
- * Unit tests for {@link CacheMcpServerTools}.
+ * Tests for {@link CacheMcpServerTools}.
  *
  * @author Nikita Kirillov
+ * @author Mikhail Polivakha
  */
-class CacheMcpServerToolsTest {
-
-    private static final String INSTANCE_ID = "instance-1";
-
-    private final EndpointInvoker endpointInvoker = mock(EndpointInvoker.class);
-
-    private final CacheMcpServerTools subject = new CacheMcpServerTools(endpointInvoker);
+class CacheMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
 
     @Test
-    void shouldSendTheCacheManagerAndCacheNameAsThePathVariables() {
+    void shouldSendTheCacheManagerAndCacheNameAsThePathVariables() throws InterruptedException {
         // when.
-        subject.clearSpecificCacheEntity(INSTANCE_ID, "cacheManager", "owners");
+        callTool(
+                McpEndpoints.CLEAR_SPECIFIC_CACHE_TOOL_NAME,
+                Map.of("instanceId", INSTANCE_ID, "cacheManager", "cacheManager", "cacheName", "owners"));
 
         // then.
-        ArgumentCaptor<HttpPayload> payloadCaptor = ArgumentCaptor.forClass(HttpPayload.class);
-        verify(endpointInvoker)
-                .invokeNoValue(
-                        eq(InstanceId.of(INSTANCE_ID)),
-                        eq(ActuatorEndpoints.CLEAR_SINGLE_CACHE),
-                        payloadCaptor.capture());
-
-        assertThat(payloadCaptor.getValue().pathVariableValues())
-                .containsOnly(Map.entry("cacheManagerName", "cacheManager"), Map.entry("cacheName", "owners"));
+        RecordedRequest request = takeRequest();
+        assertThat(request.getMethod()).isEqualTo("DELETE");
+        assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-caches/cacheManager/owners/clear");
     }
 }

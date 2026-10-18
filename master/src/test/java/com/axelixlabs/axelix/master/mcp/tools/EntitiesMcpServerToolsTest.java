@@ -19,12 +19,17 @@ package com.axelixlabs.axelix.master.mcp.tools;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.json.JsonMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 
 import com.axelixlabs.axelix.common.domain.insights.GarbageCollector;
 import com.axelixlabs.axelix.master.contract.metadata.Association;
@@ -33,34 +38,33 @@ import com.axelixlabs.axelix.master.contract.metadata.FlaggedAssociation;
 import com.axelixlabs.axelix.master.contract.metadata.JpaEntities;
 import com.axelixlabs.axelix.master.contract.metadata.MappedEntity;
 import com.axelixlabs.axelix.master.contract.metadata.PersistenceInsights;
-import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.SnapshotId;
 import com.axelixlabs.axelix.master.domain.Insights;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.JdkVendor;
-import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
+import com.axelixlabs.axelix.master.mcp.McpEndpoints;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link EntitiesMcpServerTools}.
+ * Tests for {@link EntitiesMcpServerTools}.
  *
  * @author Mikhail Polivakha
  */
-class EntitiesMcpServerToolsTest {
+class EntitiesMcpServerToolsTest extends AbstractMcpServerToolsTest {
 
     private static final String GROUP_ID = "com.example";
     private static final String ARTIFACT_ID = "orders-service";
 
-    private final DatabaseHistoricalApplicationSnapshotService snapshotService =
-            mock(DatabaseHistoricalApplicationSnapshotService.class);
+    @Autowired
+    private JdbcAggregateTemplate jdbcAggregateTemplate;
 
-    private final EntitiesMcpServerTools subject = new EntitiesMcpServerTools(new JsonMapper(), snapshotService);
+    @AfterEach
+    void deleteSnapshots() {
+        jdbcAggregateTemplate.deleteAll(HistoricalApplicationSnapshot.class);
+    }
 
     @Nested
     class WhenEntityNameNotSpecified {
@@ -74,7 +78,7 @@ class EntitiesMcpServerToolsTest {
             stubApplication(new JpaEntities().entities(List.of(order, customer)));
 
             // when.
-            String result = subject.getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
+            String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
 
             // then.
             assertThatJson(result).isArray().hasSize(2);
@@ -94,7 +98,7 @@ class EntitiesMcpServerToolsTest {
             stubApplication(new JpaEntities().entities(List.of(order, customer)));
 
             // when.
-            String result = subject.getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, "Order");
+            String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, "Order");
 
             // then.
             assertThatJson(result).node("name").isEqualTo("Order");
@@ -117,7 +121,7 @@ class EntitiesMcpServerToolsTest {
             stubApplication(new JpaEntities().entities(List.of(entity("Customer", "customers", 0, List.of()))));
 
             // when.
-            String result = subject.getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, "Order");
+            String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, "Order");
 
             // then.
             assertThat(result).contains("No entity named 'Order'");
@@ -130,12 +134,11 @@ class EntitiesMcpServerToolsTest {
         @Test
         void shouldLookUpApplicationByEmptyGroupId() {
             // given. an application registered with an empty group id (e.g. a Gradle service without 'group').
-            when(snapshotService.getCurrentRecord(ApplicationId.of("", ARTIFACT_ID)))
-                    .thenReturn(snapshot(
-                            new JpaEntities().entities(List.of(entity("Customer", "customers", 0, List.of())))));
+            jdbcAggregateTemplate.insert(snapshot(
+                    "", new JpaEntities().entities(List.of(entity("Customer", "customers", 0, List.of())))));
 
             // when. the groupId is sent as an empty string, as the tool instructs.
-            String result = subject.getApplicationEntitiesProfile("", ARTIFACT_ID, null);
+            String result = getApplicationEntitiesProfile("", ARTIFACT_ID, null);
 
             // then.
             assertThat(result).contains("Customer");
@@ -143,11 +146,8 @@ class EntitiesMcpServerToolsTest {
 
         @Test
         void shouldReturnMessageWhenApplicationNotFound() {
-            // given.
-            when(snapshotService.getCurrentRecord(any())).thenReturn(null);
-
-            // when.
-            String result = subject.getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
+            // when. no snapshot of the application is recorded.
+            String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
 
             // then.
             assertThat(result).contains("No application found");
@@ -159,7 +159,7 @@ class EntitiesMcpServerToolsTest {
             stubApplication(null);
 
             // when.
-            String result = subject.getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
+            String result = getApplicationEntitiesProfile(GROUP_ID, ARTIFACT_ID, null);
 
             // then.
             assertThat(result).contains("No entities map");
@@ -167,8 +167,15 @@ class EntitiesMcpServerToolsTest {
     }
 
     private void stubApplication(@Nullable JpaEntities jpaEntities) {
-        when(snapshotService.getCurrentRecord(ApplicationId.of(GROUP_ID, ARTIFACT_ID)))
-                .thenReturn(snapshot(jpaEntities));
+        jdbcAggregateTemplate.insert(snapshot(GROUP_ID, jpaEntities));
+    }
+
+    private String getApplicationEntitiesProfile(String groupId, String artifactId, @Nullable String entityName) {
+        Map<String, Object> arguments = new HashMap<>(Map.of("groupId", groupId, "artifactId", artifactId));
+        if (entityName != null) {
+            arguments.put("entityName", entityName);
+        }
+        return callTool(McpEndpoints.ENTITIES_PROFILE_TOOL_NAME, arguments);
     }
 
     private static MappedEntity entity(
@@ -187,9 +194,9 @@ class EntitiesMcpServerToolsTest {
                 .problems(List.of(problem));
     }
 
-    private static HistoricalApplicationSnapshot snapshot(@Nullable JpaEntities jpaEntities) {
+    private static HistoricalApplicationSnapshot snapshot(String groupId, @Nullable JpaEntities jpaEntities) {
         return new HistoricalApplicationSnapshot(
-                new SnapshotId(GROUP_ID, ARTIFACT_ID, LocalDate.now(ZoneOffset.UTC)),
+                new SnapshotId(groupId, ARTIFACT_ID, LocalDate.now(ZoneOffset.UTC)),
                 new Insights(
                         new Insights.HotSpot(
                                 new Insights.HotSpot.ProjectLeyden(false, false),

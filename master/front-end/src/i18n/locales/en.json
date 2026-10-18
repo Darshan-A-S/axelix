@@ -138,6 +138,15 @@
         "threadDump": "Thread Dump",
         "garbageCollector": "Garbage Collector"
     },
+    "UnavailableFeature": {
+        "notUsedTitle": "Not used by this application",
+        "notAvailableTitle": "Not available for this instance",
+        "caches": "Axelix found no <0>CacheManager</0> bean, so there are no caches to show.",
+        "scheduled-tasks": "Axelix found no <0>@Scheduled</0> methods, so there are no tasks to show.",
+        "entities-map": "Axelix found no JPA entities, so there is no map to show.",
+        "transactions": "Axelix found no <0>PlatformTransactionManager</0> bean, so there are no transactions to show.",
+        "dependency-analysis": "Its Axelix starter is older than 1.2, which does not report the dependencies."
+    },
     "Caches": {
         "clearAll": "Clear All Caches",
         "target": "Target",

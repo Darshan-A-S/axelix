@@ -16,6 +16,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 export { NoRequiredAuthorityTooltip } from "./NoRequiredAuthorityTooltip";
+export { UnavailableFeatureTooltip } from "./UnavailableFeatureTooltip";
 export { DashboardNoData } from "./Dashboard/DashboardNoData";
 export { DashboardCard } from "./Dashboard/DashboardCard";
 export { PagesFirstSection } from "./PagesFirstSection";

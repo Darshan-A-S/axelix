@@ -17,6 +17,7 @@
  */
 import type { JSX } from "react";
 
+import type { EInstanceFeature } from "../enums/instanceProfile.ts";
 import type { TLoginOption } from "../types/auth.ts";
 
 /**
@@ -197,4 +198,10 @@ export interface ISiderMenuItem {
      * Label displayed for the menu item.
      */
     label: string;
+
+    /**
+     * The feature the page behind this item needs. When the instance does not have it, the item is greyed out and
+     * explains why on hover, instead of opening an empty page.
+     */
+    feature?: EInstanceFeature;
 }

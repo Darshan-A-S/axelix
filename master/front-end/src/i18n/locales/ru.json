@@ -140,6 +140,15 @@
         "entitiesMap": "Карта сущностей",
         "garbageCollector": "Сборщик Мусора"
     },
+    "UnavailableFeature": {
+        "notUsedTitle": "Не используется этим приложением",
+        "notAvailableTitle": "Недоступно для этого инстанса",
+        "caches": "Axelix не нашёл бин <0>CacheManager</0>, поэтому кэшей нет.",
+        "scheduled-tasks": "Axelix не нашёл методов с <0>@Scheduled</0>, поэтому задач нет.",
+        "entities-map": "Axelix не нашёл JPA-сущностей, поэтому карты нет.",
+        "transactions": "Axelix не нашёл бин <0>PlatformTransactionManager</0>, поэтому транзакций нет.",
+        "dependency-analysis": "Его стартер Axelix старше 1.2 и не сообщает зависимости."
+    },
     "Caches": {
         "clearAll": "Очистить все кэши",
         "target": "Реализация",

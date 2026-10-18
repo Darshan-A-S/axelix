@@ -37,20 +37,36 @@ import {
     ThreadDumpIcon,
     TransactionIcon,
 } from "@/assets";
+import { UnavailableFeatureTooltip } from "@/components";
 import { EInstanceFeature, type ISiderMenuItem, type TMenuItem } from "@/models";
 
-const createMenuItems = (items: ISiderMenuItem[]): TMenuItem[] => {
-    return items.map(({ path, icon, label }) => ({
-        key: path,
-        icon: icon,
-        label: <Link to={path}>{label}</Link>,
-    }));
+const createMenuItems = (items: ISiderMenuItem[], availableFeatures: EInstanceFeature[] | null): TMenuItem[] => {
+    return items.map(({ path, icon, label, feature }) => {
+        // Unknown features (the profile is not loaded yet, or failed to load) never grey anything out
+        if (feature && availableFeatures && !availableFeatures.includes(feature)) {
+            return {
+                key: path,
+                icon: icon,
+                disabled: true,
+                label: <UnavailableFeatureTooltip feature={feature}>{label}</UnavailableFeatureTooltip>,
+            };
+        }
+
+        return {
+            key: path,
+            icon: icon,
+            label: <Link to={path}>{label}</Link>,
+        };
+    });
 };
 
+/**
+ * @param availableFeatures the features the instance has, or {@code null} while they are unknown.
+ */
 export const getInstanceItems = (
     instanceId: string,
     t: TFunction,
-    availableFeatures: EInstanceFeature[],
+    availableFeatures: EInstanceFeature[] | null,
 ): TMenuItem[] => {
     const basePath = `/instance/${instanceId}`;
 
@@ -70,17 +86,12 @@ export const getInstanceItems = (
             icon: <LoggersIcon />,
             label: t("Sider.loggers"),
         },
-        // The Dependency Analyzer is not available in every instance (older starters lack it), so we render the entry
-        // only when the instance profile lists the feature.
-        ...(availableFeatures.includes(EInstanceFeature.DEPENDENCY_ANALYSIS)
-            ? [
-                  {
-                      path: `${basePath}/dependencies`,
-                      icon: <DependenciesIcon />,
-                      label: t("Sider.dependenciesAnalyzer"),
-                  },
-              ]
-            : []),
+        {
+            path: `${basePath}/dependencies`,
+            icon: <DependenciesIcon />,
+            label: t("Sider.dependenciesAnalyzer"),
+            feature: EInstanceFeature.DEPENDENCY_ANALYSIS,
+        },
     ];
 
     const springMenuItemsData: ISiderMenuItem[] = [
@@ -103,6 +114,7 @@ export const getInstanceItems = (
             path: `${basePath}/scheduled-tasks`,
             icon: <ScheduledTasksIcon />,
             label: t("Sider.scheduledTasks"),
+            feature: EInstanceFeature.SCHEDULED_TASKS,
         },
         {
             path: `${basePath}/conditions`,
@@ -113,16 +125,19 @@ export const getInstanceItems = (
             path: `${basePath}/caches`,
             icon: <CachesIcon />,
             label: t("Sider.caches"),
+            feature: EInstanceFeature.CACHES,
         },
         {
             path: `${basePath}/transactional`,
             icon: <TransactionIcon />,
             label: t("Sider.transactionControl"),
+            feature: EInstanceFeature.TRANSACTIONS,
         },
         {
             path: `${basePath}/entities-map`,
             icon: <EntitiesMapIcon />,
             label: t("Sider.entitiesMap"),
+            feature: EInstanceFeature.ENTITIES_MAP,
         },
     ];
 
@@ -144,19 +159,19 @@ export const getInstanceItems = (
             key: "insights",
             icon: <InsightsIcon />,
             label: t("Sider.insights"),
-            children: createMenuItems(insightsMenuItemsData),
+            children: createMenuItems(insightsMenuItemsData, availableFeatures),
         },
         {
             key: "spring",
             icon: <SpringIcon />,
             label: "Spring Framework",
-            children: createMenuItems(springMenuItemsData),
+            children: createMenuItems(springMenuItemsData, availableFeatures),
         },
         {
             key: "JVM",
             icon: <JVMIcon />,
             label: "JVM",
-            children: createMenuItems(jvmMenuItemsData),
+            children: createMenuItems(jvmMenuItemsData, availableFeatures),
         },
     ];
 };

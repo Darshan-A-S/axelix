@@ -25,18 +25,24 @@ const t = ((key: string) => key) as unknown as TFunction;
 
 const DEPENDENCIES_PATH = "/instance/abc/dependencies";
 
-const insightsChildKeys = (features: EInstanceFeature[]): unknown[] => {
+const dependenciesEntry = (features: EInstanceFeature[] | null): { key: unknown; disabled?: boolean } | undefined => {
     const items = getInstanceItems("abc", t, features);
-    const insights = items.find((item) => item?.key === "insights") as { children: { key: unknown }[] };
-    return insights.children.map((child) => child.key);
+    const insights = items.find((item) => item?.key === "insights") as {
+        children: { key: unknown; disabled?: boolean }[];
+    };
+    return insights.children.find((child) => child.key === DEPENDENCIES_PATH);
 };
 
 describe("getInstanceItems dependency-analysis gating", () => {
-    it("shows the Dependency Analyzer entry when the instance supports the feature", () => {
-        expect(insightsChildKeys([EInstanceFeature.DEPENDENCY_ANALYSIS])).toContain(DEPENDENCIES_PATH);
+    it("enables the Dependency Analyzer entry when the instance has the feature", () => {
+        expect(dependenciesEntry([EInstanceFeature.DEPENDENCY_ANALYSIS])?.disabled).toBeFalsy();
     });
 
-    it("hides the Dependency Analyzer entry when the instance does not support the feature", () => {
-        expect(insightsChildKeys([])).not.toContain(DEPENDENCIES_PATH);
+    it("greys out the Dependency Analyzer entry when the instance does not have the feature", () => {
+        expect(dependenciesEntry([])?.disabled).toBe(true);
+    });
+
+    it("keeps the Dependency Analyzer entry enabled while the features are unknown", () => {
+        expect(dependenciesEntry(null)?.disabled).toBeFalsy();
     });
 });

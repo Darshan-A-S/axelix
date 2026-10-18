@@ -1,0 +1,4 @@
+/* antd forces no background on disabled items, but the greyed-out entries still react, since they explain themselves */
+.Menu :global(.ant-menu-item-disabled:hover) {
+    background-color: var(--axelix-grey-100) !important;
+}

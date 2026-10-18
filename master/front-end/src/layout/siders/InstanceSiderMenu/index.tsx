@@ -26,13 +26,16 @@ import { EInstanceFeature, type IInstanceProfileResponse } from "@/models";
 import { getInstanceProfile } from "@/services";
 import { getInstanceItems } from "@/utils";
 
+import styles from "./styles.module.css";
+
 export const InstanceSiderMenu = () => {
     const { t } = useTranslation();
 
     const { pathname } = useLocation();
     const { instanceId } = useParams();
 
-    const [features, setFeatures] = useState<EInstanceFeature[]>([]);
+    // null while unknown, so that nothing is greyed out before the profile arrives
+    const [features, setFeatures] = useState<EInstanceFeature[] | null>(null);
 
     useEffect(() => {
         if (!instanceId) {
@@ -40,11 +43,11 @@ export const InstanceSiderMenu = () => {
         }
 
         getInstanceProfile(instanceId)
-            .then((response: AxiosResponse<IInstanceProfileResponse>) => setFeatures(response.data.features ?? []))
-            // safe fallback in case of problems
+            .then((response: AxiosResponse<IInstanceProfileResponse>) => setFeatures(response.data.features))
+            // safe fallback in case of problems: keep every entry available rather than grey them all out
             .catch(() => {
                 console.warn(`The profile of instance '${instanceId}' is not available. Performing a safe fallback`);
-                setFeatures([]);
+                setFeatures(null);
             });
     }, [instanceId]);
 
@@ -52,6 +55,7 @@ export const InstanceSiderMenu = () => {
 
     return (
         <Menu
+            className={styles.Menu}
             mode="inline"
             items={items}
             selectedKeys={[pathname]}

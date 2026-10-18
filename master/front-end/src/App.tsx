@@ -51,6 +51,8 @@ export const App = () => {
             Menu: {
                 itemSelectedBg: palette.green[50],
                 itemSelectedColor: palette.green[700],
+                // Greyed-out entries of the features an instance does not have
+                itemDisabledColor: palette.grey[400],
             },
         },
     };

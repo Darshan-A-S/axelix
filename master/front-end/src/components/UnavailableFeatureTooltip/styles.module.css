@@ -1,0 +1,8 @@
+.Trigger {
+    display: block;
+}
+
+.Title {
+    font-weight: var(--axelix-font-weight-semibold);
+    color: var(--axelix-white);
+}

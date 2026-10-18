@@ -28,7 +28,7 @@ import com.axelixlabs.axelix.master.domain.Instance;
  * The {@link InstanceFeature features} the {@link Instance} itself reported to have. Starters older than 1.3 do not
  * detect their features, which is why the {@link Instance} holds this value as nullable.
  *
- * @param features the features detected in the instance, possibly empty.
+ * @param features the features detected in the instance, possibly empty, although highly unlikely.
  *
  * @author Mikhail Polivakha
  */

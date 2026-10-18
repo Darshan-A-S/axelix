@@ -25,9 +25,9 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.InstanceFeature;
  * Detects which {@link InstanceFeature features} the current instance has, so that Axelix Master can tell the UI
  * which pages make sense for it. The concrete implementation is expected to be contributed by a given starter.
  * <p>
- * The detection is performed once the application is ready, and reflects the infrastructure rather than its content.
+ * The detection is performed once the application is ready, and reflects the existing infrastructure rather than its content.
  * For instance, an instance with a cache manager has the caches feature even if no cache has been created yet, since
- * caches are often created lazily, on the first access.
+ * caches may be created lazily, on the first access.
  *
  * @author Mikhail Polivakha
  */

@@ -351,9 +351,12 @@ public class InstanceSelfRegistrationInternalApiTest {
 
     @Test
     void shouldStoreTheFeaturesDetectedByTheInstance() {
-        // given.
-        String requestWithDetectedFeatures = JSON_REQUEST.replace(
-                "\"insights\" : {", "\"detectedFeatures\" : [ \"caches\", \"entities-map\" ],\n\"insights\" : {");
+        // given. only the starters since 1.3 detect their features.
+        String requestWithDetectedFeatures = JSON_REQUEST
+                .replace("\"version\" : \"1.0.0-SNAPSHOT\"", "\"version\" : \"1.3.0\"")
+                .replace(
+                        "\"insights\" : {",
+                        "\"detectedFeatures\" : [ \"caches\", \"entities-map\" ],\n\"insights\" : {");
 
         // when.
         ResponseEntity<Void> response = restTemplate

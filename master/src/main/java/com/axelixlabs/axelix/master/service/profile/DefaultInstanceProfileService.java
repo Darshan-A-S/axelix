@@ -20,6 +20,8 @@ package com.axelixlabs.axelix.master.service.profile;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.jspecify.annotations.NonNull;
+
 import org.springframework.stereotype.Service;
 
 import com.axelixlabs.axelix.common.utils.SemanticVersion;
@@ -60,7 +62,7 @@ public class DefaultInstanceProfileService implements InstanceProfileService {
         int siblingsCount = instanceRegistry.findSiblings(instanceId).size() - 1;
 
         return new InstanceProfileResponse(
-                instancesToShortProfileConverter.convertInternal(instance),
+                instancesToShortProfileConverter.convert(instance),
                 siblingsCount,
                 resolveFeatures(instance).stream()
                         .map(InstanceFeature::getValue)
@@ -74,6 +76,13 @@ public class DefaultInstanceProfileService implements InstanceProfileService {
             return detectedFeatures.features();
         }
 
+        return inferAvailableFeatures(instance);
+    }
+
+    // in 1.6, once every instance in the compatibility window reports the features in use,
+    // we should remove that method and rely solely on the state reported by starters (i.e. the DetectedFeatures).
+    @Deprecated(forRemoval = true, since = "1.3")
+    private static @NonNull Set<InstanceFeature> inferAvailableFeatures(Instance instance) {
         // Starters older than 1.3 do not detect their features. Since we cannot tell whether such an instance
         // has, say, caches, we assume that it has all of them - at worst, the corresponding page turns out empty.
         Set<InstanceFeature> assumed = EnumSet.of(

@@ -124,7 +124,7 @@ class InstanceProfileApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldNotAssumeDependencyAnalysis_whenTheStarterIsOlderThanItsEndpoint() {
         // given.
-        String instanceId = register("1.1.4", null);
+        String instanceId = register("1.1.0", null);
 
         // when.
         ResponseEntity<String> response = restTemplate.asViewer().getForEntity(PROFILE_PATH, String.class, instanceId);

@@ -325,7 +325,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         }
 
         @Test
-        void shouldReportAnErrorWhenSomeOfTheInstancesFailedToUpdate() throws InterruptedException {
+        void shouldReportTheInstancesThatFailedToChangeTheLevel() throws InterruptedException {
             // given.
             anotherInstance.respondWithBadRequest("/axelix-loggers/logger/com.example.app/change-level");
 
@@ -343,7 +343,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
             assertThat(result)
                     .isEqualTo("Error invoking method: changeLoggingLevelByLoggerName" + System.lineSeparator()
-                            + "Some instances failed to update");
+                            + "The operation has failed for the following instances: instance-2");
 
             // and. the instance that succeeded still has the change applied.
             assertLevelChange(
@@ -392,6 +392,25 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             // and.
             assertReset(instance.takeRequest());
             assertReset(anotherInstance.takeRequest());
+        }
+
+        @Test
+        void shouldReportTheInstancesThatFailedToResetTheLevel() throws InterruptedException {
+            // given.
+            anotherInstance.respondWithBadRequest("/axelix-loggers/logger/com.example.app/reset");
+
+            // when.
+            String result = callToolExpectingError(
+                    "resetLoggingLevelByLoggerName",
+                    Map.of("instanceIds", List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID), "loggerName", "com.example.app"));
+
+            // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+            assertThat(result)
+                    .isEqualTo("Error invoking method: resetLoggingLevelByLoggerName" + System.lineSeparator()
+                            + "The operation has failed for the following instances: instance-2");
+
+            // and. the instance that succeeded still has the level reset.
+            assertReset(instance.takeRequest());
         }
 
         private static void assertReset(RecordedRequest request) {

@@ -72,7 +72,7 @@ class CacheMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
     }
 
     @Test
-    void shouldReportAnErrorWhenSomeOfTheInstancesFailedToClearTheCache() throws InterruptedException {
+    void shouldReportTheInstancesThatFailedToClearTheSpecificCache() throws InterruptedException {
         // given.
         anotherInstance.respondWithBadRequest("/axelix-caches/cacheManager/owners/clear");
 
@@ -90,10 +90,29 @@ class CacheMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
         assertThat(result)
                 .isEqualTo("Error invoking method: clearSpecificCacheEntity" + System.lineSeparator()
-                        + "Some instances failed to update");
+                        + "The operation has failed for the following instances: instance-2");
 
         // and. the instance that succeeded still has the cache cleared.
         assertCacheClearing(instance.takeRequest(), "/axelix-caches/cacheManager/owners/clear");
+    }
+
+    @Test
+    void shouldReportTheInstancesThatFailedToClearAllCaches() throws InterruptedException {
+        // given.
+        anotherInstance.respondWithBadRequest("/axelix-caches/clear");
+
+        // when.
+        String result = callToolExpectingError(
+                McpEndpoints.CLEAR_ALL_CACHES_TOOL_NAME,
+                Map.of("instanceIds", List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID)));
+
+        // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+        assertThat(result)
+                .isEqualTo("Error invoking method: clearAllCaches" + System.lineSeparator()
+                        + "The operation has failed for the following instances: instance-2");
+
+        // and. the instance that succeeded still has the caches cleared.
+        assertCacheClearing(instance.takeRequest(), "/axelix-caches/clear");
     }
 
     private static void assertCacheClearing(RecordedRequest request, String path) {

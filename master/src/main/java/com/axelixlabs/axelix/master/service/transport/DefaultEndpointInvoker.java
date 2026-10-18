@@ -17,6 +17,7 @@
  */
 package com.axelixlabs.axelix.master.service.transport;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -82,18 +83,18 @@ public class DefaultEndpointInvoker implements EndpointInvoker {
 
         EndpointProber<?> prober = getEndpointProber(endpoint);
 
-        int failures = 0;
+        List<String> failedInstanceIds = new ArrayList<>();
 
         for (String instanceId : uniqueInstanceIds) {
             try {
                 prober.invoke(InstanceId.of(instanceId), payload);
             } catch (EndpointInvocationException | BadRequestException | InstanceNotFoundException e) {
-                failures++;
+                failedInstanceIds.add(instanceId);
             }
         }
 
-        if (failures > 0) {
-            throw new PartiallyUpdatedException("Some instances failed to update");
+        if (!failedInstanceIds.isEmpty()) {
+            throw new PartiallyUpdatedException(failedInstanceIds);
         }
     }
 

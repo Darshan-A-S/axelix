@@ -17,6 +17,8 @@
  */
 package com.axelixlabs.axelix.master.service.transport;
 
+import java.util.List;
+
 /**
  * Indicates that a bulk endpoint invocation completed only for a subset of requested instances.
  *
@@ -24,7 +26,17 @@ package com.axelixlabs.axelix.master.service.transport;
  */
 public class PartiallyUpdatedException extends RuntimeException {
 
-    public PartiallyUpdatedException(String message) {
-        super(message);
+    private final List<String> failedInstanceIds;
+
+    /**
+     * @param failedInstanceIds the IDs of the instances for which the invocation has failed
+     */
+    public PartiallyUpdatedException(List<String> failedInstanceIds) {
+        super("The operation has failed for the following instances: " + String.join(", ", failedInstanceIds));
+        this.failedInstanceIds = List.copyOf(failedInstanceIds);
+    }
+
+    public List<String> failedInstanceIds() {
+        return failedInstanceIds;
     }
 }

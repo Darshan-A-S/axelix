@@ -283,7 +283,10 @@ public class DefaultEndpointInvokerTest {
                 List.of("successful-instance", "failed-instance"), METHOD_INVOKE_NO_VALUE, NoHttpPayload.INSTANCE);
 
         // then.
-        assertThatThrownBy(callable).isInstanceOf(PartiallyUpdatedException.class);
+        assertThatThrownBy(callable)
+                .isInstanceOfSatisfying(
+                        PartiallyUpdatedException.class,
+                        e -> assertThat(e.failedInstanceIds()).containsExactly("failed-instance"));
         assertThat(prober.invokedInstanceIds()).containsExactly("successful-instance", "failed-instance");
     }
 
@@ -299,7 +302,10 @@ public class DefaultEndpointInvokerTest {
                 List.of("first-instance", "second-instance"), METHOD_INVOKE_NO_VALUE, NoHttpPayload.INSTANCE);
 
         // then.
-        assertThatThrownBy(callable).isInstanceOf(PartiallyUpdatedException.class);
+        assertThatThrownBy(callable)
+                .isInstanceOfSatisfying(
+                        PartiallyUpdatedException.class,
+                        e -> assertThat(e.failedInstanceIds()).containsExactly("first-instance", "second-instance"));
         assertThat(prober.invokedInstanceIds()).containsExactly("first-instance", "second-instance");
     }
 

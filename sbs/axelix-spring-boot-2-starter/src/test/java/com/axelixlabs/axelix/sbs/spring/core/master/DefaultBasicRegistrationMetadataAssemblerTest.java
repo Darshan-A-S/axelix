@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.sbs.spring.core.master;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -97,7 +98,8 @@ class DefaultBasicRegistrationMetadataAssemblerTest {
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    axelixInfoProperties);
+                    axelixInfoProperties,
+                    () -> Set.of());
         }
     }
 

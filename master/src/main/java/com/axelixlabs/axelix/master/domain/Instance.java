@@ -25,6 +25,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
+
 /**
  * @param id                      The id of the instance. This id must be unique among all the other instances that are
  *                                managed by this Axelix Master.
@@ -44,6 +46,8 @@ import org.springframework.data.relational.core.mapping.Table;
  * @param status                  The status of the given instance from the Master standpoint.
  * @param memoryUsage             Memory usage of the given instance
  * @param actuatorUrl             The URL of the actuator root, e.g. {@code https://my-app:6061/actuator}
+ * @param detectedFeatures        The features the instance reported to have. {@code null} when the instance does not
+ *                                detect its features (starters older than 1.3), so they are unknown.
  */
 @Table("instances")
 public record Instance(
@@ -62,7 +66,8 @@ public record Instance(
         @Nullable Instant latestHeartBeat,
         InstanceStatus status,
         @Embedded.Empty MemoryUsage memoryUsage,
-        String actuatorUrl) {
+        String actuatorUrl,
+        @Nullable DetectedFeatures detectedFeatures) {
 
     public Instance copy(InstanceStatus instanceStatus) {
         return new Instance(
@@ -81,7 +86,8 @@ public record Instance(
                 this.latestHeartBeat,
                 instanceStatus,
                 this.memoryUsage,
-                this.actuatorUrl);
+                this.actuatorUrl,
+                this.detectedFeatures);
     }
 
     public enum InstanceStatus {

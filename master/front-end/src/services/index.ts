@@ -21,7 +21,7 @@ export * from "./dashboard/dashboardLanguages";
 export * from "./scheduledTasks";
 export * from "./transactional";
 export * from "./dependencies";
-export * from "./features";
+export * from "./instanceProfile";
 export * from "./environment";
 export * from "./configProps";
 export * from "./threadDump";

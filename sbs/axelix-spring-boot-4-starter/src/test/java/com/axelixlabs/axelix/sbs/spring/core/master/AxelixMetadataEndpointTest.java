@@ -69,6 +69,7 @@ class AxelixMetadataEndpointTest extends AbstractMasterSharedContextTest {
                 "kotlin" : null
               },
               "healthStatus" : "UP",
+              "detectedFeatures" : [ "caches", "scheduled-tasks" ],
               "memoryDetails" : {
                 "heap" : "#{json-unit.ignore}"
               },

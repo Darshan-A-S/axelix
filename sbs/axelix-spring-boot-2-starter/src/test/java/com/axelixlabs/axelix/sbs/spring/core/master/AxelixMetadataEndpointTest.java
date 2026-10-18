@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.sbs.spring.core.master;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 
 import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthTestConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
+import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestRestTemplateBuilder;
@@ -91,7 +93,8 @@ class AxelixMetadataEndpointTest {
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    axelixInfoProperties);
+                    axelixInfoProperties,
+                    () -> EnumSet.of(InstanceFeature.CACHES, InstanceFeature.SCHEDULED_TASKS));
         }
 
         @Bean
@@ -129,6 +132,7 @@ class AxelixMetadataEndpointTest {
                         + "    \"kotlin\" : null\n"
                         + "  },\n"
                         + "  \"healthStatus\" : \"UP\",\n"
+                        + "  \"detectedFeatures\" : [ \"caches\", \"scheduled-tasks\" ],\n"
                         + "  \"memoryDetails\" : {\n"
                         + "    \"heap\" : \"#{json-unit.ignore}\"\n"
                         + "  },\n"

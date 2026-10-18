@@ -15,10 +15,8 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+import { apiFetch } from "@/api";
 
-/**
- * The stable, wire-level ids of the version-gated Axelix features the UI cares about.
- */
-export enum EInstanceFeature {
-    DEPENDENCY_ANALYSIS = "dependency-analysis",
-}
+export const getInstanceProfile = (instanceId: string) => {
+    return apiFetch.get(`instances/${instanceId}/profile`);
+};

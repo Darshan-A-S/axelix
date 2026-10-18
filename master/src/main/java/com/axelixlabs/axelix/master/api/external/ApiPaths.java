@@ -373,11 +373,12 @@ public final class ApiPaths {
         public static final String TOOLS_LIST = "/mcp/tools-feed";
     }
 
-    public static final class InstanceFeaturesApi {
+    public static final class InstanceProfileApi {
 
         /**
-         * Endpoint to resolve which features are available for a given application instance.
+         * Endpoint to retrieve the profile of a given application instance: the instance itself, the number of its
+         * siblings and the features it has.
          */
-        public static final String INSTANCE_ID = "/features/{instanceId}";
+        public static final String PROFILE = "/instances/{instanceId}/profile";
     }
 }

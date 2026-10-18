@@ -273,7 +273,8 @@ public class WallboardApiTest extends AbstractProtectedEndpointTest {
                     base.latestHeartBeat(),
                     base.status(),
                     base.memoryUsage(),
-                    base.actuatorUrl());
+                    base.actuatorUrl(),
+                    null);
         }
     }
 

@@ -81,7 +81,8 @@ class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
                         "latestHeartBeat": "${json-unit.any-string}",
                         "status": "UP",
                         "memoryUsage": { "heap": 1000.0 },
-                        "actuatorUrl": "http://example.com"
+                        "actuatorUrl": "http://example.com",
+                        "detectedFeatures": null
                       },
                       {
                         "id": { "instanceId": "instance-2" },
@@ -99,7 +100,8 @@ class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
                         "latestHeartBeat": "${json-unit.any-string}",
                         "status": "UP",
                         "memoryUsage": { "heap": 1000.0 },
-                        "actuatorUrl": "http://example.com"
+                        "actuatorUrl": "http://example.com",
+                        "detectedFeatures": null
                       }
                     ]
                     """);
@@ -133,7 +135,8 @@ class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
                         "latestHeartBeat": "${json-unit.any-string}",
                         "status": "UP",
                         "memoryUsage": { "heap": 1000.0 },
-                        "actuatorUrl": "http://example.com"
+                        "actuatorUrl": "http://example.com",
+                        "detectedFeatures": null
                       }
                     ]
                     """);
@@ -168,7 +171,8 @@ class WallboardMcpServerToolsTest extends AbstractMcpServerToolsTest {
                         "latestHeartBeat": "${json-unit.any-string}",
                         "status": "UP",
                         "memoryUsage": { "heap": 1000.0 },
-                        "actuatorUrl": "http://example.com"
+                        "actuatorUrl": "http://example.com",
+                        "detectedFeatures": null
                       }
                     ]
                     """);

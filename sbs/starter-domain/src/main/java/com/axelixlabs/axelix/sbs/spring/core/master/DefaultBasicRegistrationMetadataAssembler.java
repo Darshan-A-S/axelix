@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.sbs.spring.core.master;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.util.ArrayList;
 
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.BasicRegistrationMetadata;
@@ -42,19 +43,22 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
     private final LibraryInformationProvider libraryInformationProvider;
     private final InsightsInfoProvider insightsInfoProvider;
     private final AxelixInfoProperties axelixInfoProperties;
+    private final InstanceFeaturesDetector instanceFeaturesDetector;
 
     public DefaultBasicRegistrationMetadataAssembler(
             HealthDetectionFunction healthDetectionFunction,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider,
-            AxelixInfoProperties axelixInfoProperties) {
+            AxelixInfoProperties axelixInfoProperties,
+            InstanceFeaturesDetector instanceFeaturesDetector) {
 
         this.healthDetectionFunction = healthDetectionFunction;
         this.axelixVersionDiscoverer = axelixVersionDiscoverer;
         this.libraryInformationProvider = libraryInformationProvider;
         this.insightsInfoProvider = insightsInfoProvider;
         this.axelixInfoProperties = axelixInfoProperties;
+        this.instanceFeaturesDetector = instanceFeaturesDetector;
     }
 
     @Override
@@ -72,7 +76,8 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
                 .healthStatus(healthDetectionFunction.get())
                 .memoryDetails(new MemoryDetails()
                         .heap(memoryMXBean.getHeapMemoryUsage().getUsed()))
-                .insights(insightsInfoProvider.getInsight());
+                .insights(insightsInfoProvider.getInsight())
+                .detectedFeatures(new ArrayList<>(instanceFeaturesDetector.detect()));
     }
 
     private SoftwareVersions buildSoftwareVersionInUse() {

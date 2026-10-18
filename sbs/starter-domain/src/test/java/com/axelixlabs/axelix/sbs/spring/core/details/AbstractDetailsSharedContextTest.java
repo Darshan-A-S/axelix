@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.sbs.spring.core.details;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
@@ -145,7 +146,8 @@ abstract class AbstractDetailsSharedContextTest {
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    axelixInfoProperties);
+                    axelixInfoProperties,
+                    () -> Set.of());
         }
     }
 }

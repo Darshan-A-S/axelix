@@ -49,7 +49,7 @@ val contractSources = fileTree("$rootDir/common/src/main/resources/contract") { 
                 globalProperties.set(mapOf("models" to ownModel, "modelDocs" to "false", "modelTests" to "false"))
                 importMappings.set(contracts.modelBasePackage.map { basePackage ->
                     listOf(
-                        "BasicRegistrationMetadata", "SoftwareVersions", "MemoryDetails", "HealthStatus", "GarbageCollector",
+                        "BasicRegistrationMetadata", "SoftwareVersions", "MemoryDetails", "HealthStatus", "InstanceFeature", "GarbageCollector",
                         "Insights", "HotSpotInsights", "InsightFeature", "ScheduledTaskExecution", "PersistenceInsights",
                         "TransactionAggregatedProfile", "TransactionOrigin", "TransactionalKey", "ExecutionStats",
                         "CountedLazyLoadingTarget", "LazyLoadingTarget", "ExternalCallInsight", "TypeExternalCall",

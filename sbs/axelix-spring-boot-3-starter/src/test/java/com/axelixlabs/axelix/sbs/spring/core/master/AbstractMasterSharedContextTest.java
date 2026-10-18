@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.sbs.spring.core.master;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.HealthEndpoint;
@@ -33,6 +34,7 @@ import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.Main;
 import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthTestConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
+import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.sbs.spring.core.master.AbstractMasterSharedContextTest.SharedConfig;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
@@ -99,7 +101,8 @@ abstract class AbstractMasterSharedContextTest {
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    axelixInfoProperties);
+                    axelixInfoProperties,
+                    () -> EnumSet.of(InstanceFeature.CACHES, InstanceFeature.SCHEDULED_TASKS));
         }
     }
 }

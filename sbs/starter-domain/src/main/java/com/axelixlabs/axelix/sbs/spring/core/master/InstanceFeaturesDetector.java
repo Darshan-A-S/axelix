@@ -15,26 +15,26 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.service.features;
+package com.axelixlabs.axelix.sbs.spring.core.master;
 
-import com.axelixlabs.axelix.master.api.external.response.features.InstanceFeaturesResponse;
-import com.axelixlabs.axelix.master.domain.InstanceId;
-import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
+import java.util.Set;
+
+import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.InstanceFeature;
 
 /**
- * Resolves the set of features available for a managed instance.
+ * Detects which {@link InstanceFeature features} the current instance has, so that Axelix Master can tell the UI
+ * which pages make sense for it. The concrete implementation is expected to be contributed by a given starter.
+ * <p>
+ * The detection is performed once the application is ready, and reflects the infrastructure rather than its content.
+ * For instance, an instance with a cache manager has the caches feature even if no cache has been created yet, since
+ * caches are often created lazily, on the first access.
  *
  * @author Mikhail Polivakha
  */
-public interface InstanceFeatureAvailabilityService {
+public interface InstanceFeaturesDetector {
 
     /**
-     * Resolves the features available for the given instance.
-     *
-     * @param instanceId the id of the instance to resolve the features for.
-     * @return the features available for the instance.
-     *
-     * @throws InstanceNotFoundException when the instance is not known to this Axelix Master.
+     * @return the features the current instance has.
      */
-    InstanceFeaturesResponse resolveFeatures(InstanceId instanceId);
+    Set<InstanceFeature> detect();
 }

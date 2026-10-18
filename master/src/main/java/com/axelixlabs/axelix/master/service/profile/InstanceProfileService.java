@@ -15,8 +15,24 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import { apiFetch } from "@/api";
+package com.axelixlabs.axelix.master.service.profile;
 
-export const getInstanceFeatures = (instanceId: string) => {
-    return apiFetch.get(`features/${instanceId}`);
-};
+import com.axelixlabs.axelix.master.api.external.response.profile.InstanceProfileResponse;
+import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
+
+/**
+ * Assembles the profile of a managed instance.
+ *
+ * @author Mikhail Polivakha
+ */
+public interface InstanceProfileService {
+
+    /**
+     * @param instanceId the id of the instance to assemble the profile for.
+     * @return the profile of the instance.
+     *
+     * @throws InstanceNotFoundException when the instance is not known to this Axelix Master.
+     */
+    InstanceProfileResponse getProfile(InstanceId instanceId);
+}

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -160,7 +161,8 @@ class DefaultHeartBeatMetadataAssemblerTest {
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    axelixInfoProperties);
+                    axelixInfoProperties,
+                    () -> Set.of());
         }
     }
 

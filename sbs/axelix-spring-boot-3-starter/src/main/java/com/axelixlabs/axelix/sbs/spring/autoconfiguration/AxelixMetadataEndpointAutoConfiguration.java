@@ -38,8 +38,10 @@ import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.AxelixMetadataEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.master.BasicRegistrationMetadataAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultBasicRegistrationMetadataAssembler;
+import com.axelixlabs.axelix.sbs.spring.core.master.DefaultInstanceFeaturesDetector;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultOpenSessionInViewStateProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.HealthDetectionFunction;
+import com.axelixlabs.axelix.sbs.spring.core.master.InstanceFeaturesDetector;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.OpenSessionInViewStateProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.DefaultInsightsInfoProvider;
@@ -107,19 +109,30 @@ public class AxelixMetadataEndpointAutoConfiguration {
     }
 
     @Bean
+    public InstanceFeaturesDetector instanceFeaturesDetector(
+            ConfigurableApplicationContext applicationContext,
+            ObjectProvider<JpaEntitiesProfileProvider> entitiesMapProvider) {
+        return new DefaultInstanceFeaturesDetector(
+                applicationContext.getBeanFactory(),
+                entitiesMapProvider.getIfAvailable(NoOpJpaEntitiesProfileProvider::new));
+    }
+
+    @Bean
     public BasicRegistrationMetadataAssembler serviceMetadataAssembler(
             HealthDetectionFunction healthDetectionFunction,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider,
-            AxelixInfoProperties axelixInfoProperties) {
+            AxelixInfoProperties axelixInfoProperties,
+            InstanceFeaturesDetector instanceFeaturesDetector) {
 
         return new DefaultBasicRegistrationMetadataAssembler(
                 healthDetectionFunction,
                 axelixVersionDiscoverer,
                 libraryInformationProvider,
                 insightsInfoProvider,
-                axelixInfoProperties);
+                axelixInfoProperties,
+                instanceFeaturesDetector);
     }
 
     @Bean

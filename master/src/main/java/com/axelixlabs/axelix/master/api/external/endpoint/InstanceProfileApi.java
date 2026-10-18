@@ -22,28 +22,27 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
-import com.axelixlabs.axelix.master.api.external.response.features.InstanceFeaturesResponse;
+import com.axelixlabs.axelix.master.api.external.response.profile.InstanceProfileResponse;
 import com.axelixlabs.axelix.master.domain.InstanceId;
-import com.axelixlabs.axelix.master.service.features.InstanceFeatureAvailabilityService;
+import com.axelixlabs.axelix.master.service.profile.InstanceProfileService;
 
 /**
- * The API for resolving which features are available for a managed instance, that Axelix Master UI would care about.
- * <p>
- * The front-end needs it so it can render only the features the instance's supports.
+ * The API for the profile of a managed instance, which the front-end renders the instance view around: the
+ * instance itself, its siblings and the features it has.
  *
  * @author Mikhail Polivakha
  */
 @ExternalApiRestController
-public class InstanceFeaturesApi {
+public class InstanceProfileApi {
 
-    private final InstanceFeatureAvailabilityService instanceFeatureAvailabilityService;
+    private final InstanceProfileService instanceProfileService;
 
-    public InstanceFeaturesApi(InstanceFeatureAvailabilityService instanceFeatureAvailabilityService) {
-        this.instanceFeatureAvailabilityService = instanceFeatureAvailabilityService;
+    public InstanceProfileApi(InstanceProfileService instanceProfileService) {
+        this.instanceProfileService = instanceProfileService;
     }
 
-    @GetMapping(path = ApiPaths.InstanceFeaturesApi.INSTANCE_ID)
-    public InstanceFeaturesResponse getFeatures(@PathVariable("instanceId") String instanceId) {
-        return instanceFeatureAvailabilityService.resolveFeatures(InstanceId.of(instanceId));
+    @GetMapping(path = ApiPaths.InstanceProfileApi.PROFILE)
+    public InstanceProfileResponse getProfile(@PathVariable("instanceId") String instanceId) {
+        return instanceProfileService.getProfile(InstanceId.of(instanceId));
     }
 }

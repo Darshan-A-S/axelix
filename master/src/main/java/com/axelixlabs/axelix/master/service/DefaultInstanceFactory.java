@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -31,12 +32,14 @@ import org.springframework.util.StringUtils;
 
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.contract.metadata.HealthStatus;
+import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.Instance.InstanceStatus;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
+import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
 
 /**
  * Default implementation {@link InstanceFactory}.
@@ -74,7 +77,14 @@ public class DefaultInstanceFactory implements InstanceFactory {
                 latestHeartBeat,
                 convertServiceStatus(metadata.getHealthStatus()),
                 new MemoryUsage(metadata.getMemoryDetails().getHeap()),
-                instanceActuatorUrl);
+                instanceActuatorUrl,
+                convertDetectedFeatures(metadata.getDetectedFeatures()));
+    }
+
+    @Nullable
+    private DetectedFeatures convertDetectedFeatures(@Nullable List<InstanceFeature> features) {
+        // Starters older than 1.3 do not detect their features at all
+        return features != null ? DetectedFeatures.of(features) : null;
     }
 
     private ApplicationId resolveApplicationId(String instanceId, BasicRegistrationMetadata metadata) {

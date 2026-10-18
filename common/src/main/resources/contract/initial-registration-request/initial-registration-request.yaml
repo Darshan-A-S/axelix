@@ -145,6 +145,17 @@ components:
           description: The insight information discovered for the given service instance.
           x-axelix-introduced-in: 1.3.0
           $ref: '#/components/schemas/Insights'
+        detectedFeatures:
+          # Nullable, so the generated models default it to null rather than to an empty list: an absent
+          # value means "unknown", which is not the same as "no features".
+          type: [array, 'null']
+          description: >-
+            The features detected in the given instance (e.g. 'caches' when it has a cache manager).
+            Absent when the instance does not detect its features (older agents) - Axelix Master then
+            assumes that all the features are present.
+          x-axelix-introduced-in: 1.3.0
+          items:
+            $ref: '#/components/schemas/InstanceFeature'
     SoftwareVersions:
       type: object
       description: Software versions information.
@@ -198,6 +209,19 @@ components:
         - UP
         - DOWN
         - UNKNOWN
+    InstanceFeature:
+      type: string
+      description: >-
+        A feature of a managed instance that the Axelix UI renders only when the instance has it.
+        An enum is safe here despite the starter being the producer: Axelix Master is never older
+        than the starter, so it always knows every constant a starter may send. Adding a constant is
+        therefore backward compatible, older starters just never send it.
+      enum:
+        - caches
+        - scheduled-tasks
+        - entities-map
+        - transactions
+        - dependency-analysis
     GarbageCollector:
       type: string
       description: Garbage collector used by a managed JVM service instance.

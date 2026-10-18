@@ -90,7 +90,8 @@ class DatabaseInstanceRegistryTest {
                 instant,
                 Instance.InstanceStatus.UP,
                 new MemoryUsage(1234d),
-                "Http://localhost:8080/actuator");
+                "Http://localhost:8080/actuator",
+                null);
 
         // when.
         instanceRegistry.register(instance);
@@ -127,7 +128,8 @@ class DatabaseInstanceRegistryTest {
                 instant,
                 Instance.InstanceStatus.UP,
                 new MemoryUsage(1234d),
-                "Http://localhost:8080/actuator");
+                "Http://localhost:8080/actuator",
+                null);
         instanceRegistry.register(instance);
 
         // when.
@@ -147,7 +149,8 @@ class DatabaseInstanceRegistryTest {
                 Instant.now(),
                 Instance.InstanceStatus.DOWN,
                 new MemoryUsage(1200d),
-                instance.actuatorUrl());
+                instance.actuatorUrl(),
+                null);
 
         instanceRegistry.register(updated);
 
@@ -338,6 +341,7 @@ class DatabaseInstanceRegistryTest {
                 base.latestHeartBeat(),
                 base.status(),
                 base.memoryUsage(),
-                base.actuatorUrl());
+                base.actuatorUrl(),
+                null);
     }
 }

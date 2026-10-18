@@ -70,9 +70,8 @@ export const getInstanceItems = (
             icon: <LoggersIcon />,
             label: t("Sider.loggers"),
         },
-        // The Dependency Analyzer relies on the /axelix-dependencies actuator endpoint, which only exists in starters
-        // recent enough to expose it. Master resolves that per instance, so we render the entry only when it reports
-        // the feature as available - older instances would otherwise 404 on the request.
+        // The Dependency Analyzer is not available in every instance (older starters lack it), so we render the entry
+        // only when the instance profile lists the feature.
         ...(availableFeatures.includes(EInstanceFeature.DEPENDENCY_ANALYSIS)
             ? [
                   {

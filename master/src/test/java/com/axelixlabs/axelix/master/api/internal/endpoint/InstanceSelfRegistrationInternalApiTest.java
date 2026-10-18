@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.master.api.internal.endpoint;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -43,6 +44,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.common.domain.insights.GarbageCollector;
+import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.contract.metadata.TransactionOrigin;
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
@@ -52,6 +54,7 @@ import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
+import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.CapturingIamWebInterceptor;
 import com.axelixlabs.axelix.master.utils.CycloneDxDocuments;
@@ -247,6 +250,8 @@ public class InstanceSelfRegistrationInternalApiTest {
             assertThat(instance.status()).isEqualTo(Instance.InstanceStatus.UP);
             assertThat(instance.memoryUsage().heap()).isEqualTo(12000.0);
             assertThat(instance.actuatorUrl()).isEqualTo("http://localhost:8080/actuator");
+            // the request does not carry the detected features, as the starters older than 1.3 do
+            assertThat(instance.detectedFeatures()).isNull();
         });
 
         var snapshotId = new SnapshotId("org.springframework.samples", "petclinic", LocalDate.now(ZoneOffset.UTC));
@@ -342,6 +347,26 @@ public class InstanceSelfRegistrationInternalApiTest {
 
         // and then.
         assertThat(instanceRegistry.get(InstanceId.of(TEST_INSTANCE_ID))).isEmpty();
+    }
+
+    @Test
+    void shouldStoreTheFeaturesDetectedByTheInstance() {
+        // given.
+        String requestWithDetectedFeatures = JSON_REQUEST.replace(
+                "\"insights\" : {", "\"detectedFeatures\" : [ \"caches\", \"entities-map\" ],\n\"insights\" : {");
+
+        // when.
+        ResponseEntity<Void> response = restTemplate
+                .withRoleTokenInAuthorizationHeader(DefaultRole.MANAGED_SERVICE)
+                .postForEntity(
+                        "/api/internal/service/register", defaultJsonEntity(requestWithDetectedFeatures), Void.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(instanceRegistry.get(InstanceId.of(TEST_INSTANCE_ID)))
+                .get()
+                .extracting(Instance::detectedFeatures)
+                .isEqualTo(new DetectedFeatures(EnumSet.of(InstanceFeature.CACHES, InstanceFeature.ENTITIES_MAP)));
     }
 
     @Test

@@ -22,8 +22,8 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useParams } from "react-router";
 
 import { findOpenInstanceKeys } from "@/helpers";
-import { EInstanceFeature, type IInstanceFeaturesResponse } from "@/models";
-import { getInstanceFeatures } from "@/services";
+import { EInstanceFeature, type IInstanceProfileResponse } from "@/models";
+import { getInstanceProfile } from "@/services";
 import { getInstanceItems } from "@/utils";
 
 export const InstanceSiderMenu = () => {
@@ -39,13 +39,11 @@ export const InstanceSiderMenu = () => {
             return;
         }
 
-        getInstanceFeatures(instanceId)
-            .then((response: AxiosResponse<IInstanceFeaturesResponse>) => setFeatures(response.data.features ?? []))
+        getInstanceProfile(instanceId)
+            .then((response: AxiosResponse<IInstanceProfileResponse>) => setFeatures(response.data.features ?? []))
             // safe fallback in case of problems
             .catch(() => {
-                console.warn(
-                    `The feature set of instance '${instanceId}' is not available. Performing a safe fallback`,
-                );
+                console.warn(`The profile of instance '${instanceId}' is not available. Performing a safe fallback`);
                 setFeatures([]);
             });
     }, [instanceId]);

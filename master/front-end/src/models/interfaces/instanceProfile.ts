@@ -15,17 +15,21 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.api.external.response.features;
-
-import java.util.List;
+import type { EInstanceFeature, IInstanceCard } from "@/models";
 
 /**
- * The features available for a single managed instance, resolved from the starter version it runs. The front-end
- * renders a certain or page section for a feature only when its id is present in {@link #features}.
- *
- * @param instanceId the id of the instance the features were resolved for.
- * @param features   the ids of the features available for the instance.
- *
- * @author Mikhail Polivakha
+ * The profile of a single managed instance, i.e. everything the instance view renders around its pages.
  */
-public record InstanceFeaturesResponse(String instanceId, List<String> features) {}
+export interface IInstanceProfileResponse {
+    /** The short profile of the instance, the same as the wallboard renders */
+    instance: IInstanceCard;
+
+    /** The number of the other instances of the same application, i.e. excluding this one */
+    siblingsCount: number;
+
+    /**
+     * The features the instance has. The UI renders a feature (its menu entry, its page) only when its id is present.
+     * For starters older than 1.3, which do not detect their features, Axelix Master assumes all of them.
+     */
+    features: EInstanceFeature[];
+}

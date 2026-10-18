@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +45,10 @@ import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
+import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.contract.metadata.PersistenceInsights;
 import com.axelixlabs.axelix.master.domain.OssRdbms;
+import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
 import com.axelixlabs.axelix.master.repository.dialect.SQLiteDialect;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 
@@ -207,7 +210,46 @@ public class PersistenceAutoConfiguration {
         protected @NonNull List<?> userConverters() {
             return List.of(
                     new PersistenceInsightsWritingConverter(jsonMapper),
-                    new PersistenceInsightsReadingConverter(jsonMapper));
+                    new PersistenceInsightsReadingConverter(jsonMapper),
+                    new DetectedFeaturesWritingConverter(jsonMapper),
+                    new DetectedFeaturesReadingConverter(jsonMapper));
+        }
+
+        /**
+         * Stores the {@link DetectedFeatures} as the JSON array of the feature ids.
+         */
+        @WritingConverter
+        public static class DetectedFeaturesWritingConverter implements Converter<DetectedFeatures, String> {
+
+            private final JsonMapper jsonMapper;
+
+            public DetectedFeaturesWritingConverter(JsonMapper jsonMapper) {
+                this.jsonMapper = jsonMapper;
+            }
+
+            @Override
+            public String convert(DetectedFeatures source) {
+                return jsonMapper.writeValueAsString(source.features().stream()
+                        .map(InstanceFeature::getValue)
+                        .toList());
+            }
+        }
+
+        @ReadingConverter
+        public static class DetectedFeaturesReadingConverter implements Converter<String, DetectedFeatures> {
+
+            private final JsonMapper jsonMapper;
+
+            public DetectedFeaturesReadingConverter(JsonMapper jsonMapper) {
+                this.jsonMapper = jsonMapper;
+            }
+
+            @Override
+            public DetectedFeatures convert(String source) {
+                List<String> features = jsonMapper.readValue(source, new TypeReference<List<String>>() {});
+                return DetectedFeatures.of(
+                        features.stream().map(InstanceFeature::fromValue).toList());
+            }
         }
 
         @WritingConverter

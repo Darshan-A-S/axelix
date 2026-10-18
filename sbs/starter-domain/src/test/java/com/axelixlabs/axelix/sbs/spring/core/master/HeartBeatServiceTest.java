@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.sbs.spring.core.master;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -187,7 +188,8 @@ class HeartBeatServiceTest {
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    axelixInfoProperties);
+                    axelixInfoProperties,
+                    () -> Set.of());
         }
     }
 

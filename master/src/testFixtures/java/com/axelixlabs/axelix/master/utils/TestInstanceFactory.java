@@ -26,6 +26,7 @@ import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
+import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
 
 /**
  * Test fixture factory for {@link Instance}.
@@ -72,7 +73,8 @@ public final class TestInstanceFactory {
                 Instant.now(),
                 DEFAULT_STATUS,
                 new MemoryUsage(1000L),
-                DEFAULT_URL);
+                DEFAULT_URL,
+                null);
     }
 
     public static Instance create(String id, @Nullable Instant instant) {
@@ -96,7 +98,33 @@ public final class TestInstanceFactory {
                 Instant.now(),
                 DEFAULT_STATUS,
                 new MemoryUsage(1000L),
-                DEFAULT_URL);
+                DEFAULT_URL,
+                null);
+    }
+
+    public static Instance withFeatures(
+            String id,
+            ApplicationId applicationId,
+            String starterVersion,
+            @Nullable DetectedFeatures detectedFeatures) {
+        return new Instance(
+                InstanceId.of(id),
+                applicationId,
+                "test-object-factory-instance",
+                "1.2.3-classifer-test",
+                starterVersion,
+                JavaVersion.parse("25"),
+                "3.5.2",
+                "6.0.2",
+                null,
+                "BellSoft",
+                "df027cf",
+                Instant.now(),
+                Instant.now(),
+                DEFAULT_STATUS,
+                new MemoryUsage(1000L),
+                DEFAULT_URL,
+                detectedFeatures);
     }
 
     public static Instance withName(String id, String name) {
@@ -154,7 +182,8 @@ public final class TestInstanceFactory {
                 Instant.now(),
                 Instance.InstanceStatus.UP,
                 new MemoryUsage(memoryUsage),
-                "url");
+                "url",
+                null);
     }
 
     public static Instance create(String id, String url, Instance.InstanceStatus status) {
@@ -178,7 +207,8 @@ public final class TestInstanceFactory {
                 instant,
                 DEFAULT_STATUS,
                 new MemoryUsage(1000L),
-                DEFAULT_URL);
+                DEFAULT_URL,
+                null);
     }
 
     public static Instance create(
@@ -207,6 +237,7 @@ public final class TestInstanceFactory {
                 Instant.now().minusSeconds(60),
                 status,
                 new MemoryUsage(1000L),
-                url);
+                url,
+                null);
     }
 }

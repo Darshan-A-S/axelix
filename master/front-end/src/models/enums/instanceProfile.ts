@@ -15,13 +15,14 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import type { EInstanceFeature } from "@/models";
 
 /**
- * The features available for a single managed instance, resolved by Axelix Master from the starter version the
- * instance runs. The UI renders a feature (its menu entry, its page) only when its id is present in {@link features}.
+ * The stable, wire-level ids of the features a managed instance may have, see the InstanceFeature contract schema.
  */
-export interface IInstanceFeaturesResponse {
-    instanceId: string;
-    features: EInstanceFeature[];
+export enum EInstanceFeature {
+    CACHES = "caches",
+    SCHEDULED_TASKS = "scheduled-tasks",
+    ENTITIES_MAP = "entities-map",
+    TRANSACTIONS = "transactions",
+    DEPENDENCY_ANALYSIS = "dependency-analysis",
 }

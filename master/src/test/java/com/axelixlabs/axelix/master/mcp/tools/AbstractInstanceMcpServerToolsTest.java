@@ -43,69 +43,100 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Base class for the tests of the MCP tools that proxy the call to the actuator endpoints of the managed
- * instance. The managed instance is emulated by the {@link MockWebServer}.
+ * instances. There are two managed instances registered, each emulated by its own {@link MockWebServer}, so that
+ * the tools that fan the operation out to several instances can be tested as well.
  *
  * @author Mikhail Polivakha
  */
 abstract class AbstractInstanceMcpServerToolsTest extends AbstractMcpServerToolsTest {
 
     protected static final String INSTANCE_ID = "instance-1";
+    protected static final String ANOTHER_INSTANCE_ID = "instance-2";
 
     protected static final String ACTUATOR_PATH = "/actuator";
 
     @Autowired
     private InstanceRegistry instanceRegistry;
 
-    private final Map<String, MockResponse> responses = new ConcurrentHashMap<>();
-
-    private MockWebServer managedInstance;
+    protected final ManagedInstance instance = new ManagedInstance(INSTANCE_ID);
+    protected final ManagedInstance anotherInstance = new ManagedInstance(ANOTHER_INSTANCE_ID);
 
     @BeforeEach
-    void registerManagedInstance() throws IOException {
-        managedInstance = new MockWebServer();
-        managedInstance.setDispatcher(new Dispatcher() {
-            @Override
-            public @NotNull MockResponse dispatch(@NotNull RecordedRequest request) {
-                String path = Objects.requireNonNull(request.getPath()).substring(ACTUATOR_PATH.length());
-                return responses.getOrDefault(path, new MockResponse().setResponseCode(200));
-            }
-        });
-        managedInstance.start();
-
-        instanceRegistry.register(TestInstanceFactory.create(
-                INSTANCE_ID, managedInstance.url(ACTUATOR_PATH).toString()));
+    void registerManagedInstances() throws IOException {
+        instance.start(instanceRegistry);
+        anotherInstance.start(instanceRegistry);
     }
 
     @AfterEach
-    void deRegisterManagedInstance() throws IOException {
-        instanceRegistry.deRegister(InstanceId.of(INSTANCE_ID));
-        managedInstance.shutdown();
+    void deRegisterManagedInstances() throws IOException {
+        instance.shutdown(instanceRegistry);
+        anotherInstance.shutdown(instanceRegistry);
     }
 
     /**
-     * Makes the managed instance respond with the given JSON body to requests to the given actuator path (relative
-     * to the {@link #ACTUATOR_PATH}, including the query string, if any). Paths that are not stubbed respond with
-     * {@code 200 OK} and an empty body.
+     * The managed instance, registered in the {@link InstanceRegistry}, with the actuator emulated by
+     * the {@link MockWebServer}.
      */
-    protected void respondWith(String path, String body) {
-        responses.put(
-                path,
-                new MockResponse().setBody(body).addHeader(HttpHeaders.CONTENT_TYPE, ACTUATOR_RESPONSE_CONTENT_TYPE));
-    }
+    protected static final class ManagedInstance {
 
-    /**
-     * Makes the managed instance respond with {@code 400 Bad Request} to requests to the given actuator path.
-     */
-    protected void respondWithBadRequest(String path) {
-        responses.put(path, new MockResponse().setResponseCode(400));
-    }
+        private final String id;
 
-    /**
-     * @return the next request the managed instance has received
-     */
-    protected RecordedRequest takeRequest() throws InterruptedException {
-        RecordedRequest request = managedInstance.takeRequest(5, TimeUnit.SECONDS);
-        assertThat(request).as("Managed instance did not receive the request").isNotNull();
-        return request;
+        private final Map<String, MockResponse> responses = new ConcurrentHashMap<>();
+
+        private final MockWebServer server = new MockWebServer();
+
+        private ManagedInstance(String id) {
+            this.id = id;
+        }
+
+        private void start(InstanceRegistry instanceRegistry) throws IOException {
+            server.setDispatcher(new Dispatcher() {
+                @Override
+                public @NotNull MockResponse dispatch(@NotNull RecordedRequest request) {
+                    String path = Objects.requireNonNull(request.getPath()).substring(ACTUATOR_PATH.length());
+                    return responses.getOrDefault(path, new MockResponse().setResponseCode(200));
+                }
+            });
+            server.start();
+
+            instanceRegistry.register(
+                    TestInstanceFactory.create(id, server.url(ACTUATOR_PATH).toString()));
+        }
+
+        private void shutdown(InstanceRegistry instanceRegistry) throws IOException {
+            instanceRegistry.deRegister(InstanceId.of(id));
+            server.shutdown();
+        }
+
+        /**
+         * Makes the instance respond with the given JSON body to requests to the given actuator path (relative
+         * to the {@link #ACTUATOR_PATH}, including the query string, if any). Paths that are not stubbed respond
+         * with {@code 200 OK} and an empty body.
+         */
+        void respondWith(String path, String body) {
+            responses.put(
+                    path,
+                    new MockResponse()
+                            .setBody(body)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, ACTUATOR_RESPONSE_CONTENT_TYPE));
+        }
+
+        /**
+         * Makes the instance respond with {@code 400 Bad Request} to requests to the given actuator path.
+         */
+        void respondWithBadRequest(String path) {
+            responses.put(path, new MockResponse().setResponseCode(400));
+        }
+
+        /**
+         * @return the next request the instance has received
+         */
+        RecordedRequest takeRequest() throws InterruptedException {
+            RecordedRequest request = server.takeRequest(5, TimeUnit.SECONDS);
+            assertThat(request)
+                    .as("Managed instance '%s' did not receive the request", id)
+                    .isNotNull();
+            return request;
+        }
     }
 }

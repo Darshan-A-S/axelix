@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.mcp.tools;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -85,14 +86,23 @@ public class CacheMcpServerTools {
             name = McpEndpoints.CLEAR_ALL_CACHES_TOOL_NAME,
             title = "Clear All Cache",
             description = """
-            Clears ALL caches across ALL cache managers for a specific instance.
+            Clears ALL caches across ALL cache managers for the given instances.
 
-            Use this ONLY when the user explicitly asks to clear ALL caches in the application.
+            Use this ONLY when the user explicitly asks to clear ALL caches in the specific instance or the entire application.
             DO NOT use this tool if the user specifies a particular cache manager or a particular cache name
             — use the more specific tools instead.
 
             This is a broad destructive operation. If there is any ambiguity in the user's request, confirm
             with the user before proceeding.
+
+            The operation is applied to every instance listed in 'instanceIds'. If the user asks to apply it to the
+            whole application (i.e. to all of its instances), pass the IDs of all the instances of that application.
+            If the invocation reports that some instances failed to update, tell the user that the operation has been
+            applied only partially.
+
+            If you do not know the IDs of the instances, call the 'getInstances' tool first. It returns the instances
+            that are currently registered in Axelix, and optionally accepts a 'query' - a part of the service name -
+            to narrow the instances down. All the instances of the same application share the same 'applicationId'.
             """,
             annotations =
                     @McpTool.McpAnnotations(
@@ -101,9 +111,11 @@ public class CacheMcpServerTools {
                             destructiveHint = true,
                             idempotentHint = true,
                             openWorldHint = false))
-    public void clearAllCaches(@McpToolParam(description = "The instance ID") String instanceId) {
-        endpointInvoker.invokeNoValue(
-                InstanceId.of(instanceId), ActuatorEndpoints.CLEAR_ALL_CACHES, NoHttpPayload.INSTANCE);
+    public void clearAllCaches(
+            @McpToolParam(description = "The IDs of the instances to apply the operation to")
+                    List<String> instanceIds) {
+        endpointInvoker.invokeNoValueForInstances(
+                instanceIds, ActuatorEndpoints.CLEAR_ALL_CACHES, NoHttpPayload.INSTANCE);
     }
 
     @McpTool(
@@ -111,7 +123,7 @@ public class CacheMcpServerTools {
             title = "Clear Specific Cache",
             description = """
             Clears a specific cache entry identified by cache name (key) within a specific cache manager
-            for a particular instance. Only the entry matching the given cache name is evicted, all other
+            for the given instances. Only the entry matching the given cache name is evicted, all other
             entries remain intact.
 
             Use this when the user asks to clear a specific cache by name, or to evict a specific entry by key
@@ -120,6 +132,15 @@ public class CacheMcpServerTools {
             PREREQUISITE: If the cache manager name is unknown, call "Caches Feed" first.
             IF THE REQUESTED CACHE NAME IS PRESENT IN MULTIPLE CACHE MANAGERS, YOU MUST ASK THE USER
             TO SELECT THE SPECIFIC CACHE MANAGER BEFORE PROCEEDING.
+
+            The operation is applied to every instance listed in 'instanceIds'. If the user asks to apply it to the
+            whole application (i.e. to all of its instances), pass the IDs of all the instances of that application.
+            If the invocation reports that some instances failed to update, tell the user that the operation has been
+            applied only partially.
+
+            If you do not know the IDs of the instances, call the 'getInstances' tool first. It returns the instances
+            that are currently registered in Axelix, and optionally accepts a 'query' - a part of the service name -
+            to narrow the instances down. All the instances of the same application share the same 'applicationId'.
             """,
             annotations =
                     @McpTool.McpAnnotations(
@@ -129,11 +150,11 @@ public class CacheMcpServerTools {
                             idempotentHint = true,
                             openWorldHint = false))
     public void clearSpecificCacheEntity(
-            @McpToolParam(description = "The instance ID") String instanceId,
+            @McpToolParam(description = "The IDs of the instances to apply the operation to") List<String> instanceIds,
             @McpToolParam(description = "The Cache Manager Name") String cacheManager,
             @McpToolParam(description = "The Cache Name (also serves as the entry key)") String cacheName) {
 
         HttpPayload payload = new DefaultHttpPayload(Map.of("cacheName", cacheName, "cacheManagerName", cacheManager));
-        endpointInvoker.invokeNoValue(InstanceId.of(instanceId), ActuatorEndpoints.CLEAR_SINGLE_CACHE, payload);
+        endpointInvoker.invokeNoValueForInstances(instanceIds, ActuatorEndpoints.CLEAR_SINGLE_CACHE, payload);
     }
 }

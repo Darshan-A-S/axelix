@@ -101,6 +101,23 @@ abstract class AbstractMcpServerToolsTest {
                 McpSchema.CallToolRequest.builder(toolName).arguments(arguments).build());
 
         assertThat(result.isError()).isFalse();
+        return text(result);
+    }
+
+    /**
+     * Calls the given MCP tool, expecting it to fail.
+     *
+     * @return the text of the error the tool responded with
+     */
+    protected String callToolExpectingError(String toolName, Map<String, Object> arguments) {
+        McpSchema.CallToolResult result = mcpClient.callTool(
+                McpSchema.CallToolRequest.builder(toolName).arguments(arguments).build());
+
+        assertThat(result.isError()).isTrue();
+        return text(result);
+    }
+
+    private static String text(McpSchema.CallToolResult result) {
         assertThat(result.content()).singleElement().isInstanceOf(McpSchema.TextContent.class);
 
         return ((McpSchema.TextContent) result.content().get(0)).text();

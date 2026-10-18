@@ -35,7 +35,7 @@ class LogsMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
     @Test
     void shouldSendTheLimitAsTheQueryParameterAndReturnTheLogsAsThePlainText() throws InterruptedException {
         // given.
-        respondWith("/axelix-logs?limit=25", """
+        instance.respondWith("/axelix-logs?limit=25", """
                 {"entries":[{"timestamp":1760264130123,"level":"INFO","logger":"com.example.OrderService",\
                 "thread":"main","message":"Order created"}]}
                 """);
@@ -46,19 +46,19 @@ class LogsMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
 
         // then.
         assertThat(result).isEqualTo("2025-10-12T10:15:30.123Z INFO [main] com.example.OrderService - Order created\n");
-        assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-logs?limit=25");
+        assertThat(instance.takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-logs?limit=25");
     }
 
     @Test
     void shouldNotSendTheLimit_WhenItIsAbsent() throws InterruptedException {
         // given.
-        respondWith("/axelix-logs", "{\"entries\":[]}");
+        instance.respondWith("/axelix-logs", "{\"entries\":[]}");
 
         // when.
         String result = callTool(McpEndpoints.LOG_ENTRIES_TAIL_TOOL_NAME, Map.of("instanceId", INSTANCE_ID));
 
         // then.
         assertThat(result).isEmpty();
-        assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-logs");
+        assertThat(instance.takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-logs");
     }
 }

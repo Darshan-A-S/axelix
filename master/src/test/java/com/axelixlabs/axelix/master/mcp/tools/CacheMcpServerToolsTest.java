@@ -17,6 +17,7 @@
  */
 package com.axelixlabs.axelix.master.mcp.tools;
 
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.mockwebserver.RecordedRequest;
@@ -35,18 +36,68 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CacheMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
 
     @Test
-    void shouldSendTheCacheManagerAndCacheNameAsThePathVariables() throws InterruptedException {
+    void shouldFanTheSpecificCacheClearingOutToEveryListedInstance() throws InterruptedException {
         // when.
         String result = callTool(
                 McpEndpoints.CLEAR_SPECIFIC_CACHE_TOOL_NAME,
-                Map.of("instanceId", INSTANCE_ID, "cacheManager", "cacheManager", "cacheName", "owners"));
+                Map.of(
+                        "instanceIds",
+                        List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID),
+                        "cacheManager",
+                        "cacheManager",
+                        "cacheName",
+                        "owners"));
 
         // then.
         assertThat(result).isEqualTo(DONE_RESPONSE);
 
         // and.
-        RecordedRequest request = takeRequest();
+        assertCacheClearing(instance.takeRequest(), "/axelix-caches/cacheManager/owners/clear");
+        assertCacheClearing(anotherInstance.takeRequest(), "/axelix-caches/cacheManager/owners/clear");
+    }
+
+    @Test
+    void shouldFanTheClearingOfAllCachesOutToEveryListedInstance() throws InterruptedException {
+        // when.
+        String result = callTool(
+                McpEndpoints.CLEAR_ALL_CACHES_TOOL_NAME,
+                Map.of("instanceIds", List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID)));
+
+        // then.
+        assertThat(result).isEqualTo(DONE_RESPONSE);
+
+        // and.
+        assertCacheClearing(instance.takeRequest(), "/axelix-caches/clear");
+        assertCacheClearing(anotherInstance.takeRequest(), "/axelix-caches/clear");
+    }
+
+    @Test
+    void shouldReportAnErrorWhenSomeOfTheInstancesFailedToClearTheCache() throws InterruptedException {
+        // given.
+        anotherInstance.respondWithBadRequest("/axelix-caches/cacheManager/owners/clear");
+
+        // when.
+        String result = callToolExpectingError(
+                McpEndpoints.CLEAR_SPECIFIC_CACHE_TOOL_NAME,
+                Map.of(
+                        "instanceIds",
+                        List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID),
+                        "cacheManager",
+                        "cacheManager",
+                        "cacheName",
+                        "owners"));
+
+        // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+        assertThat(result)
+                .isEqualTo("Error invoking method: clearSpecificCacheEntity" + System.lineSeparator()
+                        + "Some instances failed to update");
+
+        // and. the instance that succeeded still has the cache cleared.
+        assertCacheClearing(instance.takeRequest(), "/axelix-caches/cacheManager/owners/clear");
+    }
+
+    private static void assertCacheClearing(RecordedRequest request, String path) {
         assertThat(request.getMethod()).isEqualTo("DELETE");
-        assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-caches/cacheManager/owners/clear");
+        assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + path);
     }
 }

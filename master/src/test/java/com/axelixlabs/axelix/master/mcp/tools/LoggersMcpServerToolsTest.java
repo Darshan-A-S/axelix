@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import okhttp3.mockwebserver.RecordedRequest;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
@@ -123,7 +124,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         void shouldReturnLoggerFoundViaTheDirectEndpoint() throws InterruptedException {
             // given.
             SingleLoggerProfile appLogger = logger("com.example.app", "DEBUG", "DEBUG");
-            respondWith("/axelix-loggers/logger/com.example.app", objectMapper.writeValueAsString(appLogger));
+            instance.respondWith("/axelix-loggers/logger/com.example.app", objectMapper.writeValueAsString(appLogger));
 
             // when.
             String result =
@@ -145,13 +146,14 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
                     """);
 
             // and.
-            assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app");
+            assertThat(instance.takeRequest().getPath())
+                    .isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app");
         }
 
         @Test
         void shouldFallBackToFilteringAllLoggersWhenDirectEndpointRespondsWithBadRequest() {
             // given. the exact-name lookup fails - the provided name is only a partial match.
-            respondWithBadRequest("/axelix-loggers/logger/com.example.app");
+            instance.respondWithBadRequest("/axelix-loggers/logger/com.example.app");
 
             // and.
             LoggersFeedLogger appService = feedLogger("com.example.app.service", null, "INFO");
@@ -193,7 +195,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         @Test
         void shouldReturnEmptyMapWhenNoLoggerMatchesInTheFallback() {
             // given.
-            respondWithBadRequest("/axelix-loggers/logger/does-not-exist");
+            instance.respondWithBadRequest("/axelix-loggers/logger/does-not-exist");
 
             // and.
             stubAllLoggers(new LoggersFeed()
@@ -217,7 +219,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         void shouldReturnGroupFoundViaTheDirectEndpoint() throws InterruptedException {
             // given.
             LoggersGroupProfile web = group("web", "WARN", List.of("com.example.app.web"));
-            respondWith("/axelix-loggers/group/web", objectMapper.writeValueAsString(web));
+            instance.respondWith("/axelix-loggers/group/web", objectMapper.writeValueAsString(web));
 
             // when.
             String result = callTool("findGroupsByName", Map.of("instanceId", INSTANCE_ID, "groupName", "web"));
@@ -231,13 +233,13 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
                     """);
 
             // and.
-            assertThat(takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/group/web");
+            assertThat(instance.takeRequest().getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/group/web");
         }
 
         @Test
         void shouldFallBackToFilteringAllGroupsWhenDirectEndpointRespondsWithBadRequest() {
             // given.
-            respondWithBadRequest("/axelix-loggers/group/w");
+            instance.respondWithBadRequest("/axelix-loggers/group/w");
 
             // and.
             LoggersFeedGroup web = feedGroup("web", "INFO", List.of("com.example.app.web"));
@@ -260,7 +262,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         @Test
         void shouldReturnEmptyMapWhenNoGroupMatchesInTheFallback() {
             // given.
-            respondWithBadRequest("/axelix-loggers/group/does-not-exist");
+            instance.respondWithBadRequest("/axelix-loggers/group/does-not-exist");
 
             // and.
             stubAllLoggers(new LoggersFeed()
@@ -281,13 +283,13 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
     class ChangeLoggingLevelByLoggerName {
 
         @Test
-        void shouldSendTheLoggerNameAsThePathVariableAndTheLevelWithTtlAsTheBody() throws InterruptedException {
+        void shouldFanTheChangeOutToEveryListedInstance() throws InterruptedException {
             // when.
             String result = callTool(
                     "changeLoggingLevelByLoggerName",
                     Map.of(
-                            "instanceId",
-                            INSTANCE_ID,
+                            "instanceIds",
+                            List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID),
                             "loggerName",
                             "com.example.app",
                             "loggerLevel",
@@ -299,15 +301,13 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             assertThat(result).isEqualTo(DONE_RESPONSE);
 
             // and.
-            RecordedRequest request = takeRequest();
-            assertThat(request.getMethod()).isEqualTo("POST");
-            assertThat(request.getPath())
-                    .isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app/change-level");
-
-            LogLevelChangeRequest body =
-                    objectMapper.readValue(request.getBody().readUtf8(), LogLevelChangeRequest.class);
-            assertThat(body.getConfiguredLevel()).isEqualTo("DEBUG");
-            assertThat(body.getTtlSeconds()).isEqualTo(120L);
+            assertLevelChange(
+                    instance.takeRequest(), "/axelix-loggers/logger/com.example.app/change-level", "DEBUG", 120L);
+            assertLevelChange(
+                    anotherInstance.takeRequest(),
+                    "/axelix-loggers/logger/com.example.app/change-level",
+                    "DEBUG",
+                    120L);
         }
 
         @Test
@@ -315,19 +315,39 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             // when.
             String result = callTool(
                     "changeLoggingLevelByLoggerName",
-                    Map.of("instanceId", INSTANCE_ID, "loggerName", "ROOT", "loggerLevel", "WARN"));
+                    Map.of("instanceIds", List.of(INSTANCE_ID), "loggerName", "ROOT", "loggerLevel", "WARN"));
 
             // then.
             assertThat(result).isEqualTo(DONE_RESPONSE);
 
             // and.
-            RecordedRequest request = takeRequest();
-            assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/ROOT/change-level");
+            assertLevelChange(instance.takeRequest(), "/axelix-loggers/logger/ROOT/change-level", "WARN", null);
+        }
 
-            LogLevelChangeRequest body =
-                    objectMapper.readValue(request.getBody().readUtf8(), LogLevelChangeRequest.class);
-            assertThat(body.getConfiguredLevel()).isEqualTo("WARN");
-            assertThat(body.getTtlSeconds()).isNull();
+        @Test
+        void shouldReportAnErrorWhenSomeOfTheInstancesFailedToUpdate() throws InterruptedException {
+            // given.
+            anotherInstance.respondWithBadRequest("/axelix-loggers/logger/com.example.app/change-level");
+
+            // when.
+            String result = callToolExpectingError(
+                    "changeLoggingLevelByLoggerName",
+                    Map.of(
+                            "instanceIds",
+                            List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID),
+                            "loggerName",
+                            "com.example.app",
+                            "loggerLevel",
+                            "DEBUG"));
+
+            // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+            assertThat(result)
+                    .isEqualTo("Error invoking method: changeLoggingLevelByLoggerName" + System.lineSeparator()
+                            + "Some instances failed to update");
+
+            // and. the instance that succeeded still has the change applied.
+            assertLevelChange(
+                    instance.takeRequest(), "/axelix-loggers/logger/com.example.app/change-level", "DEBUG", null);
         }
     }
 
@@ -345,7 +365,7 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             assertThat(result).isEqualTo(DONE_RESPONSE);
 
             // and.
-            RecordedRequest request = takeRequest();
+            RecordedRequest request = instance.takeRequest();
             assertThat(request.getMethod()).isEqualTo("POST");
             assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/group/web/change-level");
 
@@ -360,25 +380,39 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
     class ResetLoggingLevelByLoggerName {
 
         @Test
-        void shouldSendTheLoggerNameAsThePathVariableAndNoBody() throws InterruptedException {
+        void shouldFanTheResetOutToEveryListedInstance() throws InterruptedException {
             // when.
             String result = callTool(
                     "resetLoggingLevelByLoggerName",
-                    Map.of("instanceId", INSTANCE_ID, "loggerName", "com.example.app"));
+                    Map.of("instanceIds", List.of(INSTANCE_ID, ANOTHER_INSTANCE_ID), "loggerName", "com.example.app"));
 
             // then.
             assertThat(result).isEqualTo(DONE_RESPONSE);
 
             // and.
-            RecordedRequest request = takeRequest();
+            assertReset(instance.takeRequest());
+            assertReset(anotherInstance.takeRequest());
+        }
+
+        private static void assertReset(RecordedRequest request) {
             assertThat(request.getMethod()).isEqualTo("POST");
             assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + "/axelix-loggers/logger/com.example.app/reset");
             assertThat(request.getBodySize()).isZero();
         }
     }
 
+    private void assertLevelChange(
+            RecordedRequest request, String path, String expectedLevel, @Nullable Long expectedTtlSeconds) {
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + path);
+
+        LogLevelChangeRequest body = objectMapper.readValue(request.getBody().readUtf8(), LogLevelChangeRequest.class);
+        assertThat(body.getConfiguredLevel()).isEqualTo(expectedLevel);
+        assertThat(body.getTtlSeconds()).isEqualTo(expectedTtlSeconds);
+    }
+
     private void stubAllLoggers(LoggersFeed feed) {
-        respondWith("/axelix-loggers", objectMapper.writeValueAsString(feed));
+        instance.respondWith("/axelix-loggers", objectMapper.writeValueAsString(feed));
     }
 
     private static SingleLoggerProfile logger(String name, String configuredLevel, String effectiveLevel) {

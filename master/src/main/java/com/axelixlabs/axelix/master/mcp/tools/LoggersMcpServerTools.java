@@ -17,6 +17,7 @@
  */
 package com.axelixlabs.axelix.master.mcp.tools;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -263,8 +264,14 @@ public class LoggersMcpServerTools {
             of available levels, present them to the user as a numbered list, and ask them to choose one before
             calling this tool.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
-            tool to first retrieve the instances feed.
+            The change is applied to every instance listed in 'instanceIds'. If the user asks to apply it to the whole
+            application (i.e. to all of its instances), pass the IDs of all the instances of that application.
+            If the invocation reports that some instances failed to update, tell the user that the change has been
+            applied only partially.
+
+            If you do not know the IDs of the instances, call the 'getInstances' tool first. It returns the instances
+            that are currently registered in Axelix, and optionally accepts a 'query' - a part of the service name -
+            to narrow the instances down. All the instances of the same application share the same 'applicationId'.
             """,
             annotations =
                     @McpTool.McpAnnotations(
@@ -274,7 +281,7 @@ public class LoggersMcpServerTools {
                             idempotentHint = true,
                             openWorldHint = false))
     public void changeLoggingLevelByLoggerName(
-            @McpToolParam(description = "The instance ID") String instanceId,
+            @McpToolParam(description = "The IDs of the instances to apply the change to") List<String> instanceIds,
             @McpToolParam(description = """
                 The Logger Name. The exact or approximate name of the logger.
                 Partial names are supported.""") String loggerName,
@@ -287,7 +294,7 @@ public class LoggersMcpServerTools {
                 Map.of("name", loggerName),
                 jacksonMessageSerializationStrategy.serialize(
                         new LogLevelChangeRequest().configuredLevel(loggerLevel).ttlSeconds(ttlSeconds)));
-        endpointInvoker.invokeNoValue(InstanceId.of(instanceId), ActuatorEndpoints.SET_ONE_LOGGER, payload);
+        endpointInvoker.invokeNoValueForInstances(instanceIds, ActuatorEndpoints.SET_ONE_LOGGER, payload);
     }
 
     @McpTool(
@@ -360,8 +367,14 @@ public class LoggersMcpServerTools {
                before retrying the invocation.
             4. If no loggers are found, inform the user that no such logger exists.
 
-            Because this Tool accepts "Instance ID" you probably will need to call 'getInstances'
-            tool to first retrieve the instances feed.
+            The change is applied to every instance listed in 'instanceIds'. If the user asks to apply it to the whole
+            application (i.e. to all of its instances), pass the IDs of all the instances of that application.
+            If the invocation reports that some instances failed to update, tell the user that the change has been
+            applied only partially.
+
+            If you do not know the IDs of the instances, call the 'getInstances' tool first. It returns the instances
+            that are currently registered in Axelix, and optionally accepts a 'query' - a part of the service name -
+            to narrow the instances down. All the instances of the same application share the same 'applicationId'.
             """,
             annotations =
                     @McpTool.McpAnnotations(
@@ -371,15 +384,13 @@ public class LoggersMcpServerTools {
                             idempotentHint = true,
                             openWorldHint = false))
     public void resetLoggingLevelByLoggerName(
-            @McpToolParam(description = "The instance ID") String instanceId,
+            @McpToolParam(description = "The IDs of the instances to apply the change to") List<String> instanceIds,
             @McpToolParam(description = """
                 The Logger Name. The exact or approximate name of the logger.
                 Partial names are supported.""") String loggerName) {
 
-        endpointInvoker.invokeNoValue(
-                InstanceId.of(instanceId),
-                ActuatorEndpoints.RESET_FOR_LOGGER,
-                new DefaultHttpPayload(Map.of("name", loggerName)));
+        endpointInvoker.invokeNoValueForInstances(
+                instanceIds, ActuatorEndpoints.RESET_FOR_LOGGER, new DefaultHttpPayload(Map.of("name", loggerName)));
     }
 
     private LoggersFeed getAllLoggers(String instanceId) {

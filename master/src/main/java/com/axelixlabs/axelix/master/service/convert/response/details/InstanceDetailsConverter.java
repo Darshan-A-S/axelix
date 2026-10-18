@@ -65,7 +65,7 @@ public class InstanceDetailsConverter implements Converter<DetailsConversionRequ
     }
 
     @Override
-    public @NonNull InstanceDetailsResponse convertInternal(@NonNull DetailsConversionRequest request) {
+    public @NonNull InstanceDetailsResponse convertNonNull(@NonNull DetailsConversionRequest request) {
         InstanceDetails source = request.instanceDetails();
         InstanceId instanceId = request.instanceId();
 

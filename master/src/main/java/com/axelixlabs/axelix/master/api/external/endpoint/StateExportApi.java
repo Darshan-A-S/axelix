@@ -17,8 +17,6 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
-import java.util.Objects;
-
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -65,9 +63,9 @@ public class StateExportApi {
 
         InstanceId id = InstanceId.of(instanceId);
 
-        StateExport convertedRequest = stateExportRequestConverter.convert(request);
+        StateExport convertedRequest = stateExportRequestConverter.convertNonNull(request);
 
-        byte[] binaryData = exportService.exportInstanceState(Objects.requireNonNull(convertedRequest), id);
+        byte[] binaryData = exportService.exportInstanceState(convertedRequest, id);
 
         String filename = stateArchiveFileNameGenerator.generate(id);
 

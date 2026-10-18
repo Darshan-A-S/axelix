@@ -42,7 +42,7 @@ import com.axelixlabs.axelix.master.service.convert.response.Converter;
 public class LogEntriesTailConverter implements Converter<LogEntriesTail, String> {
 
     @Override
-    public @NonNull String convertInternal(@NonNull LogEntriesTail source) {
+    public @NonNull String convertNonNull(@NonNull LogEntriesTail source) {
         StringBuilder result = new StringBuilder();
 
         for (LogEntry entry : source.getEntries()) {

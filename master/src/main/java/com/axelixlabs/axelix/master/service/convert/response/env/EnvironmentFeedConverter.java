@@ -52,7 +52,7 @@ public class EnvironmentFeedConverter implements Converter<EnvironmentFeed, Envi
     }
 
     @Override
-    public @NonNull EnvironmentFeedResponse convertInternal(@NonNull EnvironmentFeed source) {
+    public @NonNull EnvironmentFeedResponse convertNonNull(@NonNull EnvironmentFeed source) {
         Map<Property, DangerousValue> dangerousProperties = dangerousPropertyDetector.detect(source);
         List<EnvironmentFeedResponse.PropertySource> propertySources = new ArrayList<>();
 

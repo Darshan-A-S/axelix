@@ -44,7 +44,7 @@ import com.axelixlabs.axelix.master.service.export.settings.ThreadDumpStateCompo
 public class StateExportRequestConverter implements Converter<StateExportRequest, StateExport> {
 
     @Override
-    public @NonNull StateExport convertInternal(@NonNull StateExportRequest source) {
+    public @NonNull StateExport convertNonNull(@NonNull StateExportRequest source) {
         return new StateExport(source.components().stream().map(this::map).toList());
     }
 

@@ -60,7 +60,7 @@ public class DefaultInstanceProfileService implements InstanceProfileService {
         int siblingsCount = instanceRegistry.findSiblings(instanceId).size() - 1;
 
         return new InstanceProfileResponse(
-                instancesToShortProfileConverter.convert(instance),
+                instancesToShortProfileConverter.convertNonNull(instance),
                 siblingsCount,
                 resolveFeatures(instance).stream()
                         .map(InstanceFeature::getValue)

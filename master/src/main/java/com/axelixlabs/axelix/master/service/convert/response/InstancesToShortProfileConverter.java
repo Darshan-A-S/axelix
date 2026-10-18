@@ -39,7 +39,7 @@ import com.axelixlabs.axelix.master.service.convert.utils.DateTimeFormattingUtil
 public class InstancesToShortProfileConverter implements Converter<Instance, InstanceShortProfile> {
 
     @Override
-    public @NonNull InstanceShortProfile convertInternal(@NonNull Instance instance) {
+    public @NonNull InstanceShortProfile convertNonNull(@NonNull Instance instance) {
         return new InstanceShortProfile(
                 instance.id().instanceId(),
                 instance.name(),

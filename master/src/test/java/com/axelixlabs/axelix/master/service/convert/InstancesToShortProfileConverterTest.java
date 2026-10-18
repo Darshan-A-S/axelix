@@ -48,7 +48,7 @@ class InstancesToShortProfileConverterTest {
         Instance input = Instancio.create(Instance.class);
 
         // when.
-        InstanceShortProfile result = subject.convert(input);
+        InstanceShortProfile result = subject.convertNonNull(input);
 
         // then.
         Assertions.assertThat(result)

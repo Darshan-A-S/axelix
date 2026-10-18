@@ -17,8 +17,6 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
-import java.util.Objects;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -58,6 +56,6 @@ public class DetailsApi {
         InstanceId id = InstanceId.of(instanceId);
         InstanceDetails instanceDetails =
                 endpointInvoker.invoke(id, ActuatorEndpoints.GET_DETAILS, NoHttpPayload.INSTANCE);
-        return Objects.requireNonNull(converter.convert(new DetailsConversionRequest(instanceDetails, id)));
+        return converter.convertNonNull(new DetailsConversionRequest(instanceDetails, id));
     }
 }

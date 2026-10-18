@@ -48,7 +48,7 @@ class EnvironmentFeedConverterTest {
         EnvironmentFeed feed = openInViewFeedDetectedInFirstSource();
 
         // when.
-        EnvironmentFeedResponse response = subject.convertInternal(feed);
+        EnvironmentFeedResponse response = subject.convertNonNull(feed);
 
         // then.
         DangerousValue openInView = DangerousPropertyValue.OPEN_IN_VIEW

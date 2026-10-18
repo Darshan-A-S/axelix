@@ -65,6 +65,8 @@ public class EnvironmentApi {
                 InstanceId.of(instanceId), ActuatorEndpoints.GET_ALL_ENV_PROPERTIES, NoHttpPayload.INSTANCE);
 
         EnvironmentFeed feed = objectMapper.readValue(body, EnvironmentFeed.class);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(environmentFeedConverter.convert(feed));
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(environmentFeedConverter.convertNonNull(feed));
     }
 }

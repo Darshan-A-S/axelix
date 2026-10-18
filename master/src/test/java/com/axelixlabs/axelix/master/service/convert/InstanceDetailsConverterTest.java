@@ -78,7 +78,7 @@ public class InstanceDetailsConverterTest {
     @Test
     void testConvertHappyPath() {
         // when.
-        InstanceDetailsResponse response = converter.convertInternal(
+        InstanceDetailsResponse response = converter.convertNonNull(
                 new DetailsConversionRequest(getInstanceDetails(), InstanceId.of(activeInstanceId)));
 
         assertThat(response.serviceName()).isEqualTo("test-object-factory-instance");

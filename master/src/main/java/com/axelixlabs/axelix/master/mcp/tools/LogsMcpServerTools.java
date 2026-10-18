@@ -96,6 +96,6 @@ public class LogsMcpServerTools {
                 InstanceId.of(instanceId),
                 ActuatorEndpoints.GET_LOG_ENTRIES_TAIL,
                 new DefaultHttpPayload(queryParameters, Map.of()));
-        return logEntriesTailConverter.convert(objectMapper.readValue(body, LogEntriesTail.class));
+        return logEntriesTailConverter.convertNonNull(objectMapper.readValue(body, LogEntriesTail.class));
     }
 }

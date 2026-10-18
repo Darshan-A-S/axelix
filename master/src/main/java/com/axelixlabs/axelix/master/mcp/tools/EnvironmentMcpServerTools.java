@@ -79,6 +79,6 @@ public class EnvironmentMcpServerTools {
         byte[] body = endpointInvoker.invoke(
                 InstanceId.of(instanceId), ActuatorEndpoints.GET_ALL_ENV_PROPERTIES, NoHttpPayload.INSTANCE);
         EnvironmentFeed feed = objectMapper.readValue(body, EnvironmentFeed.class);
-        return objectMapper.writeValueAsString(environmentFeedConverter.convert(feed));
+        return objectMapper.writeValueAsString(environmentFeedConverter.convertNonNull(feed));
     }
 }

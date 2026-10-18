@@ -32,22 +32,22 @@ import org.jspecify.annotations.Nullable;
  */
 public interface Converter<S, T> {
 
-    default @Nullable T convert(@Nullable S source) {
+    default @Nullable T convertNullable(@Nullable S source) {
         if (source == null) {
             return null;
         }
 
-        return convertInternal(source);
+        return convertNonNull(source);
     }
 
     @NonNull
-    T convertInternal(@NonNull S source);
+    T convertNonNull(@NonNull S source);
 
     default @NonNull Collection<@Nullable T> convertAll(@NonNull Collection<@Nullable S> sources) {
         List<@Nullable T> result = new ArrayList<>();
 
         for (S source : sources) {
-            result.add(convert(source));
+            result.add(convertNullable(source));
         }
 
         return result;

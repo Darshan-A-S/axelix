@@ -62,7 +62,7 @@ class LogEntriesTailConverterTest {
                                 .message("Retrying")));
 
         // when.
-        String result = subject.convertInternal(tail);
+        String result = subject.convertNonNull(tail);
 
         // then.
         assertThat(result).isEqualTo("""
@@ -76,7 +76,7 @@ class LogEntriesTailConverterTest {
 
     @Test
     void shouldRenderNothingWhenThereAreNoEntries() {
-        assertThat(subject.convertInternal(new LogEntriesTail().entries(List.of())))
+        assertThat(subject.convertNonNull(new LogEntriesTail().entries(List.of())))
                 .isEmpty();
     }
 }

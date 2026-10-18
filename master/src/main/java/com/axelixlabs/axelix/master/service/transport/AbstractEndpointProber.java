@@ -125,10 +125,7 @@ public abstract class AbstractEndpointProber<O> implements EndpointProber<O> {
             }
         }
 
-        SecurityContext securityContext = securityContextExecutor
-                .getSecurityContext()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Security Context is expected to be bound before invoking actuator endpoint"));
+        SecurityContext securityContext = securityContextExecutor.requireSecurityContext();
 
         builder.header(HttpHeaders.AUTHORIZATION, AuthenticationSchemes.BEARER.prefix() + securityContext.token());
 

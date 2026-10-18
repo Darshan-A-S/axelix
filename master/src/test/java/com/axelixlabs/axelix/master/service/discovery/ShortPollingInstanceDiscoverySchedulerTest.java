@@ -19,9 +19,11 @@ package com.axelixlabs.axelix.master.service.discovery;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +47,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -53,10 +56,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
+import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.SnapshotId;
 import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
+import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
 import com.axelixlabs.axelix.master.repository.InstanceRepository;
 import com.axelixlabs.axelix.master.service.discovery.k8s.KubernetesServiceInstance;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
@@ -125,7 +131,8 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         @Bean
         @Primary
         public AxelixVersionDiscoverer testAxelixVersionDiscoverer() {
-            return () -> "1.0.0-SNAPSHOT";
+            // Within the compatibility window of both the 1.0.0-SNAPSHOT starters most tests use and the newest one
+            return () -> "1.3.0-SNAPSHOT";
         }
     }
 
@@ -831,5 +838,44 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return new HttpEntity<>(request, headers);
+    }
+
+    @Test
+    void shouldStoreThatTheDiscoveredInstanceDetectedNoFeatures() throws IOException {
+        // given. unlike the starters before 1.3, which do not report the field at all.
+        String instanceId = UUID.randomUUID().toString();
+        String metadata =
+                metadataFixture("1.3").replaceAll("\"detectedFeatures\": \\[[^]]*]", "\"detectedFeatures\": []");
+        enqueueDiscovery("petclinic-1-3", instanceId, metadata);
+
+        // when.
+        subject.performDiscovery();
+
+        // then.
+        assertThat(instanceRegistry.get(InstanceId.of(instanceId)))
+                .get()
+                .extracting(Instance::detectedFeatures)
+                .isEqualTo(new DetectedFeatures(EnumSet.noneOf(InstanceFeature.class)));
+    }
+
+    private void enqueueDiscovery(String serviceId, String instanceId, String metadata) {
+        mockWebServer.enqueue(
+                new MockResponse().setBody(metadata).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
+
+        ServiceInstance k8sInstance = Instancio.of(KubernetesServiceInstance.class)
+                .set(Select.field("instanceId"), instanceId)
+                .set(Select.field("serviceId"), serviceId)
+                .set(Select.field("secure"), false)
+                .set(Select.field("host"), uri.getHost())
+                .set(Select.field("port"), uri.getPort())
+                .create();
+
+        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(serviceId));
+        Mockito.when(discoveryClient.getInstances(serviceId)).thenReturn(List.of(k8sInstance));
+    }
+
+    private static String metadataFixture(String minor) throws IOException {
+        return new ClassPathResource("compatibility/metadata/" + minor + ".json")
+                .getContentAsString(StandardCharsets.UTF_8);
     }
 }

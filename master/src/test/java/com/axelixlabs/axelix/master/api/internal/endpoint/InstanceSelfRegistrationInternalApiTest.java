@@ -548,6 +548,26 @@ public class InstanceSelfRegistrationInternalApiTest {
         return JSON_REQUEST.replace("\"instanceId\" :", "\"sbom\" : \"%s\",\n   \"instanceId\" :".formatted(escaped));
     }
 
+    @Test
+    void shouldStoreThatTheInstanceDetectedNoFeatures() {
+        // given. unlike the starters before 1.3, which do not report the field at all.
+        String requestWithNoFeatures = JSON_REQUEST
+                .replace("\"version\" : \"1.0.0-SNAPSHOT\"", "\"version\" : \"1.3.0\"")
+                .replace("\"insights\" : {", "\"detectedFeatures\" : [ ],\n\"insights\" : {");
+
+        // when.
+        ResponseEntity<Void> response = restTemplate
+                .withRoleTokenInAuthorizationHeader(DefaultRole.MANAGED_SERVICE)
+                .postForEntity("/api/internal/service/register", defaultJsonEntity(requestWithNoFeatures), Void.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(instanceRegistry.get(InstanceId.of(TEST_INSTANCE_ID)))
+                .get()
+                .extracting(Instance::detectedFeatures)
+                .isEqualTo(new DetectedFeatures(EnumSet.noneOf(InstanceFeature.class)));
+    }
+
     private <T> HttpEntity<T> defaultJsonEntity(T request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

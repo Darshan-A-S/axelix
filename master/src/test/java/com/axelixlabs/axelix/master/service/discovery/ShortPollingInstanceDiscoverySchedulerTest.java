@@ -19,10 +19,10 @@ package com.axelixlabs.axelix.master.service.discovery;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -47,7 +47,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -182,32 +181,8 @@ class ShortPollingInstanceDiscoverySchedulerTest {
             }
         """;
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(response.formatted("app1"))
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(response.formatted("app2"))
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance k8sInstance1 = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instance1Id)
-                .set(Select.field("serviceId"), service1)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        ServiceInstance k8sInstance2 = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instance2Id)
-                .set(Select.field("serviceId"), service2)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(service1, service2));
-        Mockito.when(discoveryClient.getInstances(service1)).thenReturn(List.of(k8sInstance1));
-        Mockito.when(discoveryClient.getInstances(service2)).thenReturn(List.of(k8sInstance2));
+        enqueueMetadata(response.formatted("app1"), response.formatted("app2"));
+        stubDiscovery(k8sInstance(service1, instance1Id), k8sInstance(service2, instance2Id));
 
         // when.
         subject.performDiscovery();
@@ -289,35 +264,12 @@ class ShortPollingInstanceDiscoverySchedulerTest {
             }
             """;
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(metadata.formatted(groupId, artifactId, failedExecutions))
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(metadata.formatted(groupId, artifactId, successfulExecutions))
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance instanceWithFailedExecution = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), failedInstanceId)
-                .set(Select.field("serviceId"), serviceWithFailedExecution)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        ServiceInstance instanceWithSuccessfulExecution = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), successfulInstanceId)
-                .set(Select.field("serviceId"), serviceWithSuccessfulExecution)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices())
-                .thenReturn(List.of(serviceWithFailedExecution, serviceWithSuccessfulExecution));
-        Mockito.when(discoveryClient.getInstances(serviceWithFailedExecution))
-                .thenReturn(List.of(instanceWithFailedExecution));
-        Mockito.when(discoveryClient.getInstances(serviceWithSuccessfulExecution))
-                .thenReturn(List.of(instanceWithSuccessfulExecution));
+        enqueueMetadata(
+                metadata.formatted(groupId, artifactId, failedExecutions),
+                metadata.formatted(groupId, artifactId, successfulExecutions));
+        stubDiscovery(
+                k8sInstance(serviceWithFailedExecution, failedInstanceId),
+                k8sInstance(serviceWithSuccessfulExecution, successfulInstanceId));
 
         // when.
         subject.performDiscovery();
@@ -433,21 +385,8 @@ class ShortPollingInstanceDiscoverySchedulerTest {
             }
             """;
 
-        mockWebServer.enqueue(
-                new MockResponse().setBody(firstResponse).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-        mockWebServer.enqueue(
-                new MockResponse().setBody(secondResponse).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance k8sInstance = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceId)
-                .set(Select.field("serviceId"), service)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(service));
-        Mockito.when(discoveryClient.getInstances(service)).thenReturn(List.of(k8sInstance));
+        enqueueMetadata(firstResponse, secondResponse);
+        stubDiscovery(k8sInstance(service, instanceId));
         subject.performDiscovery();
 
         // when.
@@ -516,13 +455,7 @@ class ShortPollingInstanceDiscoverySchedulerTest {
             }
         });
 
-        ServiceInstance k8sServiceInstance = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceId)
-                .set(Select.field("serviceId"), serviceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
+        ServiceInstance k8sServiceInstance = k8sInstance(serviceId, instanceId);
 
         Mockito.when(discoveryClient.getServices())
                 .thenReturn(List.of(serviceId))
@@ -696,13 +629,7 @@ class ShortPollingInstanceDiscoverySchedulerTest {
             }
         });
 
-        ServiceInstance k8sServiceInstance = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceId)
-                .set(Select.field("serviceId"), serviceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
+        ServiceInstance k8sServiceInstance = k8sInstance(serviceId, instanceId);
 
         Mockito.when(discoveryClient.getServices())
                 .thenReturn(List.of(serviceId)) // discovered at first
@@ -788,19 +715,8 @@ class ShortPollingInstanceDiscoverySchedulerTest {
             }
         """;
 
-        mockWebServer.enqueue(
-                new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance k8sInstance = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceId)
-                .set(Select.field("serviceId"), service)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(service));
-        Mockito.when(discoveryClient.getInstances(service)).thenReturn(List.of(k8sInstance));
+        enqueueMetadata(response);
+        stubDiscovery(k8sInstance(service, instanceId));
 
         // when.
         subject.performDiscovery();
@@ -841,12 +757,48 @@ class ShortPollingInstanceDiscoverySchedulerTest {
     }
 
     @Test
-    void shouldStoreThatTheDiscoveredInstanceDetectedNoFeatures() throws IOException {
+    void shouldStoreThatTheDiscoveredInstanceDetectedNoFeatures() {
         // given. unlike the starters before 1.3, which do not report the field at all.
+        String service = "petclinic";
         String instanceId = UUID.randomUUID().toString();
-        String metadata =
-                metadataFixture("1.3").replaceAll("\"detectedFeatures\": \\[[^]]*]", "\"detectedFeatures\": []");
-        enqueueDiscovery("petclinic-1-3", instanceId, metadata);
+
+        // language=json
+        String response = """
+            {
+              "version": "1.3.0",
+              "serviceVersion" : "3.5.0-SNAPSHOT",
+              "groupId" : "org.springframework.samples",
+              "artifactId" : "petclinic",
+              "commitShortSha" : "a8b0929",
+              "jdkVendor" : "BellSoft",
+              "gcInUse" : "G1",
+              "softwareVersions" : {
+                "springBoot" : "3.5.0",
+                "java" : "25",
+                "springFramework" : "6.1.2",
+                "kotlin" : null
+              },
+              "healthStatus" : "UP",
+              "memoryDetails" : {
+                "heap" : 12000
+              },
+              "insights" : {
+                "hotSpot" : {
+                  "projectLeyden" : [ ],
+                  "gc" : [ ],
+                  "projectLilliputh" : [ ]
+                },
+                "springFramework" : [ ],
+                "persistenceInsights" : {
+                  "transactions" : [ ]
+                }
+              },
+              "detectedFeatures" : [ ]
+            }
+            """;
+
+        enqueueMetadata(response);
+        stubDiscovery(k8sInstance(service, instanceId));
 
         // when.
         subject.performDiscovery();
@@ -858,24 +810,30 @@ class ShortPollingInstanceDiscoverySchedulerTest {
                 .isEqualTo(new DetectedFeatures(EnumSet.noneOf(InstanceFeature.class)));
     }
 
-    private void enqueueDiscovery(String serviceId, String instanceId, String metadata) {
-        mockWebServer.enqueue(
-                new MockResponse().setBody(metadata).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
+    private void enqueueMetadata(String... responses) {
+        for (String response : responses) {
+            mockWebServer.enqueue(
+                    new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
+        }
+    }
 
-        ServiceInstance k8sInstance = Instancio.of(KubernetesServiceInstance.class)
+    private ServiceInstance k8sInstance(String serviceId, String instanceId) {
+        return Instancio.of(KubernetesServiceInstance.class)
                 .set(Select.field("instanceId"), instanceId)
                 .set(Select.field("serviceId"), serviceId)
                 .set(Select.field("secure"), false)
                 .set(Select.field("host"), uri.getHost())
                 .set(Select.field("port"), uri.getPort())
                 .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(serviceId));
-        Mockito.when(discoveryClient.getInstances(serviceId)).thenReturn(List.of(k8sInstance));
     }
 
-    private static String metadataFixture(String minor) throws IOException {
-        return new ClassPathResource("compatibility/metadata/" + minor + ".json")
-                .getContentAsString(StandardCharsets.UTF_8);
+    private void stubDiscovery(ServiceInstance... instances) {
+        List<String> serviceIds =
+                Arrays.stream(instances).map(ServiceInstance::getServiceId).toList();
+        Mockito.when(discoveryClient.getServices()).thenReturn(serviceIds);
+
+        for (ServiceInstance instance : instances) {
+            Mockito.when(discoveryClient.getInstances(instance.getServiceId())).thenReturn(List.of(instance));
+        }
     }
 }

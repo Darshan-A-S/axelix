@@ -85,6 +85,17 @@ public interface InstanceRegistry {
     Optional<Instance> get(InstanceId instanceId);
 
     /**
+     * Get {@link Instance} by its id, failing if there is no such instance.
+     *
+     * @param instanceId the id of the instance to get.
+     * @return the {@link Instance} that is identified by given {@code instanceId}.
+     * @throws InstanceNotFoundException if there is no instance with the given id.
+     */
+    default Instance getOrThrow(InstanceId instanceId) throws InstanceNotFoundException {
+        return get(instanceId).orElseThrow(() -> new InstanceNotFoundException(instanceId));
+    }
+
+    /**
      * Get all instances that are managed by this registry.
      *
      * @return all instances that are managed by this registry.

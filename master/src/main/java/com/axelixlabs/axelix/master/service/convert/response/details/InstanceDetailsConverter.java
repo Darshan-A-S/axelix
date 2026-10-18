@@ -37,7 +37,6 @@ import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
-import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.service.convert.response.Converter;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
@@ -71,7 +70,7 @@ public class InstanceDetailsConverter implements Converter<DetailsConversionRequ
         InstanceId instanceId = request.instanceId();
 
         // Strictly speaking, there must be a wrapping tran
-        Instance instance = instanceRegistry.get(instanceId).orElseThrow(InstanceNotFoundException::new);
+        Instance instance = instanceRegistry.getOrThrow(instanceId);
         HistoricalApplicationSnapshot currentRecord = applicationSnapshotService.getCurrentRecord(new ApplicationId(
                 source.getBuild().getGroup(), source.getBuild().getArtifact()));
 

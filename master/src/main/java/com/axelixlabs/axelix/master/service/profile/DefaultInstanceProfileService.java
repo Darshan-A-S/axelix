@@ -30,7 +30,6 @@ import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
-import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.service.convert.response.InstancesToShortProfileConverter;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 
@@ -55,8 +54,7 @@ public class DefaultInstanceProfileService implements InstanceProfileService {
 
     @Override
     public InstanceProfileResponse getProfile(InstanceId instanceId) {
-        Instance instance =
-                instanceRegistry.get(instanceId).orElseThrow(() -> new InstanceNotFoundException(instanceId));
+        Instance instance = instanceRegistry.getOrThrow(instanceId);
 
         // The siblings always include the instance itself
         int siblingsCount = instanceRegistry.findSiblings(instanceId).size() - 1;

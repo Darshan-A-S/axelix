@@ -54,7 +54,6 @@ import com.axelixlabs.axelix.master.domain.ecosystem.platform.PlatformName;
 import com.axelixlabs.axelix.master.domain.ecosystem.platform.PlatformReleaseLine;
 import com.axelixlabs.axelix.master.domain.ecosystem.projects.SoftwareProject;
 import com.axelixlabs.axelix.master.domain.ecosystem.projects.SupportStatus;
-import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.exception.SbomNotAvailableException;
 import com.axelixlabs.axelix.master.repository.ApplicationDependenciesRepository;
 import com.axelixlabs.axelix.master.service.ecosystem.platform.PlatformCatalog;
@@ -106,8 +105,7 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
 
     @Override
     public DependencyAnalysisResponse analyzeFor(InstanceId instanceId) {
-        Instance instance =
-                instanceRegistry.get(instanceId).orElseThrow(() -> new InstanceNotFoundException(instanceId));
+        Instance instance = instanceRegistry.getOrThrow(instanceId);
 
         byte[] rawSbom =
                 endpointInvoker.invoke(instanceId, ActuatorEndpoints.GET_DEPENDENCIES_SBOM, NoHttpPayload.INSTANCE);

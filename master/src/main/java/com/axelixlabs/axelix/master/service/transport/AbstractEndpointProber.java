@@ -69,8 +69,7 @@ public abstract class AbstractEndpointProber<O> implements EndpointProber<O> {
     @Override
     public @NonNull O invoke(@NonNull InstanceId instanceId, HttpPayload httpPayload)
             throws EndpointInvocationException, BadRequestException, InstanceNotFoundException {
-        Instance instance =
-                instanceRegistry.get(instanceId).orElseThrow(() -> new InstanceNotFoundException(instanceId));
+        Instance instance = instanceRegistry.getOrThrow(instanceId);
 
         HttpRequest request = buildHttpRequest(supports(), httpPayload, instance.actuatorUrl());
 

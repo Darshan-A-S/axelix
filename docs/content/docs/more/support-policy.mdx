@@ -1,0 +1,65 @@
+---
+title: Support Policy
+description: "How often Axelix releases new versions, which open source versions still receive fixes, and for how long."
+---
+
+import { SupportTimeline } from './SupportTimeline';
+
+Every Axelix release line receives fixes for a limited time. This page explains how often new versions come out,
+which open source versions are supported right now, and what support includes.
+
+## Release cadence
+
+Axelix ships a new minor or major release roughly every **1 to 1.5 months**. One of those releases each year is a
+**major** one, so a calendar year usually brings about 8 or 9 minor releases and one major release.
+
+Between them, a supported line can also get **patch releases** (`1.2.1`, `1.2.2`, and so on). Patch releases have no
+fixed schedule: they ship when a fix is ready. What each kind of release may change is described in
+[Compatibility & Versioning](./compatibility-and-versioning.mdx#the-pain-index).
+
+## How long a version is supported
+
+The open source edition supports **only the latest release line**. A minor line `X.Y` is supported from the day
+`X.Y.0` ships until the next release, `X.Y+1.0` or a new major, comes out. Given the release cadence, that is
+usually about **1.5 months**.
+
+For example, `1.1.0` shipped on September 10, 2026, and `1.2.0` shipped on October 10, 2026. So the `1.1` line was
+supported during that month, and since October 10 only `1.2` is supported.
+
+While a line is supported, it receives:
+
+- fixes for security vulnerabilities, both in Axelix itself and in its dependencies;
+- fixes for critical bugs.
+
+These fixes ship as patch releases of the supported line, for example `1.2.1`. New features never land in a patch
+release: they wait for the next minor. Once a line is no longer supported, it gets no more patch releases, so the fix
+for a problem you find there is to upgrade to the latest release.
+
+:::note[Support is not compatibility]
+The end of support doesn't mean an older version stops working. Master still works with services that run starters
+from the last 4 minor releases, as described in
+[the compatibility window](./upgrading.mdx#the-compatibility-window). Support only defines which versions still get
+fixes.
+:::
+
+## Supported versions
+
+| Version | Initial release    | End of OSS support                   |
+|---------|--------------------|--------------------------------------|
+| `1.2.x` | October 10, 2026   | When the next release ships          |
+| `1.1.x` | September 10, 2026 | October 10, 2026                     |
+| `1.0.x` | July 29, 2026      | September 10, 2026                   |
+
+The chart below shows the same windows over time. The end of the current line is an estimate based on the usual gap
+between releases, and it moves with the actual release date.
+
+<SupportTimeline locale="en" />
+
+To stay on a supported version, upgrade to every new minor release. The steps are described in
+[Upgrading Axelix](./upgrading.mdx).
+
+## See also
+
+- [Compatibility & Versioning](./compatibility-and-versioning.mdx)
+- [Upgrading Axelix](./upgrading.mdx)
+- [Branching Model](./development/branching-model.mdx)

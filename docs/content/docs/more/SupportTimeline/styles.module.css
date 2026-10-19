@@ -1,0 +1,90 @@
+.Timeline {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 1px solid var(--color-fd-border);
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    overflow-x: auto;
+}
+
+.Grid {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    row-gap: 0.5rem;
+    min-width: 28rem;
+}
+
+.Row {
+    display: contents;
+}
+
+.Axis {
+    position: relative;
+    height: 1.25rem;
+    color: var(--color-fd-muted-foreground);
+}
+
+.Axis span {
+    position: absolute;
+    white-space: nowrap;
+    padding-left: 0.25rem;
+}
+
+.Version {
+    font-family: var(--font-mono, monospace);
+    font-weight: 600;
+    align-self: center;
+}
+
+.Track {
+    position: relative;
+    height: 1.75rem;
+}
+
+.Tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed var(--color-fd-border);
+}
+
+.Bar {
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    border-radius: 0.25rem;
+}
+
+.Ended {
+    background: var(--color-fd-muted-foreground);
+    opacity: 0.55;
+}
+
+.Open {
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--color-fd-primary) 0 6px,
+        color-mix(in srgb, var(--color-fd-primary) 55%, transparent) 6px 12px
+    );
+}
+
+.Legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-top: 0.75rem;
+    color: var(--color-fd-muted-foreground);
+}
+
+.Legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.Swatch {
+    display: inline-block;
+    width: 1.5rem;
+    height: 0.6rem;
+    border-radius: 0.2rem;
+}

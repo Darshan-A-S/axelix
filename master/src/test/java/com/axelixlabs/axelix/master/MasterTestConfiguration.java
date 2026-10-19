@@ -48,7 +48,7 @@ public class MasterTestConfiguration {
         @Primary
         public LiquibaseProperties sqliteLiquibaseProperties() {
             LiquibaseProperties liquibaseProperties = new LiquibaseProperties();
-            liquibaseProperties.setChangeLog("db/changelog/sqlite/db.changelog.master.sqlite.xml");
+            liquibaseProperties.setChangeLog("db/changelog/sqlite/db.changelog.sqlite.xml");
             return liquibaseProperties;
         }
     }
@@ -61,7 +61,7 @@ public class MasterTestConfiguration {
         @Primary
         public LiquibaseProperties postgresLiquibaseProperties() {
             LiquibaseProperties liquibaseProperties = new LiquibaseProperties();
-            liquibaseProperties.setChangeLog("db/changelog/postgres/db.changelog.master.postgresql.xml");
+            liquibaseProperties.setChangeLog("db/changelog/postgres/db.changelog.postgresql.xml");
             return liquibaseProperties;
         }
     }
@@ -74,7 +74,7 @@ public class MasterTestConfiguration {
         @Primary
         public LiquibaseProperties mysqlLiquibaseProperties() {
             LiquibaseProperties liquibaseProperties = new LiquibaseProperties();
-            liquibaseProperties.setChangeLog("db/changelog/mysql/db.changelog.master.mysql.xml");
+            liquibaseProperties.setChangeLog("db/changelog/mysql/db.changelog.mysql.xml");
             return liquibaseProperties;
         }
     }

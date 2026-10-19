@@ -1,11 +1,10 @@
 .MainWrapper {
-    /* TODO: Improve in future */
-    --status-sunset: #b42318;
-    --status-sunset-bg: #fef3f2;
-    --status-sunset-border: #fecdca;
-    --status-maintenance: #b54708;
-    --status-maintenance-bg: #fffaeb;
-    --status-maintenance-border: #fec84b;
+    --status-sunset: var(--axelix-red-700);
+    --status-sunset-bg: var(--axelix-red-50);
+    --status-sunset-border: var(--axelix-red-200);
+    --status-maintenance: var(--axelix-orange-700);
+    --status-maintenance-bg: var(--axelix-orange-50);
+    --status-maintenance-border: var(--axelix-orange-300);
     --status-dormant: var(--axelix-orange-400);
     --status-dormant-bg: var(--axelix-yellow-50);
     --status-dormant-border: var(--axelix-yellow-200);

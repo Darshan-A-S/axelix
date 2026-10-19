@@ -19,6 +19,8 @@ import { Tooltip } from "antd";
 import type { TooltipPlacement } from "antd/es/tooltip";
 import type { PropsWithChildren, ReactNode } from "react";
 
+import { palette } from "@/theme/tokens";
+
 import styles from "./styles.module.css";
 
 interface IProps {
@@ -33,18 +35,19 @@ interface IProps {
     placement?: TooltipPlacement;
 }
 
+/**
+ * A neutral, design-aligned tooltip: a dark surface with light text, distinct from the accented
+ * {@link InfoTooltip}. The trigger is provided as children.
+ */
 export const HintTooltip = ({ children, content, placement = "top" }: PropsWithChildren<IProps>) => {
     return (
-        <>
-            <Tooltip
-                title={<div className={`TextUltraSmall ${styles.Content}`}>{content}</div>}
-                placement={placement}
-                // TODO: Improve in the future
-                color="#0f172a"
-                styles={{ container: { padding: 0 } }}
-            >
-                {children}
-            </Tooltip>
-        </>
+        <Tooltip
+            title={<div className={`TextUltraSmall ${styles.Content}`}>{content}</div>}
+            placement={placement}
+            color={palette.grey[900]}
+            styles={{ container: { padding: 0 } }}
+        >
+            {children}
+        </Tooltip>
     );
 };

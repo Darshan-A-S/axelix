@@ -14,7 +14,6 @@
     }
 }
 
-/* TODO: Improve in the future */
 .BadgeDot {
     display: inline-block;
     height: 4px;
@@ -22,7 +21,7 @@
     border-radius: 50%;
     background-color: var(--axelix-green-600);
     flex-shrink: 0;
-    box-shadow: 0 0 0 2px  var(--axelix-green-100);
+    box-shadow: 0 0 0 2px var(--axelix-green-100);
     transition: box-shadow 0.3s;
 }
 
@@ -39,14 +38,14 @@
     padding: 3px 8px 3px 5px;
     border-radius: 20px;
     border: 1px solid var(--axelix-green-100);
-    background-color: #f0fdf4;
+    background-color: var(--axelix-green-50);
     cursor: pointer;
     outline: none;
     transition: background-color 0.3s, border-color 0.3s;
 
     &:hover {
-        background-color: #dcfce7;
-        border-color: #86efac;
+        background-color: var(--axelix-green-100);
+        border-color: var(--axelix-green-200);
 
         & .BadgeDot {
             box-shadow: 0 0 0 3px var(--axelix-green-100);

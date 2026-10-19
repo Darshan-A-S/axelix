@@ -20,6 +20,7 @@ import type { TooltipPlacement } from "antd/es/tooltip";
 import type { PropsWithChildren } from "react";
 
 import { InfoIcon, QuestionIcon } from "@/assets";
+import { palette } from "@/theme/tokens";
 
 import styles from "./styles.module.css";
 
@@ -48,8 +49,7 @@ export const InfoTooltip = ({ children, text, placement = "right" }: PropsWithCh
                     </div>
                 }
                 placement={placement}
-                // TODO: Improve in the future
-                color="#1890ff"
+                color={palette.blue[600]}
             >
                 {children ?? <QuestionIcon color="#00ab55" className={styles.QuestionIcon} />}
             </Tooltip>

@@ -1,0 +1,47 @@
+replicaCount: 1
+
+image:
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  ref: "1.3.0-SNAPSHOT"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+profiles: ""
+
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  # This service listens on 8097 (see application.properties).
+  port: 8097
+
+resources: {}
+
+liveness:
+  delay: 15
+  timeout: 10
+  path: /actuator/health
+
+readiness:
+  delay: 15
+  timeout: 10
+  path: /actuator/health
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

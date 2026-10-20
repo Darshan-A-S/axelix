@@ -223,3 +223,14 @@ jobs:
           cr-repository-path: ${{ env.IMAGE_REPOSITORY }}
           image-tag: playgrounds:${{ env.APP_NAME }}-1.2.0-SNAPSHOT
           helm-release: ${{ env.APP_NAME }}
+
+      - name: Deploy Playground Reactive Greeting Service Gradle SB 4
+        env:
+          APP_NAME: reactive-greeting-service-gradle-sb-4
+        uses: ./.github/actions/deploy-playground
+        with:
+          working-directory: playgrounds/${{ env.APP_NAME }}
+          cr-url: ${{ env.CLOUD_CONTAINER_REGISTRY_URL }}
+          cr-repository-path: ${{ env.IMAGE_REPOSITORY }}
+          image-tag: playgrounds:${{ env.APP_NAME }}-1.3.0-SNAPSHOT
+          helm-release: ${{ env.APP_NAME }}

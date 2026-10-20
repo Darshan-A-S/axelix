@@ -100,6 +100,7 @@ jobs:
               - 'sbs/axelix-spring-boot-4-starter/**'
               - 'playgrounds/spring-petclinic-maven-sb-4/**'
               - 'playgrounds/api-gateway-gradle-sb-4/**'
+              - 'playgrounds/reactive-greeting-service-gradle-sb-4/**'
 
             sbs_global_trigger:
               - 'common/**'

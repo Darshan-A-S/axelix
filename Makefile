@@ -2,7 +2,8 @@
         publish-local build-plugins publish-starter-sb-2 publish-starter-sb-3 publish-starter-sb-4 \
         build-spring-petclinic-maven-sb-2 build-notification-service-gradle-sb-2 \
         build-feature-service-maven-sb-3 build-spring-petclinic-gradle-sb-3 \
-        build-spring-petclinic-maven-sb-4 build-api-gateway-gradle-sb-4 publish-plugins \
+        build-spring-petclinic-maven-sb-4 build-api-gateway-gradle-sb-4 \
+        build-reactive-greeting-service-gradle-sb-4 publish-plugins \
         publish-gradle-plugin publish-maven-plugin master-oss master-oss-image
 
 BUILD_SB2             ?= true
@@ -19,6 +20,7 @@ clean-playgrounds:
 	cd playgrounds/spring-petclinic-gradle-sb-3 && ./gradlew clean
 	cd playgrounds/spring-petclinic-maven-sb-4 && ./mvnw clean
 	cd playgrounds/api-gateway-gradle-sb-4 && ./gradlew clean
+	cd playgrounds/reactive-greeting-service-gradle-sb-4 && ./gradlew clean
 
 clean-all: clean clean-playgrounds
 
@@ -33,6 +35,7 @@ spotless-all:
 	cd playgrounds/spring-petclinic-gradle-sb-3 && ./gradlew spotlessApply
 	cd playgrounds/spring-petclinic-maven-sb-4 && ./mvnw spring-javaformat:apply
 	cd playgrounds/api-gateway-gradle-sb-4 && ./gradlew spotlessApply
+	cd playgrounds/reactive-greeting-service-gradle-sb-4 && ./gradlew spotlessApply
 
 publish-local:
 	./gradlew publishToMavenLocal
@@ -73,7 +76,8 @@ ifeq ($(BUILD_SB3),true)
 PLAYGROUND_TARGETS += build-spring-petclinic-gradle-sb-3 build-feature-service-maven-sb-3
 endif
 ifeq ($(BUILD_SB4),true)
-PLAYGROUND_TARGETS += build-spring-petclinic-maven-sb-4 build-api-gateway-gradle-sb-4
+PLAYGROUND_TARGETS += build-spring-petclinic-maven-sb-4 build-api-gateway-gradle-sb-4 \
+                      build-reactive-greeting-service-gradle-sb-4
 endif
 
 build-playground: publish-plugins $(PLAYGROUND_TARGETS)
@@ -144,3 +148,7 @@ build-spring-petclinic-maven-sb-4: publish-maven-plugin publish-starter-sb-4
 build-api-gateway-gradle-sb-4: publish-gradle-plugin publish-starter-sb-4
 	@echo "=== Running Gradle build for API Gateway (no database) Spring Boot 4 ==="
 	cd playgrounds/api-gateway-gradle-sb-4 && JAVA_HOME=$(LOCAL_JAVA_17) ./gradlew build
+
+build-reactive-greeting-service-gradle-sb-4: publish-gradle-plugin publish-starter-sb-4
+	@echo "=== Running Gradle build for Reactive Greeting Service (WebFlux) Spring Boot 4 ==="
+	cd playgrounds/reactive-greeting-service-gradle-sb-4 && JAVA_HOME=$(LOCAL_JAVA_17) ./gradlew build

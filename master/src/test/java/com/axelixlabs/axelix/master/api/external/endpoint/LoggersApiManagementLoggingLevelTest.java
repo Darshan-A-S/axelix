@@ -82,6 +82,20 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
     @Autowired
     private InstanceRegistry registry;
 
+    @Test
+    void shouldRejectInstancesFromDifferentApplicationsWithoutSendingCommands() {
+        registry.register(TestInstanceFactory.create(siblingInstanceId, "another-group", "another-app"));
+        LogLevelLoggerBulkChangeRequest request = new LogLevelLoggerBulkChangeRequest(
+                List.of(activeInstanceId, siblingInstanceId), "logger.name", null, "DEBUG");
+
+        ResponseEntity<String> response =
+                restTemplate.asEditor().postForEntity("/api/external/loggers/logger", request, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).contains("BAD_REQUEST");
+        assertThat(invokedPaths).isEmpty();
+    }
+
     @BeforeAll
     static void startServer() throws IOException {
         mockWebServer = new MockWebServer();

@@ -34,6 +34,7 @@ import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.request.caches.CacheBulkClearRequest;
 import com.axelixlabs.axelix.master.api.external.request.caches.CachesBulkClearRequest;
+import com.axelixlabs.axelix.master.service.BulkInstancesValidator;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 import com.axelixlabs.axelix.master.service.transport.PartiallyUpdatedException;
 
@@ -47,14 +48,17 @@ import com.axelixlabs.axelix.master.service.transport.PartiallyUpdatedException;
 public class CachesClearApi {
 
     private final EndpointInvoker endpointInvoker;
+    private final BulkInstancesValidator bulkInstancesValidator;
 
-    public CachesClearApi(EndpointInvoker endpointInvoker) {
+    public CachesClearApi(EndpointInvoker endpointInvoker, BulkInstancesValidator bulkInstancesValidator) {
         this.endpointInvoker = endpointInvoker;
+        this.bulkInstancesValidator = bulkInstancesValidator;
     }
 
     @DeleteMapping(ApiPaths.CachesApi.CACHE_BULK_CLEAR_ALL)
     public ResponseEntity<?> clearAllCaches(@RequestBody CachesBulkClearRequest request) {
         try {
+            bulkInstancesValidator.validate(request.instanceIds());
             endpointInvoker.invokeNoValueForInstances(
                     request.instanceIds(), ActuatorEndpoints.CLEAR_ALL_CACHES, NoHttpPayload.INSTANCE);
             return ResponseEntity.noContent().build();
@@ -74,6 +78,7 @@ public class CachesClearApi {
                 Map.of("cacheName", request.cacheName(), "cacheManagerName", request.cacheManagerName()));
 
         try {
+            bulkInstancesValidator.validate(request.instanceIds());
             endpointInvoker.invokeNoValueForInstances(
                     request.instanceIds(), ActuatorEndpoints.CLEAR_SINGLE_CACHE, payload);
             return ResponseEntity.noContent().build();

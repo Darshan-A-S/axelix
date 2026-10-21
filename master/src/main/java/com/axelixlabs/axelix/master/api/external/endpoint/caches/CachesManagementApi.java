@@ -32,6 +32,7 @@ import com.axelixlabs.axelix.master.api.error.handle.ApiErrorCodes;
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.request.caches.CacheBulkStatusChangeRequest;
+import com.axelixlabs.axelix.master.service.BulkInstancesValidator;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 import com.axelixlabs.axelix.master.service.transport.PartiallyUpdatedException;
 
@@ -46,9 +47,11 @@ import com.axelixlabs.axelix.master.service.transport.PartiallyUpdatedException;
 public class CachesManagementApi {
 
     private final EndpointInvoker endpointInvoker;
+    private final BulkInstancesValidator bulkInstancesValidator;
 
-    public CachesManagementApi(EndpointInvoker endpointInvoker) {
+    public CachesManagementApi(EndpointInvoker endpointInvoker, BulkInstancesValidator bulkInstancesValidator) {
         this.endpointInvoker = endpointInvoker;
+        this.bulkInstancesValidator = bulkInstancesValidator;
     }
 
     @PostMapping(ApiPaths.CachesApi.BULK_ENABLE_CACHE)
@@ -57,6 +60,7 @@ public class CachesManagementApi {
                 Map.of("cacheName", request.cacheName(), "cacheManagerName", request.cacheManagerName()));
 
         try {
+            bulkInstancesValidator.validate(request.instanceIds());
             endpointInvoker.invokeNoValueForInstances(request.instanceIds(), ActuatorEndpoints.ENABLE_CACHE, payload);
             return ResponseEntity.noContent().build();
         } catch (PartiallyUpdatedException e) {
@@ -75,6 +79,7 @@ public class CachesManagementApi {
                 Map.of("cacheName", request.cacheName(), "cacheManagerName", request.cacheManagerName()));
 
         try {
+            bulkInstancesValidator.validate(request.instanceIds());
             endpointInvoker.invokeNoValueForInstances(request.instanceIds(), ActuatorEndpoints.DISABLE_CACHE, payload);
             return ResponseEntity.noContent().build();
         } catch (PartiallyUpdatedException e) {

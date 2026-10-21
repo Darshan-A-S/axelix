@@ -39,6 +39,7 @@ import com.axelixlabs.axelix.master.contract.logger.LoggersFeedLogger;
 import com.axelixlabs.axelix.master.contract.logger.LoggersGroupProfile;
 import com.axelixlabs.axelix.master.contract.logger.SingleLoggerProfile;
 import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.service.BulkInstancesValidator;
 import com.axelixlabs.axelix.master.service.serde.JacksonMessageSerializationStrategy;
 import com.axelixlabs.axelix.master.service.transport.BadRequestException;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvocationException;
@@ -54,6 +55,7 @@ import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 public class LoggersMcpServerTools {
 
     private final EndpointInvoker endpointInvoker;
+    private final BulkInstancesValidator bulkInstancesValidator;
 
     private final JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy;
 
@@ -61,9 +63,11 @@ public class LoggersMcpServerTools {
 
     public LoggersMcpServerTools(
             EndpointInvoker endpointInvoker,
+            BulkInstancesValidator bulkInstancesValidator,
             JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy,
             ObjectMapper objectMapper) {
         this.endpointInvoker = endpointInvoker;
+        this.bulkInstancesValidator = bulkInstancesValidator;
         this.jacksonMessageSerializationStrategy = jacksonMessageSerializationStrategy;
         this.objectMapper = objectMapper;
     }
@@ -294,6 +298,7 @@ public class LoggersMcpServerTools {
                 Map.of("name", loggerName),
                 jacksonMessageSerializationStrategy.serialize(
                         new LogLevelChangeRequest().configuredLevel(loggerLevel).ttlSeconds(ttlSeconds)));
+        bulkInstancesValidator.validate(instanceIds);
         endpointInvoker.invokeNoValueForInstances(instanceIds, ActuatorEndpoints.SET_ONE_LOGGER, payload);
     }
 
@@ -388,7 +393,7 @@ public class LoggersMcpServerTools {
             @McpToolParam(description = """
                 The Logger Name. The exact or approximate name of the logger.
                 Partial names are supported.""") String loggerName) {
-
+        bulkInstancesValidator.validate(instanceIds);
         endpointInvoker.invokeNoValueForInstances(
                 instanceIds, ActuatorEndpoints.RESET_FOR_LOGGER, new DefaultHttpPayload(Map.of("name", loggerName)));
     }

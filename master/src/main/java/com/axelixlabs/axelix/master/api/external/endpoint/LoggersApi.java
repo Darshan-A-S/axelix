@@ -40,6 +40,7 @@ import com.axelixlabs.axelix.master.api.external.request.loggers.LogLevelLoggerB
 import com.axelixlabs.axelix.master.contract.logger.GroupLogLevelChangeRequest;
 import com.axelixlabs.axelix.master.contract.logger.LogLevelChangeRequest;
 import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.service.BulkInstancesValidator;
 import com.axelixlabs.axelix.master.service.serde.JacksonMessageSerializationStrategy;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 import com.axelixlabs.axelix.master.service.transport.PartiallyUpdatedException;
@@ -54,11 +55,15 @@ import com.axelixlabs.axelix.master.service.transport.PartiallyUpdatedException;
 public class LoggersApi {
 
     private final EndpointInvoker endpointInvoker;
+    private final BulkInstancesValidator bulkInstancesValidator;
     private final JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy;
 
     public LoggersApi(
-            EndpointInvoker endpointInvoker, JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy) {
+            EndpointInvoker endpointInvoker,
+            BulkInstancesValidator bulkInstancesValidator,
+            JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy) {
         this.endpointInvoker = endpointInvoker;
+        this.bulkInstancesValidator = bulkInstancesValidator;
         this.jacksonMessageSerializationStrategy = jacksonMessageSerializationStrategy;
     }
 
@@ -98,6 +103,7 @@ public class LoggersApi {
                         .ttlSeconds(request.ttlSeconds())));
 
         try {
+            bulkInstancesValidator.validate(request.instanceIds());
             endpointInvoker.invokeNoValueForInstances(request.instanceIds(), ActuatorEndpoints.SET_ONE_LOGGER, payload);
             return ResponseEntity.noContent().build();
         } catch (PartiallyUpdatedException e) {
@@ -123,6 +129,7 @@ public class LoggersApi {
         HttpPayload payload = new DefaultHttpPayload(Map.of("name", request.loggerName()));
 
         try {
+            bulkInstancesValidator.validate(request.instanceIds());
             endpointInvoker.invokeNoValueForInstances(
                     request.instanceIds(), ActuatorEndpoints.RESET_FOR_LOGGER, payload);
             return ResponseEntity.noContent().build();

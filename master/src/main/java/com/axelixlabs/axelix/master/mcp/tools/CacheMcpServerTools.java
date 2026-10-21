@@ -31,6 +31,7 @@ import com.axelixlabs.axelix.common.domain.http.HttpPayload;
 import com.axelixlabs.axelix.common.domain.http.NoHttpPayload;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.mcp.McpEndpoints;
+import com.axelixlabs.axelix.master.service.BulkInstancesValidator;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 
 /**
@@ -43,9 +44,11 @@ import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 public class CacheMcpServerTools {
 
     private final EndpointInvoker endpointInvoker;
+    private final BulkInstancesValidator bulkInstancesValidator;
 
-    public CacheMcpServerTools(EndpointInvoker endpointInvoker) {
+    public CacheMcpServerTools(EndpointInvoker endpointInvoker, BulkInstancesValidator bulkInstancesValidator) {
         this.endpointInvoker = endpointInvoker;
+        this.bulkInstancesValidator = bulkInstancesValidator;
     }
 
     @McpTool(
@@ -114,6 +117,7 @@ public class CacheMcpServerTools {
     public void clearAllCaches(
             @McpToolParam(description = "The IDs of the instances to apply the operation to")
                     List<String> instanceIds) {
+        bulkInstancesValidator.validate(instanceIds);
         endpointInvoker.invokeNoValueForInstances(
                 instanceIds, ActuatorEndpoints.CLEAR_ALL_CACHES, NoHttpPayload.INSTANCE);
     }
@@ -155,6 +159,7 @@ public class CacheMcpServerTools {
             @McpToolParam(description = "The Cache Name (also serves as the entry key)") String cacheName) {
 
         HttpPayload payload = new DefaultHttpPayload(Map.of("cacheName", cacheName, "cacheManagerName", cacheManager));
+        bulkInstancesValidator.validate(instanceIds);
         endpointInvoker.invokeNoValueForInstances(instanceIds, ActuatorEndpoints.CLEAR_SINGLE_CACHE, payload);
     }
 }

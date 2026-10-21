@@ -49,7 +49,6 @@ public class AxelixLogsEndpointAutoConfiguration {
 
     @Bean
     public SlidingWindow<LogEntry> logEntries(LogsConfigurationProperties properties) {
-        properties.validate();
         return new SlidingWindow<>(properties.getMaxEntries());
     }
 

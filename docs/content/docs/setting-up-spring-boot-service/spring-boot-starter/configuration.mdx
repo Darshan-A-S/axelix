@@ -837,6 +837,51 @@ With cache management disabled, the Caches page in Master has no data to show fo
 tools fail for it.
 :::
 
+### Log entries
+
+<UpcomingReleaseNotice />
+
+The `axelix-logs` endpoint serves the most recent log entries of your application, so you can read them without
+access to the host. The starter keeps these entries in memory, starting from application startup. When the buffer is
+full, each new entry pushes out the oldest one. Because the buffer lives in memory, it is empty again after a restart.
+
+By default, the starter keeps the last 1000 entries. Raise `axelix.sbs.logs.max-entries` when a busy service logs
+so much that 1000 entries cover only a few seconds. Lower it when memory is tight, because every kept entry stays on
+the heap.
+
+<Tabs groupId="spring-config" items={['application.yaml', 'application.properties']}>
+  <Tab value="application.yaml">
+
+```yaml
+axelix:
+  sbs:
+    logs:
+      max-entries: 5000
+```
+
+  </Tab>
+  <Tab value="application.properties">
+
+```properties
+axelix.sbs.logs.max-entries=5000
+```
+
+  </Tab>
+</Tabs>
+
+<div className={styles.SharedTable}>
+
+| Property                      | Default | Description                                                                                                       |
+|-------------------------------|---------|-------------------------------------------------------------------------------------------------------------------|
+| `axelix.sbs.logs.max-entries` | `1000`  | Maximum number of the most recent log entries the starter keeps in memory. Must be greater than `0`. |
+
+</div>
+
+:::note
+The starter checks the value once the application has started. If it is `0` or negative, startup fails with an
+`IllegalArgumentException` saying `axelix.sbs.logs.max-entries must be positive`.
+:::
+
 ### Transaction monitoring
 
 Transaction monitoring is what powers the Transaction Control page and the related meters: it wraps your

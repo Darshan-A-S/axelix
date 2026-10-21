@@ -17,7 +17,6 @@
  */
 package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 
-import com.axelixlabs.axelix.sbs.spring.core.config.LogsConfigurationProperties;
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.ConditionalOnLoggingSystem;
 import com.axelixlabs.axelix.sbs.spring.core.SlidingWindow;
+import com.axelixlabs.axelix.sbs.spring.core.config.LogsConfigurationProperties;
 import com.axelixlabs.axelix.sbs.spring.core.contract.logs.LogEntry;
 import com.axelixlabs.axelix.sbs.spring.core.logs.AxelixLogsEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.logs.Log4j2InMemoryLogsAppender;
@@ -49,7 +49,6 @@ public class AxelixLogsEndpointAutoConfiguration {
 
     @Bean
     public SlidingWindow<LogEntry> logEntries(LogsConfigurationProperties properties) {
-        properties.validate();
         return new SlidingWindow<>(properties.getMaxEntries());
     }
 

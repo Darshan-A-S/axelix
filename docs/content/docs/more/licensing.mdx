@@ -1,0 +1,65 @@
+---
+title: Licensing
+description: "Which license covers each Axelix component, and what the licenses mean when you use Axelix in your own projects."
+---
+
+Axelix is open source, but not every part of it ships under the same license. This page lists the license of each
+component and explains what it means for the applications you run Axelix with.
+
+## Licenses by component
+
+Almost all of Axelix is licensed under the **GNU Lesser General Public License, version 3** (LGPLv3). The only
+exception is the official Helm chart, which uses the **MIT License**.
+
+| Component                                              | License |
+|--------------------------------------------------------|---------|
+| Axelix Master, including its web UI and MCP server     | LGPLv3  |
+| Axelix Spring Boot Starters (Spring Boot 2, 3, and 4)  | LGPLv3  |
+| Axelix build plugins for Gradle and Maven              | LGPLv3  |
+| Official Axelix Helm chart                             | MIT     |
+
+The license applies to every form the component ships in. For example, the Master JAR and the Master Docker image
+both carry LGPLv3, and the starter and plugin artifacts on Maven Central declare LGPLv3 in their POM metadata. The full
+LGPLv3 text is in the [`LICENSE`](https://github.com/axelixlabs/axelix/blob/master/LICENSE) file of the
+[Axelix repository](https://github.com/axelixlabs/axelix), and the Helm chart ships with its own MIT license text. The
+copyright holder for all components is Axelix Labs.
+
+## What LGPLv3 means for your application
+
+**Yes, you can use the Axelix starters and build plugins in a closed-source, proprietary application, free of charge.**
+You don't pay any fees, and you don't sign any agreement with Axelix Labs.
+
+This works because LGPLv3 is a weak copyleft license. Its obligations cover Axelix's own code, not the code of
+applications that use it. So adding a starter to your Spring Boot service, or a build plugin to your build, doesn't
+require you to publish your application's source code or change its license. The same holds for running Master inside
+your company to monitor your services.
+
+The obligations start when you **distribute a modified version** of an Axelix component. For example, if you patch the
+starter and ship the patched JAR to your customers, you must make the source of your changes available to them under
+LGPLv3. LGPLv3 has no network clause, so modifying Master and only running it on your own servers doesn't count as
+distribution.
+
+:::note[Not legal advice]
+This section is a short summary to help you orient yourself. The license text is the only binding source. If your
+case depends on the details, for example when you embed Axelix into a product you sell, check it with your legal team.
+:::
+
+## The Helm chart under MIT
+
+The Helm chart only describes how to deploy Master to Kubernetes, so it uses the more
+permissive MIT License. You can copy it into your internal chart repository, change it, or merge it into your own
+umbrella chart without sharing the changes. The only condition is to keep the copyright and license notice in the
+copies. Master itself, which the chart deploys, stays under LGPLv3.
+
+## Axelix Enterprise
+
+The upcoming paid **Axelix Enterprise** edition is not open source. It is distributed under a separate commercial
+license agreement with Axelix Labs, and its additional features are not covered by LGPLv3. Axelix OSS, described in
+the table above, stays under LGPLv3. See [Axelix OSS and Enterprise](../product/introduction.mdx#axelix-oss-and-enterprise)
+for more on the two editions.
+
+## See also
+
+- [Introduction](../product/introduction.mdx)
+- [Support Policy](./support-policy.mdx)
+- [Compatibility & Versioning](./compatibility-and-versioning.mdx)

@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalManagementPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
@@ -67,6 +68,9 @@ class JwtAuthorizationFilterSeparateManagementPortTest {
     @LocalManagementPort
     private int managementPort;
 
+    @LocalServerPort
+    private int serverPort;
+
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -91,6 +95,14 @@ class JwtAuthorizationFilterSeparateManagementPortTest {
                 restTemplate.exchange(envEndpointUrl(), HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void shouldNotRegisterFilter_OnApplicationPort() {
+        ResponseEntity<String> response =
+                restTemplate.getForEntity("http://localhost:" + serverPort + "/actuator/axelix-env", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     private String envEndpointUrl() {

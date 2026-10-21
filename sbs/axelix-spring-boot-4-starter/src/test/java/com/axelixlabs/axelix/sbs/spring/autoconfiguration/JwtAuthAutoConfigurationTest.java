@@ -20,9 +20,14 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.boot.actuate.autoconfigure.endpoint.EndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.web.server.ManagementContextAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration;
 
 import com.axelixlabs.axelix.common.auth.core.JwtDefaults;
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
@@ -30,6 +35,7 @@ import com.axelixlabs.axelix.common.auth.service.Authorizer;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.sbs.spring.core.auth.AuthorityResolver;
+import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthorizationFilter;
 import com.axelixlabs.axelix.sbs.spring.core.auth.WebIdentityAccessManager;
 import com.axelixlabs.axelix.sbs.spring.core.config.AuthProperties;
 
@@ -52,6 +58,15 @@ class JwtAuthAutoConfigurationTest {
             .withConfiguration(AutoConfigurations.of(
                     JwtAuthAutoConfiguration.class, SecurityContextExecutorAutoConfiguration.class));
 
+    private final WebApplicationContextRunner webContextRunner = new WebApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(
+                    JwtAuthAutoConfiguration.class,
+                    SecurityContextExecutorAutoConfiguration.class,
+                    EndpointAutoConfiguration.class,
+                    WebEndpointAutoConfiguration.class,
+                    DispatcherServletAutoConfiguration.class,
+                    ManagementContextAutoConfiguration.class));
+
     @Test
     void shouldCreateAllBeansInDefaultScenario() {
         contextRunner.run(context -> {
@@ -61,7 +76,6 @@ class JwtAuthAutoConfigurationTest {
             assertThat(context).hasSingleBean(AuthorityResolver.class);
             assertThat(context).hasSingleBean(Authorizer.class);
             assertThat(context).hasSingleBean(WebIdentityAccessManager.class);
-            assertThat(context).hasSingleBean(FilterRegistrationBean.class);
             assertThat(context).hasSingleBean(SecurityContextExecutor.class);
         });
     }
@@ -95,5 +109,12 @@ class JwtAuthAutoConfigurationTest {
                     assertThat(context).hasFailed();
                     assertThat(context.getStartupFailure()).isInstanceOf(BeanCreationException.class);
                 });
+    }
+
+    @Test
+    void shouldRegisterFilterInMainContext_whenManagementPortIsSame() {
+        webContextRunner.run(context -> assertThat(
+                        context.getBean(FilterRegistrationBean.class).getFilter())
+                .isInstanceOf(JwtAuthorizationFilter.class));
     }
 }

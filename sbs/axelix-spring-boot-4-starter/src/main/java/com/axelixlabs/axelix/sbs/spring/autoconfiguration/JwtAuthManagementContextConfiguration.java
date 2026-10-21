@@ -29,13 +29,13 @@ import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthorizationFilter;
 import com.axelixlabs.axelix.sbs.spring.core.auth.WebIdentityAccessManager;
 
 /**
- * Registers {@link JwtAuthorizationFilter} in the management child context, i.e. when Actuator
- * runs on a separate {@code management.server.port}.
+ * Registers {@link JwtAuthorizationFilter} in the context that serves Actuator: the main context,
+ * or the management child context when Actuator runs on a separate {@code management.server.port}.
  *
  * @since 19.10.2026
  * @author Nikita Kirillov
  */
-@ManagementContextConfiguration(value = ManagementContextType.CHILD, proxyBeanMethods = false)
+@ManagementContextConfiguration(value = ManagementContextType.ANY, proxyBeanMethods = false)
 @ConditionalOnBean(WebIdentityAccessManager.class)
 public class JwtAuthManagementContextConfiguration {
 

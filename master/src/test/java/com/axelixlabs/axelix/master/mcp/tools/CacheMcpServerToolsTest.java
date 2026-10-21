@@ -115,6 +115,44 @@ class CacheMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
         assertCacheClearing(instance.takeRequest(), "/axelix-caches/clear");
     }
 
+    @Test
+    void shouldRejectClearingTheSpecificCacheOnInstancesOfDifferentApplications() {
+        // when.
+        String result = callToolExpectingError(
+                McpEndpoints.CLEAR_SPECIFIC_CACHE_TOOL_NAME,
+                Map.of(
+                        "instanceIds",
+                        List.of(INSTANCE_ID, ANOTHER_APPLICATION_INSTANCE_ID),
+                        "cacheManager",
+                        "cacheManager",
+                        "cacheName",
+                        "owners"));
+
+        // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+        assertThat(result)
+                .isEqualTo("Error invoking method: clearSpecificCacheEntity" + System.lineSeparator()
+                        + "All instances must belong to the same application");
+
+        // and.
+        assertThat(instance.requestCount()).isZero();
+    }
+
+    @Test
+    void shouldRejectClearingAllCachesOnInstancesOfDifferentApplications() {
+        // when.
+        String result = callToolExpectingError(
+                McpEndpoints.CLEAR_ALL_CACHES_TOOL_NAME,
+                Map.of("instanceIds", List.of(INSTANCE_ID, ANOTHER_APPLICATION_INSTANCE_ID)));
+
+        // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+        assertThat(result)
+                .isEqualTo("Error invoking method: clearAllCaches" + System.lineSeparator()
+                        + "All instances must belong to the same application");
+
+        // and.
+        assertThat(instance.requestCount()).isZero();
+    }
+
     private static void assertCacheClearing(RecordedRequest request, String path) {
         assertThat(request.getMethod()).isEqualTo("DELETE");
         assertThat(request.getPath()).isEqualTo(ACTUATOR_PATH + path);

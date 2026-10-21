@@ -70,6 +70,7 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
     private static final String activeInstanceId = UUID.randomUUID().toString();
     private static final String siblingInstanceId = UUID.randomUUID().toString();
     private static final String failingInstanceId = UUID.randomUUID().toString();
+    private static final String anotherApplicationInstanceId = UUID.randomUUID().toString();
 
     private static MockWebServer mockWebServer;
 
@@ -123,6 +124,7 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
                 TestInstanceFactory.create(siblingInstanceId, mockWebServer.url(siblingInstanceId) + "/actuator"));
         registry.register(
                 TestInstanceFactory.create(failingInstanceId, mockWebServer.url(failingInstanceId) + "/actuator"));
+        registry.register(TestInstanceFactory.create(anotherApplicationInstanceId, "another-group", "another-app"));
     }
 
     @AfterEach
@@ -130,6 +132,7 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
         registry.deRegister(InstanceId.of(activeInstanceId));
         registry.deRegister(InstanceId.of(siblingInstanceId));
         registry.deRegister(InstanceId.of(failingInstanceId));
+        registry.deRegister(InstanceId.of(anotherApplicationInstanceId));
         invokedPaths.clear();
         failingCacheOperationStatusCode.set(500);
     }
@@ -240,6 +243,27 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
             assertThat(response.getBody()).contains("PARTIALLY_UPDATED");
             assertThat(invokedPaths)
                     .containsExactlyInAnyOrder("/" + siblingInstanceId + "/actuator/axelix-caches/clear");
+        }
+
+        @Test
+        void shouldReturnBadRequestWithoutInvokingAnyInstances_WhenInstancesBelongToDifferentApplications() {
+            // given.
+            CachesBulkClearRequest requestBody =
+                    new CachesBulkClearRequest(List.of(activeInstanceId, anotherApplicationInstanceId));
+
+            // when.
+            ResponseEntity<String> response = restTemplate
+                    .asEditor()
+                    .exchange(
+                            "/api/external/caches/clear",
+                            HttpMethod.DELETE,
+                            new HttpEntity<>(requestBody),
+                            String.class);
+
+            // then.
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).contains("BAD_REQUEST");
+            assertThat(invokedPaths).isEmpty();
         }
 
         @ParameterizedTest
@@ -372,6 +396,27 @@ class CachesClearApiTest extends AbstractProtectedEndpointTest {
             assertThat(invokedPaths)
                     .containsExactlyInAnyOrder(
                             "/" + siblingInstanceId + "/actuator/axelix-caches/manager/orders/clear");
+        }
+
+        @Test
+        void shouldReturnBadRequestWithoutInvokingAnyInstances_WhenInstancesBelongToDifferentApplications() {
+            // given.
+            CacheBulkClearRequest requestBody = new CacheBulkClearRequest(
+                    List.of(activeInstanceId, anotherApplicationInstanceId), "manager", "orders");
+
+            // when.
+            ResponseEntity<String> response = restTemplate
+                    .asEditor()
+                    .exchange(
+                            "/api/external/caches/cache/clear",
+                            HttpMethod.DELETE,
+                            new HttpEntity<>(requestBody),
+                            String.class);
+
+            // then.
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).contains("BAD_REQUEST");
+            assertThat(invokedPaths).isEmpty();
         }
 
         @ParameterizedTest

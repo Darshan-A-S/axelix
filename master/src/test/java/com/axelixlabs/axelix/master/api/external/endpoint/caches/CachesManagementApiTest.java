@@ -66,6 +66,7 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
     private static final String activeInstanceId = UUID.randomUUID().toString();
     private static final String siblingInstanceId = UUID.randomUUID().toString();
     private static final String failingInstanceId = UUID.randomUUID().toString();
+    private static final String anotherApplicationInstanceId = UUID.randomUUID().toString();
 
     private static MockWebServer mockWebServer;
 
@@ -119,6 +120,7 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
                 TestInstanceFactory.create(siblingInstanceId, mockWebServer.url(siblingInstanceId) + "/actuator"));
         registry.register(
                 TestInstanceFactory.create(failingInstanceId, mockWebServer.url(failingInstanceId) + "/actuator"));
+        registry.register(TestInstanceFactory.create(anotherApplicationInstanceId, "another-group", "another-app"));
     }
 
     @AfterEach
@@ -126,6 +128,7 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
         registry.deRegister(InstanceId.of(activeInstanceId));
         registry.deRegister(InstanceId.of(siblingInstanceId));
         registry.deRegister(InstanceId.of(failingInstanceId));
+        registry.deRegister(InstanceId.of(anotherApplicationInstanceId));
         invokedPaths.clear();
         failingCacheOperationStatusCode.set(500);
     }
@@ -258,6 +261,25 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
         assertThat(invokedPaths)
                 .containsExactlyInAnyOrder(
                         "/" + siblingInstanceId + "/actuator/axelix-caches/manager/orders/" + operation);
+    }
+
+    @ParameterizedTest
+    @MethodSource("cacheOperations")
+    void shouldReturnBadRequestWithoutInvokingAnyInstances_WhenInstancesBelongToDifferentApplications(
+            String operation) {
+        // given.
+        CacheBulkStatusChangeRequest requestBody = new CacheBulkStatusChangeRequest(
+                List.of(activeInstanceId, anotherApplicationInstanceId), "manager", "orders");
+
+        // when.
+        ResponseEntity<String> response = restTemplate
+                .asEditor()
+                .postForEntity("/api/external/caches/cache/" + operation, requestBody, String.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).contains("BAD_REQUEST");
+        assertThat(invokedPaths).isEmpty();
     }
 
     @ParameterizedTest

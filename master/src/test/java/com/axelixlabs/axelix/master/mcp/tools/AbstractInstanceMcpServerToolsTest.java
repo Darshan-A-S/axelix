@@ -52,6 +52,7 @@ abstract class AbstractInstanceMcpServerToolsTest extends AbstractMcpServerTools
 
     protected static final String INSTANCE_ID = "instance-1";
     protected static final String ANOTHER_INSTANCE_ID = "instance-2";
+    protected static final String ANOTHER_APPLICATION_INSTANCE_ID = "another-application-instance";
 
     protected static final String ACTUATOR_PATH = "/actuator";
 
@@ -65,12 +66,15 @@ abstract class AbstractInstanceMcpServerToolsTest extends AbstractMcpServerTools
     void registerManagedInstances() throws IOException {
         instance.start(instanceRegistry);
         anotherInstance.start(instanceRegistry);
+        instanceRegistry.register(
+                TestInstanceFactory.create(ANOTHER_APPLICATION_INSTANCE_ID, "another-group", "another-app"));
     }
 
     @AfterEach
     void deRegisterManagedInstances() throws IOException {
         instance.shutdown(instanceRegistry);
         anotherInstance.shutdown(instanceRegistry);
+        instanceRegistry.deRegister(InstanceId.of(ANOTHER_APPLICATION_INSTANCE_ID));
     }
 
     /**
@@ -126,6 +130,13 @@ abstract class AbstractInstanceMcpServerToolsTest extends AbstractMcpServerTools
          */
         void respondWithBadRequest(String path) {
             responses.put(path, new MockResponse().setResponseCode(400));
+        }
+
+        /**
+         * @return the number of requests the instance has received
+         */
+        int requestCount() {
+            return server.getRequestCount();
         }
 
         /**

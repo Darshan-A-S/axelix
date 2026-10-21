@@ -349,6 +349,28 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
             assertLevelChange(
                     instance.takeRequest(), "/axelix-loggers/logger/com.example.app/change-level", "DEBUG", null);
         }
+
+        @Test
+        void shouldRejectChangingTheLevelOnInstancesOfDifferentApplications() {
+            // when.
+            String result = callToolExpectingError(
+                    "changeLoggingLevelByLoggerName",
+                    Map.of(
+                            "instanceIds",
+                            List.of(INSTANCE_ID, ANOTHER_APPLICATION_INSTANCE_ID),
+                            "loggerName",
+                            "com.example.app",
+                            "loggerLevel",
+                            "DEBUG"));
+
+            // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+            assertThat(result)
+                    .isEqualTo("Error invoking method: changeLoggingLevelByLoggerName" + System.lineSeparator()
+                            + "All instances must belong to the same application");
+
+            // and.
+            assertThat(instance.requestCount()).isZero();
+        }
     }
 
     @Nested
@@ -411,6 +433,26 @@ class LoggersMcpServerToolsTest extends AbstractInstanceMcpServerToolsTest {
 
             // and. the instance that succeeded still has the level reset.
             assertReset(instance.takeRequest());
+        }
+
+        @Test
+        void shouldRejectResettingTheLevelOnInstancesOfDifferentApplications() {
+            // when.
+            String result = callToolExpectingError(
+                    "resetLoggingLevelByLoggerName",
+                    Map.of(
+                            "instanceIds",
+                            List.of(INSTANCE_ID, ANOTHER_APPLICATION_INSTANCE_ID),
+                            "loggerName",
+                            "com.example.app"));
+
+            // then. the error message format is produced by the Spring AI MCP server toolkit, not by Axelix.
+            assertThat(result)
+                    .isEqualTo("Error invoking method: resetLoggingLevelByLoggerName" + System.lineSeparator()
+                            + "All instances must belong to the same application");
+
+            // and.
+            assertThat(instance.requestCount()).isZero();
         }
 
         private static void assertReset(RecordedRequest request) {

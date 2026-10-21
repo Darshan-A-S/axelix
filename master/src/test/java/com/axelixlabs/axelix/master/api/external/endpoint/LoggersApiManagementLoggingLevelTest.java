@@ -69,6 +69,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
     private static final String activeInstanceId = UUID.randomUUID().toString();
     private static final String siblingInstanceId = UUID.randomUUID().toString();
     private static final String failingInstanceId = UUID.randomUUID().toString();
+    private static final String anotherApplicationInstanceId = UUID.randomUUID().toString();
 
     private static MockWebServer mockWebServer;
 
@@ -81,20 +82,6 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
 
     @Autowired
     private InstanceRegistry registry;
-
-    @Test
-    void shouldRejectInstancesFromDifferentApplicationsWithoutSendingCommands() {
-        registry.register(TestInstanceFactory.create(siblingInstanceId, "another-group", "another-app"));
-        LogLevelLoggerBulkChangeRequest request = new LogLevelLoggerBulkChangeRequest(
-                List.of(activeInstanceId, siblingInstanceId), "logger.name", null, "DEBUG");
-
-        ResponseEntity<String> response =
-                restTemplate.asEditor().postForEntity("/api/external/loggers/logger", request, String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).contains("BAD_REQUEST");
-        assertThat(invokedPaths).isEmpty();
-    }
 
     @BeforeAll
     static void startServer() throws IOException {
@@ -142,6 +129,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
                 siblingInstanceId, mockWebServer.url(siblingInstanceId).toString()));
         registry.register(TestInstanceFactory.create(
                 failingInstanceId, mockWebServer.url(failingInstanceId).toString()));
+        registry.register(TestInstanceFactory.create(anotherApplicationInstanceId, "another-group", "another-app"));
     }
 
     @AfterEach
@@ -149,6 +137,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
         registry.deRegister(InstanceId.of(activeInstanceId));
         registry.deRegister(InstanceId.of(siblingInstanceId));
         registry.deRegister(InstanceId.of(failingInstanceId));
+        registry.deRegister(InstanceId.of(anotherApplicationInstanceId));
         invokedPaths.clear();
         failingLoggerUpdateStatusCode.set(500);
     }
@@ -322,6 +311,22 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
             assertThat(invokedPaths)
                     .containsExactly("/" + siblingInstanceId + "/axelix-loggers/logger/logger.name/change-level");
         }
+
+        @Test
+        void shouldReturnBadRequestWithoutInvokingAnyInstances_WhenUpdatingInstancesOfDifferentApplications() {
+            // given.
+            LogLevelLoggerBulkChangeRequest requestBody = new LogLevelLoggerBulkChangeRequest(
+                    List.of(activeInstanceId, anotherApplicationInstanceId), "logger.name", null, "DEBUG");
+
+            // when.
+            ResponseEntity<String> response =
+                    restTemplate.asViewer().postForEntity("/api/external/loggers/logger", requestBody, String.class);
+
+            // then.
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).contains("BAD_REQUEST");
+            assertThat(invokedPaths).isEmpty();
+        }
     }
 
     @Nested
@@ -469,6 +474,23 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
             assertThat(response.getBody()).contains("PARTIALLY_UPDATED");
             assertThat(invokedPaths)
                     .containsExactly("/" + siblingInstanceId + "/axelix-loggers/logger/reset.logger.name/reset");
+        }
+
+        @Test
+        void shouldReturnBadRequestWithoutInvokingAnyInstances_WhenResettingInstancesOfDifferentApplications() {
+            // given.
+            LogLevelLoggerBulkResetRequest requestBody = new LogLevelLoggerBulkResetRequest(
+                    List.of(activeInstanceId, anotherApplicationInstanceId), "reset.logger.name");
+
+            // when.
+            ResponseEntity<String> response = restTemplate
+                    .asViewer()
+                    .postForEntity("/api/external/loggers/logger/reset", requestBody, String.class);
+
+            // then.
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).contains("BAD_REQUEST");
+            assertThat(invokedPaths).isEmpty();
         }
 
         @ParameterizedTest

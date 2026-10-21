@@ -24,14 +24,12 @@ import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointPr
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.server.PathContainer;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 
 import com.axelixlabs.axelix.common.auth.core.JwtDefaults;
-import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.auth.service.Authorizer;
 import com.axelixlabs.axelix.common.auth.service.DefaultAuthoritiesManager;
 import com.axelixlabs.axelix.common.auth.service.DefaultAuthorizer;
@@ -42,7 +40,6 @@ import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.auth.AuthorityResolver;
 import com.axelixlabs.axelix.sbs.spring.core.auth.DefaultAuthorityResolver;
-import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthorizationFilter;
 import com.axelixlabs.axelix.sbs.spring.core.auth.ManagedServiceWebIdentityAccessManager;
 import com.axelixlabs.axelix.sbs.spring.core.auth.WebIdentityAccessManager;
 import com.axelixlabs.axelix.sbs.spring.core.config.AuthProperties;
@@ -104,19 +101,5 @@ public class JwtAuthAutoConfiguration {
     public WebIdentityAccessManager webIdentityAccessManager(
             JwtDecoderService jwtDecoderService, AuthorityResolver authorityResolver, Authorizer authorizer) {
         return new ManagedServiceWebIdentityAccessManager(jwtDecoderService, authorityResolver, authorizer);
-    }
-
-    @Bean
-    public FilterRegistrationBean<JwtAuthorizationFilter> jwtAuthorizationFilterRegistration(
-            WebIdentityAccessManager webIdentityAccessManager,
-            SecurityContextExecutor securityContextExecutor,
-            WebEndpointProperties webEndpointProperties) {
-
-        var jwtAuthorizationFilter = new JwtAuthorizationFilter(
-                webIdentityAccessManager, securityContextExecutor, webEndpointProperties.getBasePath());
-
-        var registration = new FilterRegistrationBean<>(jwtAuthorizationFilter);
-        registration.setName("jwtAuthorizationFilter");
-        return registration;
     }
 }

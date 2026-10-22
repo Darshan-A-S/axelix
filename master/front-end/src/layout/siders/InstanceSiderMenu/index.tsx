@@ -16,10 +16,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import { Menu } from "antd";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useParams } from "react-router";
 
-import { findOpenInstanceKeys } from "@/helpers";
+import { findOpenInstanceCategory } from "@/helpers";
 import { useInstanceProfile } from "@/hooks";
 import { getInstanceItems } from "@/utils";
 
@@ -36,6 +37,18 @@ export const InstanceSiderMenu = () => {
     const features = profile.response?.features ?? null;
 
     const items = getInstanceItems(instanceId!, t, features);
+    // Only one category stays open at a time, so the sider fits the viewport without scrolling. null once collapsed
+    const [openCategory, setOpenCategory] = useState<string | null>(() => findOpenInstanceCategory(items, pathname));
+
+    // Follow the current page when it changes from outside the sider, e.g. through a link on the page
+    useEffect(() => {
+        setOpenCategory(findOpenInstanceCategory(items, pathname));
+    }, [pathname]);
+
+    // antd reports every open key: keep only the one just opened, or none if the open one was collapsed
+    const handleOpenChange = (keys: string[]): void => {
+        setOpenCategory(keys.find((key) => key !== openCategory) ?? null);
+    };
 
     return (
         <Menu
@@ -43,7 +56,8 @@ export const InstanceSiderMenu = () => {
             mode="inline"
             items={items}
             selectedKeys={[pathname]}
-            defaultOpenKeys={findOpenInstanceKeys(items, pathname)}
+            openKeys={openCategory ? [openCategory] : []}
+            onOpenChange={handleOpenChange}
         />
     );
 };

@@ -10,8 +10,9 @@ sources:
   - https://github.com/axelixlabs/axelix
   - https://github.com/axelixlabs/axelix/tree/master/charts/axelix
 maintainers:
-  - name: Mikhail Polivakha
-    email: mikhailpolivakha@gmail.com
+  - name: Axelix Team
+    email: hello@axelix.io
+    url: https://github.com/axelixlabs
 keywords:
   - monitoring
   - java

@@ -57,7 +57,6 @@ class InstancesToShortProfileConverterTest {
                 .isEqualTo(input);
         Assertions.assertThat(result.javaVersion())
                 .isEqualTo(input.javaVersion().render());
-        Assertions.assertThat(result.deployedAt())
-                .isEqualTo(input.deployedAt().getEpochSecond());
+        Assertions.assertThat(result.deployedAt()).isEqualTo(input.deployedAt().getEpochSecond());
     }
 }

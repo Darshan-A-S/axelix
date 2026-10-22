@@ -27,5 +27,10 @@ import org.springframework.scheduling.TaskScheduler;
  */
 public interface TaskSchedulerProvider {
 
+    /**
+     * Returns the scheduler that the scheduled tasks of the application run on. It runs a task on the scheduler
+     * named in its {@code @Scheduled(scheduler = ...)}, as long as the runnable of the task is passed to it as is,
+     * not wrapped.
+     */
     TaskScheduler getTaskScheduler();
 }

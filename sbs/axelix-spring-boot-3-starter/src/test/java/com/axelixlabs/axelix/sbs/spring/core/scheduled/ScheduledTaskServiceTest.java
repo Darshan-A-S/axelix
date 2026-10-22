@@ -39,7 +39,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.config.IntervalTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
@@ -323,8 +322,8 @@ class ScheduledTaskServiceTest {
         public ScheduledTaskService scheduledTaskService(
                 ScheduledTasksRegistry registry,
                 List<TaskRescheduler> taskReschedulers,
-                ThreadPoolTaskExecutor taskExecutor) {
-            return new ScheduledTaskService(registry, taskReschedulers, taskExecutor);
+                TaskSchedulerProvider taskSchedulerProvider) {
+            return new ScheduledTaskService(registry, taskReschedulers, taskSchedulerProvider);
         }
 
         // Cron

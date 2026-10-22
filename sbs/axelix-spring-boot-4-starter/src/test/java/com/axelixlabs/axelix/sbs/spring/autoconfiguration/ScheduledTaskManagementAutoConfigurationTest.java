@@ -39,7 +39,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import com.axelixlabs.axelix.sbs.spring.autoconfiguration.ScheduledTaskManagementAutoConfiguration.TaskManagementExecutor;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.AxelixScheduledTasksEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.IntervalBasedTaskRescheduler;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ManagedScheduledTask;
@@ -70,8 +69,6 @@ class ScheduledTaskManagementAutoConfigurationTest {
     private static final String SPRING_BOOT_SCHEDULER_THREAD_PREFIX = "scheduling-";
     private static final String USER_TASK_SCHEDULER_BEAN_NAME = "userTaskScheduler";
     private static final String QUALIFIED_SCHEDULER_BEAN_NAME = "qualifiedScheduler";
-    private static final String TASK_EXECUTOR_FIELD = "taskExecutor";
-    private static final String SCHEDULER_PROVIDER_FIELD = "taskSchedulerProvider";
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withPropertyValues(ENDPOINT_EXPOSURE_PROPERTY)
@@ -92,7 +89,6 @@ class ScheduledTaskManagementAutoConfigurationTest {
             assertThat(context).hasSingleBean(ScheduledTaskService.class);
             assertThat(context).hasSingleBean(ScheduledTasksAssembler.class);
             assertThat(context).hasSingleBean(AxelixScheduledTasksEndpoint.class);
-            assertThat(context).hasSingleBean(TaskManagementExecutor.class);
 
             assertThat(context).getBeans(TaskRescheduler.class).hasSize(2);
             assertThat(context).hasSingleBean(IntervalBasedTaskRescheduler.class);
@@ -122,7 +118,6 @@ class ScheduledTaskManagementAutoConfigurationTest {
                     assertThat(context).doesNotHaveBean(ScheduledTasksRegistry.class);
                     assertThat(context).doesNotHaveBean(ScheduledTaskService.class);
                     assertThat(context).doesNotHaveBean(AxelixScheduledTasksEndpoint.class);
-                    assertThat(context).doesNotHaveBean(TaskManagementExecutor.class);
                     assertThat(context).hasSingleBean(ThreadPoolTaskExecutor.class);
                     assertThat(context).hasSingleBean(ThreadPoolTaskScheduler.class);
                     assertThat(context).hasBean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME);
@@ -144,7 +139,6 @@ class ScheduledTaskManagementAutoConfigurationTest {
                     assertThat(context).hasSingleBean(ScheduledTaskService.class);
                     assertThat(context).hasSingleBean(ScheduledTasksAssembler.class);
                     assertThat(context).hasSingleBean(AxelixScheduledTasksEndpoint.class);
-                    assertThat(context).hasSingleBean(TaskManagementExecutor.class);
                     assertThat(context).doesNotHaveBean(ThreadPoolTaskExecutor.class);
                     assertThat(context).doesNotHaveBean(ThreadPoolTaskScheduler.class);
                     assertThat(context)
@@ -160,36 +154,6 @@ class ScheduledTaskManagementAutoConfigurationTest {
                     // there is no registrar without @EnableScheduling, so the scheduler is not available
                     TaskSchedulerProvider provider = context.getBean(TaskSchedulerProvider.class);
                     assertThatThrownBy(provider::getTaskScheduler).isInstanceOf(IllegalStateException.class);
-                });
-    }
-
-    @Test // GH-1485
-    void shouldCreateAllBeans_whenThereAreOtherThreadPoolTaskExecutorsInContext() {
-        // given: there are other ThreadPoolTaskExecutors in context
-
-        contextRunner
-                .withUserConfiguration(ThreadPoolTaskExecutorsConfig.class)
-                // when
-                .run(context -> {
-                    // then
-                    assertThat(context).hasSingleBean(ScheduledTasksRegistry.class);
-                    assertThat(context).hasSingleBean(ScheduledTaskService.class);
-                    assertThat(context).hasSingleBean(ScheduledTasksAssembler.class);
-                    assertThat(context).hasSingleBean(AxelixScheduledTasksEndpoint.class);
-                    assertThat(context).hasSingleBean(TaskManagementExecutor.class);
-                    assertThat(context).hasSingleBean(ThreadPoolTaskScheduler.class);
-                    assertThat(context).hasBean(TASK_SCHEDULER_BEAN_NAME);
-                    // Spring Boot backs off its applicationTaskExecutor when there are user-declared executors
-                    assertThat(context)
-                            .doesNotHaveBean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME);
-
-                    assertThat(context).getBeans(TaskRescheduler.class).hasSize(2);
-                    assertThat(context).hasSingleBean(IntervalBasedTaskRescheduler.class);
-                    assertThat(context).hasSingleBean(TriggerBasedTaskRescheduler.class);
-
-                    // our executor is not a bean, so only the user-declared ones are in the context
-                    // and the ambiguity between them does not affect the ScheduledTaskService
-                    assertThat(context).getBeans(ThreadPoolTaskExecutor.class).hasSize(2);
                 });
     }
 
@@ -239,7 +203,6 @@ class ScheduledTaskManagementAutoConfigurationTest {
                     assertThat(context).doesNotHaveBean(TASK_SCHEDULER_BEAN_NAME);
                     assertThat(context)
                             .doesNotHaveBean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME);
-                    assertThat(context).hasSingleBean(TaskManagementExecutor.class);
 
                     BlockingQueue<String> executions = context.getBean(QualifiedSchedulerConfig.class).executionThreads;
 
@@ -248,56 +211,37 @@ class ScheduledTaskManagementAutoConfigurationTest {
     }
 
     @Test // GH-1726
-    void shouldWireServiceAndReschedulersToTaskManagementExecutor_whenThereAreOtherSchedulingBeansInContext() {
-        // given: there are Spring Boot's and user-declared executors and scheduler in context
+    void shouldExecuteOnApplicationScheduler_whenApplicationUsesSpringBootScheduler() {
+        contextRunner.run(context -> assertExecutesOnThread(context, SPRING_BOOT_SCHEDULER_THREAD_PREFIX));
+    }
+
+    @Test // GH-1726
+    void shouldExecuteOnApplicationScheduler_whenUserDeclaresTaskScheduler() {
+        // given: the user declares own TaskScheduler
 
         contextRunner
-                .withUserConfiguration(ThreadPoolTaskSchedulerConfig.class, ThreadPoolTaskExecutorsConfig.class)
+                .withUserConfiguration(ThreadPoolTaskSchedulerConfig.class)
+                // when
+                .run(context -> assertExecutesOnThread(context, USER_TASK_SCHEDULER_BEAN_NAME + "-"));
+    }
+
+    @Test // GH-1726
+    void shouldExecuteOnQualifiedScheduler_whenScheduledAnnotationSpecifiesScheduler() {
+        // given: there are two schedulers, so it is the qualifier of @Scheduled that decides, not the default
+
+        new ApplicationContextRunner()
+                .withPropertyValues(ENDPOINT_EXPOSURE_PROPERTY)
+                .withUserConfiguration(QualifiedSchedulerConfig.class)
+                .withConfiguration(AutoConfigurations.of(
+                        TaskSchedulingAutoConfiguration.class,
+                        TaskExecutionAutoConfiguration.class,
+                        ScheduledTaskManagementAutoConfiguration.class))
                 // when
                 .run(context -> {
-                    // then
-                    TaskManagementExecutor taskManagementExecutor = context.getBean(TaskManagementExecutor.class);
-                    TaskSchedulerProvider schedulerProvider = context.getBean(TaskSchedulerProvider.class);
+                    BlockingQueue<String> executions = context.getBean(QualifiedSchedulerConfig.class).executionThreads;
 
-                    assertThat(context.getBean(ScheduledTaskService.class))
-                            .extracting(TASK_EXECUTOR_FIELD)
-                            .isSameAs(taskManagementExecutor.executor());
-
-                    assertThat(context.getBean(IntervalBasedTaskRescheduler.class))
-                            .extracting(SCHEDULER_PROVIDER_FIELD)
-                            .isSameAs(schedulerProvider);
-                    assertThat(context.getBean(TriggerBasedTaskRescheduler.class))
-                            .extracting(SCHEDULER_PROVIDER_FIELD)
-                            .isSameAs(schedulerProvider);
+                    assertExecutesOnThread(context, executions, QUALIFIED_SCHEDULER_BEAN_NAME + "-");
                 });
-    }
-
-    @Test // GH-1726
-    void shouldRunTasksOnNamedThreads_inTaskManagementExecutor() {
-        contextRunner.run(context -> {
-            TaskManagementExecutor taskManagementExecutor = context.getBean(TaskManagementExecutor.class);
-
-            String executorThreadName = taskManagementExecutor
-                    .executor()
-                    .submit(() -> Thread.currentThread().getName())
-                    .get(5, TimeUnit.SECONDS);
-
-            assertThat(executorThreadName).startsWith(TaskManagementExecutor.EXECUTOR_NAME);
-        });
-    }
-
-    @Test // GH-1726
-    void shouldInitializeAndShutdownTaskManagementExecutor_withContextLifecycle() {
-        contextRunner.run(context -> {
-            ThreadPoolTaskExecutor executor =
-                    context.getBean(TaskManagementExecutor.class).executor();
-
-            assertThat(executor.getThreadPoolExecutor().isShutdown()).isFalse();
-
-            context.close();
-
-            assertThat(executor.getThreadPoolExecutor().isShutdown()).isTrue();
-        });
     }
 
     @Test // GH-1497
@@ -344,6 +288,30 @@ class ScheduledTaskManagementAutoConfigurationTest {
         assertThat(executions.poll(5, TimeUnit.SECONDS)).startsWith(threadNamePrefix);
     }
 
+    private static void assertExecutesOnThread(AssertableApplicationContext context, String threadNamePrefix)
+            throws InterruptedException {
+        assertExecutesOnThread(
+                context, context.getBean(EnableSchedulingConfig.class).executionThreads, threadNamePrefix);
+    }
+
+    private static void assertExecutesOnThread(
+            AssertableApplicationContext context, BlockingQueue<String> executions, String threadNamePrefix)
+            throws InterruptedException {
+        ScheduledTaskService service = context.getBean(ScheduledTaskService.class);
+        ManagedScheduledTask task = context.getBean(ScheduledTasksRegistry.class)
+                .getAll()
+                .iterator()
+                .next();
+
+        // the initial run takes place on the scheduler of the application
+        assertThat(executions.poll(5, TimeUnit.SECONDS)).startsWith(threadNamePrefix);
+
+        service.executeScheduledTask(task.getId());
+
+        // the manual run takes place on the very same scheduler
+        assertThat(executions.poll(5, TimeUnit.SECONDS)).startsWith(threadNamePrefix);
+    }
+
     @TestConfiguration
     @EnableScheduling
     static class EnableSchedulingConfig {
@@ -386,20 +354,6 @@ class ScheduledTaskManagementAutoConfigurationTest {
         @Scheduled(scheduler = QUALIFIED_SCHEDULER_BEAN_NAME, fixedDelay = 10000)
         public void qualifiedMockTask() {
             executionThreads.add(Thread.currentThread().getName());
-        }
-    }
-
-    @TestConfiguration
-    static class ThreadPoolTaskExecutorsConfig {
-
-        @Bean
-        public ThreadPoolTaskExecutor threadPoolTaskExecutor1() {
-            return new ThreadPoolTaskExecutor();
-        }
-
-        @Bean
-        public ThreadPoolTaskExecutor threadPoolTaskExecutor2() {
-            return new ThreadPoolTaskExecutor();
         }
     }
 }

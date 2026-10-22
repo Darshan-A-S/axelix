@@ -31,7 +31,7 @@ public record InstancesGridResponse(Collection<InstanceShortProfile> instances) 
     /**
      * The short profile of the particular Instance, managed by this master deployment.
      *
-     * @param deployedFor a String representation for how long the service has been already deployed for.
+     * @param deployedAt the moment the service was deployed at, in seconds since the epoch, if known.
      *
      * @author Mikhail Polivakha
      */
@@ -41,7 +41,7 @@ public record InstancesGridResponse(Collection<InstanceShortProfile> instances) 
             String serviceVersion,
             String commitShaShort,
             InstanceStatus status,
-            @Nullable String deployedFor,
+            @Nullable Long deployedAt,
             String javaVersion,
             String springBootVersion,
             String springFrameworkVersion,

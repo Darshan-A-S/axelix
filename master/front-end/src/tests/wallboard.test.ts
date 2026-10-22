@@ -15,9 +15,16 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+import dayjs from "dayjs";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { createWallboardFilterId, parseWallboardFilters, removeFilterById, semVerMatch } from "@/helpers";
+import {
+    createWallboardFilterId,
+    formatDeployedFor,
+    parseWallboardFilters,
+    removeFilterById,
+    semVerMatch,
+} from "@/helpers";
 import { EWallboardFilterKey, EWallboardFilterOperator, type IWallboardSingleOperandFilter } from "@/models";
 import { SEARCH_PARAMS_FILTER } from "@/utils";
 
@@ -687,5 +694,22 @@ describe("parseWallboardFilters", () => {
                 operator: EWallboardFilterOperator.GREATER_THAN_EQUAL,
             },
         ]);
+    });
+});
+
+describe("formatDeployedFor", () => {
+    const now = dayjs("2025-02-05T12:00:00Z");
+
+    it.each<[number, string]>([
+        [dayjs("2025-02-04T10:00:00Z").unix(), "1d 2h"],
+        [dayjs("2025-02-05T09:36:00Z").unix(), "2h 24m"],
+        [dayjs("2025-02-05T11:58:31Z").unix(), "1m 29s"],
+        [dayjs("2025-02-05T11:59:56Z").unix(), "0m 4s"],
+    ])("formats the duration since %s as %s", (deployedAt, expected) => {
+        // when.
+        const result = formatDeployedFor(deployedAt, now);
+
+        // then.
+        expect(result).toBe(expected);
     });
 });

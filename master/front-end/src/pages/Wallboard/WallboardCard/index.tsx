@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { QuestionIcon } from "@/assets";
+import { formatDeployedFor } from "@/helpers";
 import { EInstanceStatus, type IInstanceCard } from "@/models";
 
 import styles from "./styles.module.css";
@@ -108,7 +109,9 @@ export const WallboardCard = ({ data }: IProps) => {
 
                     <div className={styles.Footer}>
                         <div className={styles.Label}>Commit: {data.commitShaShort}</div>
-                        <div className={styles.Value}>{data.deployedFor}</div>
+                        <div className={styles.Value}>
+                            {data.deployedAt !== null && formatDeployedFor(data.deployedAt)}
+                        </div>
                     </div>
                 </div>
             </Link>

@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+import dayjs, { type Dayjs } from "dayjs";
 import type { TFunction } from "i18next";
 
 import {
@@ -72,6 +73,31 @@ export const getAllKotlinVersions = (instances: IInstanceCard[]): string[] => {
     });
 
     return Array.from(allVersions);
+};
+
+/**
+ * Format for how long the instance has been deployed, like '3d 11h', '2h 11m' or '1m 29s'.
+ *
+ * @param deployedAt the moment the instance was deployed at, in seconds since the epoch
+ * @param now the moment to measure the duration up to
+ */
+export const formatDeployedFor = (deployedAt: number, now: Dayjs = dayjs()): string => {
+    const totalSeconds = Math.max(0, now.diff(dayjs.unix(deployedAt), "second"));
+
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) {
+        return `${days}d ${hours}h`;
+    }
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+
+    return `${minutes}m ${seconds}s`;
 };
 
 const parseVersion = (version: string): number[] => {

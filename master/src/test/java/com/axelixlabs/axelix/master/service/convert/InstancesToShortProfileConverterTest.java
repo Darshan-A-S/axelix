@@ -53,9 +53,11 @@ class InstancesToShortProfileConverterTest {
         // then.
         Assertions.assertThat(result)
                 .usingRecursiveComparison()
-                .ignoringFields("deployedFor", "instanceId", "javaVersion")
+                .ignoringFields("deployedAt", "instanceId", "javaVersion")
                 .isEqualTo(input);
         Assertions.assertThat(result.javaVersion())
                 .isEqualTo(input.javaVersion().render());
+        Assertions.assertThat(result.deployedAt())
+                .isEqualTo(input.deployedAt().getEpochSecond());
     }
 }

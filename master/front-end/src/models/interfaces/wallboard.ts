@@ -25,7 +25,8 @@ export interface IInstanceCard {
     name: string;
     serviceVersion: string;
     commitShaShort: string;
-    deployedFor: string;
+    /** The moment the instance was deployed at, in seconds since the epoch, if known */
+    deployedAt: number | null;
     kotlinVersion: string | null;
     springFrameworkVersion: string;
 }

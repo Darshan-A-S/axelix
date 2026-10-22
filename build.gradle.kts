@@ -109,6 +109,13 @@ subprojects {
 
             licenseHeader(licenseHeaderText)
         }
+
+        // The java {} license header step skips package-info.java, so it is handled by a separate generic format.
+        // These files may start with a Javadoc that must not be swallowed as an old header, hence the '/**' delimiter
+        format("javaPackageInfo") {
+            target("src/**/package-info.java")
+            licenseHeader(licenseHeaderText, "(/\\*\\*|@|package )")
+        }
     }
 
     testing {

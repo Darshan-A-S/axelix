@@ -290,26 +290,8 @@ configure(publishableModules) {
 
                     developers {
                         developer {
-                            name.set("Mikhail Polivakha")
-                            email.set("mikhailpolivakha@gmail.com")
-                            organization.set("Axelix Labs")
-                            organizationUrl.set("https://github.com/axelixlabs")
-                        }
-                        developer {
-                            name.set("Nikita Kirillov")
-                            email.set("kirilloffnikita1@gmail.com")
-                            organization.set("Axelix Labs")
-                            organizationUrl.set("https://github.com/axelixlabs")
-                        }
-                        developer {
-                            name.set("Ashot Sargsyan")
-                            email.set("ashotsargsyan527@gmail.com")
-                            organization.set("Axelix Labs")
-                            organizationUrl.set("https://github.com/axelixlabs")
-                        }
-                        developer {
-                            name.set("Sergey Cherkasov")
-                            email.set("iamcherkasov.job@gmail.com")
+                            name.set("Axelix Team")
+                            email.set("hello@axelix.io")
                             organization.set("Axelix Labs")
                             organizationUrl.set("https://github.com/axelixlabs")
                         }

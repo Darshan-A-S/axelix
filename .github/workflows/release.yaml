@@ -298,8 +298,6 @@ jobs:
         run: |
           cp values.schema.json charts/axelix/
           helm package charts/axelix --destination helm-chart-dist
-          # Make it obvious that the archive is a Helm chart. The chart name inside the archive is not affected.
-          mv "helm-chart-dist/axelix-${RELEASE_TAG}.tgz" "helm-chart-dist/axelix-helm-chart-${RELEASE_TAG}.tgz"
 
       - name: Create and push the fleet release tag
         run: |
@@ -327,10 +325,12 @@ jobs:
       # The release notes are written and the release is published by the maintainer manually
       - name: Create a draft GitHub release
         run: |
+          # The release assets follow the '<name>-<version>' convention of the Docker image and the Helm chart
+          cp master-oss/build/libs/master.jar "axelix-${RELEASE_TAG}.jar"
           gh release create "v${RELEASE_TAG}" \
             --draft \
             --verify-tag \
             --title "${RELEASE_TAG}" \
             --notes "TODO: release notes" \
-            master-oss/build/libs/master.jar \
-            "helm-chart-dist/axelix-helm-chart-${RELEASE_TAG}.tgz"
+            "axelix-${RELEASE_TAG}.jar" \
+            "helm-chart-dist/axelix-${RELEASE_TAG}.tgz"

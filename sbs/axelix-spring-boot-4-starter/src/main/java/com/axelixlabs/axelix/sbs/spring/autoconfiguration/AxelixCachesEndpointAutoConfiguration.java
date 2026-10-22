@@ -22,7 +22,6 @@ import java.util.Map;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 
@@ -43,7 +42,9 @@ import com.axelixlabs.axelix.sbs.spring.core.metrics.AxelixMetricsPublisher;
  * @author Sergey Cherkasov
  * @author Ilya Naumov
  */
-@AxelixAutoConfiguration(after = {CacheAutoConfiguration.class, AxelixMetricsPublisherAutoConfiguration.class})
+@AxelixAutoConfiguration(
+        after = AxelixMetricsPublisherAutoConfiguration.class,
+        afterName = "org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration")
 @ConditionalOnAvailableEndpoint(endpoint = AxelixCachesEndpoint.class)
 @ConditionalOnProperty(
         prefix = "axelix.sbs.cache.management",

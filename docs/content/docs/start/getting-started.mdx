@@ -137,10 +137,10 @@ variant.
   </Tab>
   <Tab value="Kubernetes (Helm)">
 
-Axelix ships a first-party [Helm chart](https://github.com/axelixlabs/helm-charts):
+Axelix ships a first-party [Helm chart](https://github.com/axelixlabs/axelix/tree/master/charts/axelix):
 
 ```bash
-helm repo add axelix https://axelixlabs.github.io/helm-charts
+helm repo add axelix https://axelixlabs.github.io/axelix
 helm repo update
 helm install axelix axelix/axelix \
   --namespace axelix --create-namespace \
@@ -149,7 +149,7 @@ helm install axelix axelix/axelix \
 
 Put your overrides — at minimum the JWT signing key, the super-admin password, and the database connection — into
 `values.yaml`; the chart's
-[README](https://github.com/axelixlabs/helm-charts) documents every value. The chart also wires the ServiceAccount and
+[`values.yaml`](https://github.com/axelixlabs/axelix/blob/master/charts/axelix/values.yaml) documents every value. The chart also wires the ServiceAccount and
 RBAC required for in-cluster autodiscovery. See [Run on
 Kubernetes](./configuring-master.mdx#run-on-kubernetes).
 

@@ -1199,7 +1199,7 @@ automatically.
 
 Axelix ships a first-party Helm chart, so you do not need to assemble manifests by hand:
 
-- **Chart source**: [github.com/axelixlabs/helm-charts](https://github.com/axelixlabs/helm-charts) — `README.md`
+- **Chart source**: the [`charts/axelix`](https://github.com/axelixlabs/axelix/tree/master/charts/axelix) directory of the Axelix repository. Its `values.yaml`
   documents every value the chart exposes, including database connection, JWT, super-admin credentials, autodiscovery,
   RBAC, and Ingress.
 - **Published package**:
@@ -1209,7 +1209,7 @@ Axelix ships a first-party Helm chart, so you do not need to assemble manifests 
 A typical install boils down to:
 
 ```bash
-helm repo add axelix https://axelixlabs.github.io/helm-charts
+helm repo add axelix https://axelixlabs.github.io/axelix
 helm repo update
 helm install axelix axelix/axelix \
   --namespace axelix --create-namespace \
@@ -1230,7 +1230,7 @@ of things that need to be emphasized.
 #### Automatic Discovery
 
 During auto-discovery, Axelix Master queries the K8S control plane REST API. In order to do that, the [K8S ServiceAccount](https://kubernetes.io/docs/concepts/security/service-accounts/)
-that is bundled into the pod must have the appropriate permissions. The [official chart](https://github.com/axelixlabs/helm-charts)
+that is bundled into the pod must have the appropriate permissions. The [official chart](https://github.com/axelixlabs/axelix/tree/master/charts/axelix)
 wires them up for you.
 
 :::note
@@ -1315,8 +1315,8 @@ the same ServiceAccount. When the ServiceAccount lives in a different namespace 
 subject must still name the ServiceAccount's own namespace, as shown above.
 
 :::tip
-The official's chart [`templates/rbac.yaml`](https://github.com/axelixlabs/helm-charts/blob/main/charts/axelix/templates/rbac.yaml)
-and [`templates/serviceaccount.yaml`](https://github.com/axelixlabs/helm-charts/blob/main/charts/axelix/templates/serviceaccount.yaml)
+The official's chart [`templates/rbac.yaml`](https://github.com/axelixlabs/axelix/blob/master/charts/axelix/templates/rbac.yaml)
+and [`templates/serviceaccount.yaml`](https://github.com/axelixlabs/axelix/blob/master/charts/axelix/templates/serviceaccount.yaml)
 are the reference for exactly this. You may run `helm template` against the chart and copy the rendered ServiceAccount, Role,
 and RoleBinding into your own manifests if you want a starting point.
 :::

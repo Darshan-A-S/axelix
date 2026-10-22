@@ -45,7 +45,7 @@ export const K8sSnippet = ({ refEl }: IProps) => {
                 </span>
                 <span className={styles.Line}>
                     <span className={styles.Cm}>helm repo add</span> <span className={styles.St}>axelixlabs</span>{" "}
-                    <span className={styles.St}>https://axelixlabs.github.io/helm-charts</span>
+                    <span className={styles.St}>https://axelixlabs.github.io/axelix</span>
                 </span>
                 <span className={styles.Line}>
                     <span className={styles.Cm}>helm repo update</span>{" "}

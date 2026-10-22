@@ -139,10 +139,10 @@ Compose](../setting-up-master-ui/configuring-master/configuring-master.mdx#за�
   </Tab>
   <Tab value="Kubernetes (Helm)">
 
-Axelix поставляет официальный [Helm-чарт](https://github.com/axelixlabs/helm-charts):
+Axelix поставляет официальный [Helm-чарт](https://github.com/axelixlabs/axelix/tree/master/charts/axelix):
 
 ```bash
-helm repo add axelix https://axelixlabs.github.io/helm-charts
+helm repo add axelix https://axelixlabs.github.io/axelix
 helm repo update
 helm install axelix axelix/axelix \
   --namespace axelix --create-namespace \
@@ -150,7 +150,7 @@ helm install axelix axelix/axelix \
 ```
 
 Свои переопределения — как минимум ключ подписи JWT, пароль суперадминистратора и подключение к базе — положите в
-`values.yaml`; [README чарта](https://github.com/axelixlabs/helm-charts) описывает каждое значение. Чарт также сам
+`values.yaml`; [`values.yaml` чарта](https://github.com/axelixlabs/axelix/blob/master/charts/axelix/values.yaml) описывает каждое значение. Чарт также сам
 настраивает ServiceAccount и RBAC, необходимые для автообнаружения внутри кластера. См. [Запуск в
 Kubernetes](../setting-up-master-ui/configuring-master/configuring-master.mdx#запуск-в-kubernetes).
 

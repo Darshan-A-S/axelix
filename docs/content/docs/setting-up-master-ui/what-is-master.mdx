@@ -23,7 +23,7 @@ accepts these registrations out of the box (`axelix.master.discovery.self-regist
 **Automatic discovery (Kubernetes only):**
 When enabled (controlled by `axelix.master.discovery.auto.enabled` property), Master actively scans the platform to find qualifying services.
 Platform scanning is currently implemented for **Kubernetes** only. It is off by default in Master's own configuration,
-but the official [Helm chart](https://github.com/axelixlabs/helm-charts/) turns it on by default.
+but the official [Helm chart](https://github.com/axelixlabs/axelix/tree/master/charts/axelix) turns it on by default.
 
 **How discovery works:**
 1. **Self-registration**: apps with the Axelix Starter register themselves and heartbeat

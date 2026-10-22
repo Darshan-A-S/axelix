@@ -1212,7 +1212,7 @@ axelix:
 
 Axelix поставляет first-party Helm-чарт, поэтому собирать манифесты вручную не нужно:
 
-- **Исходник чарта**: [github.com/axelixlabs/helm-charts](https://github.com/axelixlabs/helm-charts) — `README.md`
+- **Исходник чарта**: каталог [`charts/axelix`](https://github.com/axelixlabs/axelix/tree/master/charts/axelix) репозитория Axelix. Его `values.yaml`
   документирует каждое значение, которое выставляет чарт, включая подключение к БД, JWT, учётные данные
   суперадминистратора, автообнаружение, RBAC и Ingress.
 - **Опубликованный пакет**:
@@ -1222,7 +1222,7 @@ Axelix поставляет first-party Helm-чарт, поэтому собир
 Типичная установка сводится к следующему:
 
 ```bash
-helm repo add axelix https://axelixlabs.github.io/helm-charts
+helm repo add axelix https://axelixlabs.github.io/axelix
 helm repo update
 helm install axelix axelix/axelix \
   --namespace axelix --create-namespace \
@@ -1244,7 +1244,7 @@ helm install axelix axelix/axelix \
 
 При автообнаружении Axelix Master обращается к REST API control plane Kubernetes. Чтобы это работало,
 [ServiceAccount Kubernetes](https://kubernetes.io/docs/concepts/security/service-accounts/), встроенный в под, должен
-иметь соответствующие права. [Официальный чарт](https://github.com/axelixlabs/helm-charts) настраивает их за вас.
+иметь соответствующие права. [Официальный чарт](https://github.com/axelixlabs/axelix/tree/master/charts/axelix) настраивает их за вас.
 
 :::note
 
@@ -1329,8 +1329,8 @@ spec:
 каждое пространство имён из `filters.namespaces`, и все они должны ссылаться на один и тот же ServiceAccount.
 
 :::tip
-[`templates/rbac.yaml`](https://github.com/axelixlabs/helm-charts/blob/main/charts/axelix/templates/rbac.yaml) и
-[`templates/serviceaccount.yaml`](https://github.com/axelixlabs/helm-charts/blob/main/charts/axelix/templates/serviceaccount.yaml)
+[`templates/rbac.yaml`](https://github.com/axelixlabs/axelix/blob/master/charts/axelix/templates/rbac.yaml) и
+[`templates/serviceaccount.yaml`](https://github.com/axelixlabs/axelix/blob/master/charts/axelix/templates/serviceaccount.yaml)
 официального чарта — эталонная реализация именно этого. Вы можете выполнить `helm template` для официального чарта и скопировать
 сгенерированные ServiceAccount, Role и RoleBinding в свои манифесты, если нужна отправная точка.
 :::

@@ -26,7 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.config.CronTask;
 import org.springframework.scheduling.config.FixedDelayTask;
 import org.springframework.scheduling.config.FixedRateTask;
@@ -39,7 +39,7 @@ import org.springframework.scheduling.support.CronTrigger;
  *
  * <p>The tasks that come from a {@code ScheduledTaskRegistrar} declared by the user without
  * {@code @EnableScheduling} cannot be re-scheduled (enabled again, or have the cron expression or interval
- * modified), as the scheduler of the application is not available.
+ * modified) or run manually, as the scheduler of the application is not available.
  *
  * @since 14.10.2025
  * @author Nikita Kirillov
@@ -54,15 +54,15 @@ public final class ScheduledTaskService implements AutoCloseable {
 
     private final ScheduledTasksRegistry registry;
     private final List<TaskRescheduler> taskReschedulers;
-    private final ThreadPoolTaskExecutor taskExecutor;
+    private final TaskSchedulerProvider taskSchedulerProvider;
 
     public ScheduledTaskService(
             ScheduledTasksRegistry registry,
             List<TaskRescheduler> taskReschedulers,
-            ThreadPoolTaskExecutor taskExecutor) {
+            TaskSchedulerProvider taskSchedulerProvider) {
         this.registry = registry;
         this.taskReschedulers = taskReschedulers;
-        this.taskExecutor = taskExecutor;
+        this.taskSchedulerProvider = taskSchedulerProvider;
     }
 
     /**
@@ -162,7 +162,8 @@ public final class ScheduledTaskService implements AutoCloseable {
     }
 
     /**
-     * Allows forcing a task to run without affecting its schedule.
+     * Allows forcing a task to run without affecting its schedule. The task runs on the scheduler of the
+     * application, the same one as its scheduled runs.
      *
      * @param taskId  the id of the task to run forcibly.
      */
@@ -170,14 +171,10 @@ public final class ScheduledTaskService implements AutoCloseable {
         try {
             ManagedScheduledTask task = registry.findRequired(taskId);
 
-            taskExecutor.execute(() -> {
-                try {
-                    task.getRunnable().run();
-                } catch (Exception ex) {
-                    log.info("Failed to Run: {}", taskId, ex);
-                }
-            });
-
+            // The runnable is passed as is: on Spring 6.1+ it carries the qualifier of @Scheduled, by which
+            // the scheduler routes the task. The errors are handled by the error handler of the scheduler.
+            TaskScheduler scheduler = taskSchedulerProvider.getTaskScheduler();
+            scheduler.schedule(task.getRunnable(), scheduler.getClock().instant());
         } catch (ScheduledTaskNotFoundException e) {
             log.warn("Task '{}' not found, cannot run now", taskId, e);
             throw e;

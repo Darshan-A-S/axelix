@@ -271,14 +271,6 @@ jobs:
         if: always()
         run: docker logout ${{ env.DOCKER_HUB_REGISTRY }}
 
-      - name: Upload the Master jar
-        uses: actions/upload-artifact@v7
-        with:
-          name: master-jar
-          path: master-oss/build/libs/master.jar
-          retention-days: 3
-          if-no-files-found: error
-
       # Generate complete README from README.md template
       - name: Generate Helm chart README via helm-docs
         uses: losisin/helm-docs-github-action@v1.7.1
@@ -309,14 +301,6 @@ jobs:
           # Make it obvious that the archive is a Helm chart. The chart name inside the archive is not affected.
           mv "helm-chart-dist/axelix-${RELEASE_TAG}.tgz" "helm-chart-dist/axelix-helm-chart-${RELEASE_TAG}.tgz"
 
-      - name: Upload the Helm chart archive
-        uses: actions/upload-artifact@v7
-        with:
-          name: helm-chart
-          path: helm-chart-dist/*.tgz
-          retention-days: 3
-          if-no-files-found: error
-
       - name: Create and push the fleet release tag
         run: |
           git tag "v${RELEASE_TAG}"
@@ -339,3 +323,14 @@ jobs:
           git add index.yaml
           git commit -m "Add Helm chart ${RELEASE_TAG}"
           git push origin gh-pages
+
+      # The release notes are written and the release is published by the maintainer manually
+      - name: Create a draft GitHub release
+        run: |
+          gh release create "v${RELEASE_TAG}" \
+            --draft \
+            --verify-tag \
+            --title "${RELEASE_TAG}" \
+            --notes "TODO: release notes" \
+            master-oss/build/libs/master.jar \
+            "helm-chart-dist/axelix-helm-chart-${RELEASE_TAG}.tgz"

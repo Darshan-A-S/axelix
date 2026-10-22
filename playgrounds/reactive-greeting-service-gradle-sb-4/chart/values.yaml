@@ -11,6 +11,15 @@ fullnameOverride: ""
 
 profiles: ""
 
+# Axelix starter settings. The signing key is injected at deploy time (helm --set), see
+# .github/actions/deploy-playground.
+axelix:
+  sbs:
+    auth:
+      jwt:
+        algorithm: HMAC512
+        signingKey: ""
+
 podLabels: {}
 
 podSecurityContext: {}
@@ -19,8 +28,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  # This service listens on 8097 (see application.properties).
-  port: 8097
+  port: 8080
 
 resources: {}
 

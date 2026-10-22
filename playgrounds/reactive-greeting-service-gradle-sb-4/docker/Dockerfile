@@ -29,7 +29,7 @@ RUN java \
     -Dspring.context.exit=onRefresh \
     -jar /application/application.jar
 
-EXPOSE 8097
+EXPOSE 8080
 
 ENV JAVA_GC_LOG_OPTS="-Xlog:gc=info,safepoint:gc.log::filecount=1,filesize=20M"
 ENV JAVA_APP_CDS_OPTS="-XX:SharedArchiveFile=/application/application.jsa"

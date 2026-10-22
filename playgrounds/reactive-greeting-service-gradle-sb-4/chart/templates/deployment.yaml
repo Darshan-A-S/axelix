@@ -36,6 +36,10 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.profiles }}"
+            - name: AXELIX_SBS_AUTH_JWT_ALGORITHM
+              value: {{ .Values.axelix.sbs.auth.jwt.algorithm | quote }}
+            - name: AXELIX_SBS_AUTH_JWT_SIGNING_KEY
+              value: {{ .Values.axelix.sbs.auth.jwt.signingKey | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

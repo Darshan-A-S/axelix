@@ -1,5 +1,6 @@
 plugins {
     `kotlin-dsl`
+    id("com.diffplug.spotless") version "8.9.0"
 }
 
 repositories {
@@ -24,6 +25,15 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+spotless {
+    kotlin {
+        target("src/**/*.kt", "src/**/*.gradle.kts")
+        // Precompiled script plugins may start with 'plugins'. Extends the 'LICENSE_HEADER_DELIMITER' constant in spotless
+        // so that spotless recognizes the 'plugins' and 'object' delimiters.
+        licenseHeaderFile("../LICENSE_HEADER", "(package |@file|import |plugins |object )")
+    }
 }
 
 

@@ -157,14 +157,16 @@ Kubernetes](../setting-up-master-ui/configuring-master/configuring-master.mdx#з
   </Tab>
   <Tab value="JAR">
 
-Скачайте JAR Master со [страницы релизов](https://github.com/axelixlabs/axelix/releases) — UI уже включён в него — и
-запустите:
+Скачайте `axelix-1.2.1.jar` из раздела **Assets** релиза на [странице
+релизов](https://github.com/axelixlabs/axelix/releases). UI уже включён в JAR, а его имя следует
+[правилам именования артефактов](../more/compatibility-and-versioning.mdx#имена-артефактов) каждого релиза. Запустите
+его:
 
 <Tabs groupId="jwt-key" items={['Встроенный ключ (локально)', 'Свой ключ']}>
   <Tab value="Встроенный ключ (локально)">
 
 ```bash
-java -jar master.jar
+java -jar axelix-1.2.1.jar
 ```
 
 Если JWT-свойства не заданы, Master использует встроенный ключ подписи. Подходит только для локального знакомства, см.
@@ -177,7 +179,7 @@ java -jar master.jar
 export AXELIX_MASTER_AUTH_JWT_ALGORITHM=HMAC512
 export AXELIX_MASTER_AUTH_JWT_SIGNINGKEY=replace-with-a-long-random-secret
 
-java -jar master.jar
+java -jar axelix-1.2.1.jar
 ```
 
   </Tab>

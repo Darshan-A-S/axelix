@@ -156,14 +156,15 @@ Kubernetes](./configuring-master.mdx#run-on-kubernetes).
   </Tab>
   <Tab value="JAR">
 
-Download the Master JAR from the [Releases page](https://github.com/axelixlabs/axelix/releases) — it already bundles
-the UI — and start it:
+Download `axelix-1.2.1.jar` from the **Assets** of the release on the [Releases
+page](https://github.com/axelixlabs/axelix/releases). The JAR already bundles the UI, and its name follows the
+[artifact naming](../more/compatibility-and-versioning.mdx#artifact-names) of every release. Start it:
 
 <Tabs groupId="jwt-key" items={['Built-in key (local trial)', 'Your own key']}>
   <Tab value="Built-in key (local trial)">
 
 ```bash
-java -jar master.jar
+java -jar axelix-1.2.1.jar
 ```
 
 With no JWT properties set, Master uses the built-in signing key. Use this only for a local trial, see [Running without
@@ -176,7 +177,7 @@ a signing key](./configuring-master.mdx#running-without-a-signing-key).
 export AXELIX_MASTER_AUTH_JWT_ALGORITHM=HMAC512
 export AXELIX_MASTER_AUTH_JWT_SIGNINGKEY=replace-with-a-long-random-secret
 
-java -jar master.jar
+java -jar axelix-1.2.1.jar
 ```
 
   </Tab>

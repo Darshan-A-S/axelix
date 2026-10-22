@@ -115,11 +115,14 @@ production. Before deploying to production:
   with `axelix.sbs.auth.jwt.algorithm`.
 
 **As a JAR.** On the [Releases page](https://github.com/axelixlabs/axelix/releases), expand the
-**Assets** section of the latest release and download `master.jar`, then run:
+**Assets** section of the latest release and download `axelix-1.2.1.jar`, then run:
 
 ```bash
-java -jar master.jar
+java -jar axelix-1.2.1.jar
 ```
+
+Every release artifact of Master is named `axelix` plus the release version: the JAR `axelix-<version>.jar`, the
+Docker image `axelix:<version>`, and the Helm chart archive `axelix-<version>.tgz`.
 
 **With Docker.** The release image is published to GitHub Container Registry and Docker Hub.
 

@@ -19,6 +19,8 @@ package com.axelixlabs.axelix.master.utils;
 
 import java.util.List;
 
+import tools.jackson.databind.json.JsonMapper;
+
 import com.axelixlabs.axelix.common.domain.insights.FeatureId;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.contract.metadata.GarbageCollector;
@@ -47,7 +49,16 @@ public final class TestMetadataFactory {
 
     private static final long DEFAULT_HEAP = 12_000;
 
+    private static final JsonMapper JSON_MAPPER = JsonMapper.builder().build();
+
     private TestMetadataFactory() {}
+
+    /**
+     * @return the given {@link BasicRegistrationMetadata} serialized to JSON, as the starter would send it.
+     */
+    public static String toJson(BasicRegistrationMetadata metadata) {
+        return JSON_MAPPER.writeValueAsString(metadata);
+    }
 
     public static BasicRegistrationMetadata create(String groupId, String artifactId) {
         return create(groupId, artifactId, GarbageCollector.G1);

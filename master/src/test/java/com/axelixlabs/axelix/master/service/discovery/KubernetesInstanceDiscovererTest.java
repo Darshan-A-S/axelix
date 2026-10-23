@@ -67,6 +67,7 @@ import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.service.transport.DefaultEndpointProber;
 import com.axelixlabs.axelix.master.service.transport.EndpointProber;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
+import com.axelixlabs.axelix.master.utils.TestMetadataFactory;
 import com.axelixlabs.axelix.master.utils.auth.StaticTestSecurityContextExecutor;
 
 import static com.axelixlabs.axelix.master.utils.ContentType.ACTUATOR_RESPONSE_CONTENT_TYPE;
@@ -191,39 +192,8 @@ class KubernetesInstanceDiscovererTest {
     void shouldDiscoverManagedInstance() {
         String activeInstanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.setDispatcher(new Dispatcher() {
             @Override
@@ -272,39 +242,7 @@ class KubernetesInstanceDiscovererTest {
     void shouldDiscoverInstanceWhenGroupIdIsEmpty() {
         String activeInstanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String response = TestMetadataFactory.toJson(TestMetadataFactory.create("", "petclinic"));
 
         mockWebServer.enqueue(
                 new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
@@ -331,39 +269,9 @@ class KubernetesInstanceDiscovererTest {
         String serviceId = UUID.randomUUID().toString();
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.5.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic")
+                        .version("1.5.0-SNAPSHOT"));
 
         mockWebServer.enqueue(
                 new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
@@ -392,72 +300,11 @@ class KubernetesInstanceDiscovererTest {
         String secondServiceId = UUID.randomUUID().toString();
         String secondServiceInstanceGoodVersionId = UUID.randomUUID().toString();
 
-        // language=json
-        String badVersionResponse = """
-            {
-              "version": "2.0.0-BAD-VERSION",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
-        // language=json
-        String goodVersionResponse = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String badVersionResponse =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic")
+                        .version("2.0.0-BAD-VERSION"));
+        String goodVersionResponse =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.enqueue(new MockResponse()
                 .setBody(badVersionResponse)
@@ -539,39 +386,8 @@ class KubernetesInstanceDiscovererTest {
         String healthyInstanceId = UUID.randomUUID().toString();
         String timeoutInstanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-        """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.setDispatcher(new Dispatcher() {
 
@@ -632,39 +448,7 @@ class KubernetesInstanceDiscovererTest {
         String testServiceId = "test-service";
         String testInstanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : null,
-              "artifactId" : null,
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String response = TestMetadataFactory.toJson(TestMetadataFactory.create(null, null));
 
         mockWebServer.enqueue(
                 new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
@@ -691,72 +475,9 @@ class KubernetesInstanceDiscovererTest {
         String instanceWithoutApplicationId = UUID.randomUUID().toString();
         String instanceWithApplicationId = UUID.randomUUID().toString();
 
-        // language=json
-        String responseWithoutApplicationId = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : null,
-              "artifactId" : null,
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
-        // language=json
-        String responseWithApplicationId = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String responseWithoutApplicationId = TestMetadataFactory.toJson(TestMetadataFactory.create(null, null));
+        String responseWithApplicationId =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.enqueue(new MockResponse()
                 .setBody(responseWithoutApplicationId)
@@ -798,39 +519,8 @@ class KubernetesInstanceDiscovererTest {
         String connectionRefusedInstanceId = UUID.randomUUID().toString();
         String testServiceId = "test-service";
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-        """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.enqueue(new MockResponse().setBody(response).addHeader("Content-Type", "application/json"));
 
@@ -951,39 +641,8 @@ class KubernetesInstanceDiscovererTest {
         String serviceId = UUID.randomUUID().toString();
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.enqueue(
                 new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));

@@ -55,7 +55,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
+import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
+import com.axelixlabs.axelix.master.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
+import com.axelixlabs.axelix.master.contract.metadata.ScheduledTaskExecution;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.SnapshotId;
 import com.axelixlabs.axelix.master.domain.Instance;
@@ -65,6 +68,7 @@ import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
 import com.axelixlabs.axelix.master.repository.InstanceRepository;
 import com.axelixlabs.axelix.master.service.discovery.k8s.KubernetesServiceInstance;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.TestMetadataFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 
 import static com.axelixlabs.axelix.master.utils.ContentType.ACTUATOR_RESPONSE_CONTENT_TYPE;
@@ -147,41 +151,9 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String instance1Id = UUID.randomUUID().toString();
         String instance2Id = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "%s",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-        """;
-
-        enqueueMetadata(response.formatted("app1"), response.formatted("app2"));
+        enqueueMetadata(
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "app1")),
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "app2")));
         stubDiscovery(k8sInstance(service1, instance1Id), k8sInstance(service2, instance2Id));
 
         // when.
@@ -209,64 +181,27 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String failedTaskId = "com.example.OwnerJob#run()";
         String successfulTaskId = "com.example.OwnerArchivistTask#archive()";
 
-        // language=json
-        String failedExecutions = """
-            [ {
-              "taskId" : "com.example.OwnerJob#run()",
-              "startedAt" : "2026-09-27T10:00:00.123Z",
-              "durationMillis" : 1500,
-              "success" : false,
-              "errorType" : "NullPointerException",
-              "errorMessage" : "boom"
-            } ]""";
+        BasicRegistrationMetadata failedMetadata = TestMetadataFactory.create(groupId, artifactId);
+        failedMetadata
+                .getInsights()
+                .scheduledTaskExecutions(List.of(new ScheduledTaskExecution()
+                        .taskId(failedTaskId)
+                        .startedAt("2026-09-27T10:00:00.123Z")
+                        .durationMillis(1500L)
+                        .success(false)
+                        .errorType("NullPointerException")
+                        .errorMessage("boom")));
 
-        // language=json
-        String successfulExecutions = """
-            [ {
-              "taskId" : "com.example.OwnerArchivistTask#archive()",
-              "startedAt" : "2026-09-27T10:05:00.500Z",
-              "durationMillis" : 42,
-              "success" : true
-            } ]""";
+        BasicRegistrationMetadata successfulMetadata = TestMetadataFactory.create(groupId, artifactId);
+        successfulMetadata
+                .getInsights()
+                .scheduledTaskExecutions(List.of(new ScheduledTaskExecution()
+                        .taskId(successfulTaskId)
+                        .startedAt("2026-09-27T10:05:00.500Z")
+                        .durationMillis(42L)
+                        .success(true)));
 
-        // language=json
-        String metadata = """
-            {
-              "version" : "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "%s",
-              "artifactId" : "%s",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                },
-                "scheduledTaskExecutions" : %s
-              }
-            }
-            """;
-
-        enqueueMetadata(
-                metadata.formatted(groupId, artifactId, failedExecutions),
-                metadata.formatted(groupId, artifactId, successfulExecutions));
+        enqueueMetadata(TestMetadataFactory.toJson(failedMetadata), TestMetadataFactory.toJson(successfulMetadata));
         stubDiscovery(
                 k8sInstance(serviceWithFailedExecution, failedInstanceId),
                 k8sInstance(serviceWithSuccessfulExecution, successfulInstanceId));
@@ -317,73 +252,15 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String service = "service-3";
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String firstResponse = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String firstResponse =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
-        // language=json
-        String secondResponse = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "910230",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.2",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "DOWN",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        BasicRegistrationMetadata secondMetadata = TestMetadataFactory.create(
+                        "org.springframework.samples", "petclinic")
+                .commitShortSha("910230")
+                .healthStatus(HealthStatus.DOWN);
+        secondMetadata.getSoftwareVersions().springBoot("3.5.2");
+        String secondResponse = TestMetadataFactory.toJson(secondMetadata);
 
         enqueueMetadata(firstResponse, secondResponse);
         stubDiscovery(k8sInstance(service, instanceId));
@@ -406,39 +283,9 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String service = "service-with-master-ping";
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String metadataResponse = """
-            {
-              "version": "1.3.0",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String metadataResponse =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic")
+                        .version("1.3.0"));
 
         // language=json
         String masterPingResponse = """
@@ -517,39 +364,8 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String serviceId = "test-service";
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "910230",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.2",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "DOWN",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.setDispatcher(new Dispatcher() {
             @Override
@@ -691,39 +507,8 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String serviceId = "test-service";
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "910230",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.2",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "DOWN",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-            """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         mockWebServer.setDispatcher(new Dispatcher() {
             @Override
@@ -768,63 +553,8 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String service = "service-with-insights";
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.0.0-SNAPSHOT",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [
-                    {
-                      "featureId" : "AotCache",
-                      "enabled" : false
-                    },
-                    {
-                      "featureId" : "AppCDS",
-                      "enabled" : true
-                    }
-                  ],
-                  "gc" : [
-                    {
-                      "featureId" : "GCLoggingEnabled",
-                      "enabled" : false
-                    }
-                  ],
-                  "projectLilliputh" : [
-                    {
-                      "featureId" : "CompactObjectHeaders",
-                      "enabled" : false
-                    }
-                  ]
-                },
-                "springFramework" : [
-                  {
-                    "featureId" : "OSIV",
-                    "enabled" : true
-                  }
-                ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              }
-            }
-        """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
         enqueueMetadata(response);
         stubDiscovery(k8sInstance(service, instanceId));
@@ -873,40 +603,10 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         String service = "petclinic";
         String instanceId = UUID.randomUUID().toString();
 
-        // language=json
-        String response = """
-            {
-              "version": "1.3.0",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
-              "groupId" : "org.springframework.samples",
-              "artifactId" : "petclinic",
-              "commitShortSha" : "a8b0929",
-              "jdkVendor" : "BellSoft",
-              "gcInUse" : "G1",
-              "softwareVersions" : {
-                "springBoot" : "3.5.0",
-                "java" : "25",
-                "springFramework" : "6.1.2",
-                "kotlin" : null
-              },
-              "healthStatus" : "UP",
-              "memoryDetails" : {
-                "heap" : 12000
-              },
-              "insights" : {
-                "hotSpot" : {
-                  "projectLeyden" : [ ],
-                  "gc" : [ ],
-                  "projectLilliputh" : [ ]
-                },
-                "springFramework" : [ ],
-                "persistenceInsights" : {
-                  "transactions" : [ ]
-                }
-              },
-              "detectedFeatures" : [ ]
-            }
-            """;
+        String response =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic")
+                        .version("1.3.0")
+                        .detectedFeatures(List.of()));
 
         enqueueMetadata(response);
         stubDiscovery(k8sInstance(service, instanceId));

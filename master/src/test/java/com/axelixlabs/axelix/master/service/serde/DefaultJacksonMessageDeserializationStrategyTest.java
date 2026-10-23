@@ -28,21 +28,44 @@ import com.axelixlabs.axelix.master.contract.details.InstanceDetails;
 import com.axelixlabs.axelix.master.contract.details.OsDetails;
 import com.axelixlabs.axelix.master.contract.details.RuntimeDetails;
 import com.axelixlabs.axelix.master.contract.details.SpringDetails;
+import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link DetailsJacksonMessageDeserializationStrategy}.
+ * Unit tests for {@link DefaultJacksonMessageDeserializationStrategy}.
  *
  * @author Sergey Cherkasov
+ * @author Nikita Kirillov
  */
-public class DetailsJacksonMessageDeserializationStrategyTest {
+public class DefaultJacksonMessageDeserializationStrategyTest {
 
-    private final DetailsJacksonMessageDeserializationStrategy subject =
-            new DetailsJacksonMessageDeserializationStrategy(new ObjectMapper());
+    @Test
+    void shouldDeserializeMetadata() {
+        // given.
+        var subject =
+                new DefaultJacksonMessageDeserializationStrategy<>(new ObjectMapper(), BasicRegistrationMetadata.class);
+
+        // language=json
+        String response = """
+           {
+             "version": "1.0.0-SNAPSHOT"
+           }
+           """;
+
+        // when.
+        BasicRegistrationMetadata metadata = subject.deserialize(response.getBytes(StandardCharsets.UTF_8));
+
+        // then.
+        assertThat(metadata).isNotNull();
+        assertThat(metadata.getVersion()).isEqualTo("1.0.0-SNAPSHOT");
+    }
 
     @Test
     void shouldDeserializeAxelixDetails() {
+        // given.
+        var subject = new DefaultJacksonMessageDeserializationStrategy<>(new ObjectMapper(), InstanceDetails.class);
+
         // language=json
         String response = """
             {

@@ -38,6 +38,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
+import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.http.NoHttpPayload;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.contract.metadata.GarbageCollector;
@@ -48,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Integration tests for {@link ManagedServiceMetadataEndpointProber}.
+ * Integration tests for the {@link EndpointProber} of the {@link ActuatorEndpoints#METADATA} endpoint.
  *
  * @since 19.09.2025
  * @author Nikita Kirillov
@@ -73,7 +74,7 @@ class ManagedServiceMetadataEndpointProberTest {
     private static MockWebServer mockWebServer;
 
     @Autowired
-    private ManagedServiceMetadataEndpointProber metadataEndpointProber;
+    private EndpointProber<BasicRegistrationMetadata> metadataEndpointProber;
 
     @BeforeAll
     static void startServer() throws IOException {

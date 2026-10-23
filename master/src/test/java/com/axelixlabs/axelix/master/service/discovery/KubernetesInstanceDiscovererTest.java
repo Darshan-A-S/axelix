@@ -52,6 +52,7 @@ import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
+import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
@@ -60,12 +61,10 @@ import com.axelixlabs.axelix.master.domain.MemoryUsage;
 import com.axelixlabs.axelix.master.service.DefaultInstanceFactory;
 import com.axelixlabs.axelix.master.service.discovery.k8s.KubernetesInstanceDiscoverer;
 import com.axelixlabs.axelix.master.service.discovery.k8s.KubernetesServiceInstance;
-import com.axelixlabs.axelix.master.service.serde.MasterPingJacksonMessageDeserializationStrategy;
-import com.axelixlabs.axelix.master.service.serde.MetadataJacksonMessageDeserializationStrategy;
+import com.axelixlabs.axelix.master.service.serde.DefaultJacksonMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.service.transport.DefaultEndpointProber;
 import com.axelixlabs.axelix.master.service.transport.EndpointProber;
-import com.axelixlabs.axelix.master.service.transport.ManagedServiceMetadataEndpointProber;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.auth.StaticTestSecurityContextExecutor;
 
@@ -92,7 +91,7 @@ class KubernetesInstanceDiscovererTest {
     private InstanceRegistry instanceRegistry;
 
     @Autowired
-    private ManagedServiceMetadataEndpointProber managedServiceMetadataEndpointProber;
+    private EndpointProber<BasicRegistrationMetadata> managedServiceMetadataEndpointProber;
 
     @Autowired
     private EndpointProber<MasterPing> masterPingEndpointProber;
@@ -116,23 +115,22 @@ class KubernetesInstanceDiscovererTest {
         }
 
         @Bean
-        public ManagedServiceMetadataEndpointProber managedServiceMetadataEndpointProber(
+        public DefaultEndpointProber<BasicRegistrationMetadata> managedServiceMetadataEndpointProber(
                 InstanceRegistry instanceRegistry,
-                MetadataJacksonMessageDeserializationStrategy deserializationStrategy,
                 SecurityContextExecutor securityContextExecutor,
                 HttpClient httpClient) {
-            return new ManagedServiceMetadataEndpointProber(
-                    instanceRegistry, deserializationStrategy, securityContextExecutor, httpClient);
+            return new DefaultEndpointProber<>(
+                    instanceRegistry,
+                    new DefaultJacksonMessageDeserializationStrategy<>(
+                            new ObjectMapper(), BasicRegistrationMetadata.class),
+                    securityContextExecutor,
+                    ActuatorEndpoints.METADATA,
+                    httpClient);
         }
 
         @Bean
         public HttpClient httpClient() {
             return HttpClient.newHttpClient();
-        }
-
-        @Bean
-        public MetadataJacksonMessageDeserializationStrategy deserializationStrategy() {
-            return new MetadataJacksonMessageDeserializationStrategy(new ObjectMapper());
         }
 
         @Bean
@@ -142,7 +140,7 @@ class KubernetesInstanceDiscovererTest {
                 HttpClient httpClient) {
             return new DefaultEndpointProber<>(
                     instanceRegistry,
-                    new MasterPingJacksonMessageDeserializationStrategy(new ObjectMapper()),
+                    new DefaultJacksonMessageDeserializationStrategy<>(new ObjectMapper(), MasterPing.class),
                     securityContextExecutor,
                     ActuatorEndpoints.PING,
                     httpClient);

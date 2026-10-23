@@ -45,7 +45,6 @@ import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.service.transport.BadRequestException;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvocationException;
 import com.axelixlabs.axelix.master.service.transport.EndpointProber;
-import com.axelixlabs.axelix.master.service.transport.ManagedServiceMetadataEndpointProber;
 
 /**
  * Abstract implementation of {@link InstancesDiscoverer} that performs common tasks like checking
@@ -71,7 +70,7 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
 
     private final Logger logger;
     private final DiscoveryClient discoveryClient;
-    private final ManagedServiceMetadataEndpointProber managedServiceProber;
+    private final EndpointProber<BasicRegistrationMetadata> managedServiceProber;
     private final EndpointProber<MasterPing> masterPingProber;
     private final CompatibilityDetectionStrategy compatibilityDetectionStrategy;
     private final InstanceRegistry instanceRegistry;
@@ -79,7 +78,7 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
     public AbstractInstancesDiscoverer(
             Logger logger,
             DiscoveryClient discoveryClient,
-            ManagedServiceMetadataEndpointProber managedServiceMetadataEndpointProber,
+            EndpointProber<BasicRegistrationMetadata> managedServiceMetadataEndpointProber,
             EndpointProber<MasterPing> masterPingEndpointProber,
             CompatibilityDetectionStrategy compatibilityDetectionStrategy,
             InstanceRegistry instanceRegistry) {

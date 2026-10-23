@@ -20,6 +20,8 @@ package com.axelixlabs.axelix.master.autoconfiguration.probers;
 import java.net.http.HttpClient;
 import java.util.Arrays;
 
+import tools.jackson.databind.ObjectMapper;
+
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
@@ -28,10 +30,10 @@ import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.master.contract.details.InstanceDetails;
 import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
-import com.axelixlabs.axelix.master.service.serde.DetailsJacksonMessageDeserializationStrategy;
+import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
+import com.axelixlabs.axelix.master.service.serde.DefaultJacksonMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.serde.GcLogFileMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.serde.HeapDumpMessageDeserializationStrategy;
-import com.axelixlabs.axelix.master.service.serde.MasterPingJacksonMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.service.transport.CachingEndpointProber;
 import com.axelixlabs.axelix.master.service.transport.DefaultEndpointProber;
@@ -145,22 +147,35 @@ public class EndpointProbersAutoConfiguration {
 
     // Details
     @Bean
-    public DefaultEndpointProber<InstanceDetails> getDetailsEndpointProber(
-            DetailsJacksonMessageDeserializationStrategy deserializationStrategy) {
+    public DefaultEndpointProber<InstanceDetails> getDetailsEndpointProber(ObjectMapper objectMapper) {
         return new DefaultEndpointProber<>(
                 instanceRegistry,
-                deserializationStrategy,
+                new DefaultJacksonMessageDeserializationStrategy<>(objectMapper, InstanceDetails.class),
                 securityContextExecutor,
                 ActuatorEndpoints.GET_DETAILS,
                 httpClient);
     }
 
+    // Metadata
+    @Bean
+    public DefaultEndpointProber<BasicRegistrationMetadata> metadataEndpointProber(ObjectMapper objectMapper) {
+        return new DefaultEndpointProber<>(
+                instanceRegistry,
+                new DefaultJacksonMessageDeserializationStrategy<>(objectMapper, BasicRegistrationMetadata.class),
+                securityContextExecutor,
+                ActuatorEndpoints.METADATA,
+                httpClient);
+    }
+
     // Ping
     @Bean
-    public DefaultEndpointProber<MasterPing> masterPingEndpointProber(
-            MasterPingJacksonMessageDeserializationStrategy deserializationStrategy) {
+    public DefaultEndpointProber<MasterPing> masterPingEndpointProber(ObjectMapper objectMapper) {
         return new DefaultEndpointProber<>(
-                instanceRegistry, deserializationStrategy, securityContextExecutor, ActuatorEndpoints.PING, httpClient);
+                instanceRegistry,
+                new DefaultJacksonMessageDeserializationStrategy<>(objectMapper, MasterPing.class),
+                securityContextExecutor,
+                ActuatorEndpoints.PING,
+                httpClient);
     }
 
     // Beans

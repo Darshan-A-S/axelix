@@ -20,24 +20,22 @@ package com.axelixlabs.axelix.master.service.serde;
 import org.jspecify.annotations.NonNull;
 import tools.jackson.databind.ObjectMapper;
 
-import org.springframework.stereotype.Component;
-
-import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
-
 /**
- * {@link JacksonMessageDeserializationStrategy} for {@link MasterPing}.
+ * Default implementation of the {@link JacksonMessageDeserializationStrategy}.
  *
- * @author Nikita Kirillov
+ * @author Mikhail Polivakha
  */
-@Component
-public class MasterPingJacksonMessageDeserializationStrategy extends JacksonMessageDeserializationStrategy<MasterPing> {
+public class DefaultJacksonMessageDeserializationStrategy<T> extends JacksonMessageDeserializationStrategy<T> {
 
-    public MasterPingJacksonMessageDeserializationStrategy(ObjectMapper objectMapper) {
+    private final Class<T> supported;
+
+    public DefaultJacksonMessageDeserializationStrategy(ObjectMapper objectMapper, Class<T> supported) {
         super(objectMapper);
+        this.supported = supported;
     }
 
     @Override
-    public @NonNull Class<MasterPing> supported() {
-        return MasterPing.class;
+    public @NonNull Class<T> supported() {
+        return this.supported;
     }
 }

@@ -35,6 +35,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
+import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.service.InstanceFactory;
 import com.axelixlabs.axelix.master.service.convert.ScheduledTaskExecutionResultConverter;
 import com.axelixlabs.axelix.master.service.discovery.CompatibilityDetectionStrategy;
@@ -46,7 +47,6 @@ import com.axelixlabs.axelix.master.service.scheduled.ScheduledTaskExecutionHist
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.service.transport.EndpointProber;
-import com.axelixlabs.axelix.master.service.transport.ManagedServiceMetadataEndpointProber;
 
 /**
  * Auto-configuration for K8S related components.
@@ -109,7 +109,7 @@ public class DiscoveryAutoConfiguration {
         @Bean
         public KubernetesInstanceDiscoverer kubernetesInstanceDiscoverer(
                 DiscoveryClient discoveryClient,
-                ManagedServiceMetadataEndpointProber managedServiceMetadataEndpointProber,
+                EndpointProber<BasicRegistrationMetadata> managedServiceMetadataEndpointProber,
                 EndpointProber<MasterPing> masterPingEndpointProber,
                 CompatibilityDetectionStrategy compatibilityDetectionStrategy,
                 InstanceRegistry instanceRegistry,

@@ -53,11 +53,6 @@ public class DiscardingAbstractEndpointProber extends AbstractEndpointProber<byt
         return super.invoke(instanceId, httpPayload);
     }
 
-    public void invokeNoValue(@NonNull InstanceId instanceId, HttpPayload httpPayload)
-            throws EndpointInvocationException, InstanceNotFoundException {
-        super.invoke(instanceId, httpPayload);
-    }
-
     @Override
     public @NonNull ActuatorEndpoint supports() {
         return this.actuatorEndpoint;

@@ -1,1 +1,2 @@
 com.axelixlabs.axelix.sbs.spring.autoconfiguration.JwtAuthManagementContextConfiguration
+com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixJacksonManagementContextConfiguration

@@ -51,6 +51,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
+import com.axelixlabs.axelix.common.utils.SemanticVersion;
 import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
@@ -98,6 +99,9 @@ class KubernetesInstanceDiscovererTest {
 
     @Autowired
     private CompatibilityDetectionStrategy compatibilityDetectionStrategy;
+
+    @Autowired
+    private AxelixVersionDiscoverer axelixVersionDiscoverer;
 
     @Autowired
     private DefaultInstanceFactory instanceFactory;
@@ -925,8 +929,9 @@ class KubernetesInstanceDiscovererTest {
     void shouldSkipKnownInstanceOutsideCompatibilityWindow() {
         String serviceId = UUID.randomUUID().toString();
         String instanceId = UUID.randomUUID().toString();
-        // newer than the 1.3.0-SNAPSHOT master, so outside its compatibility window
-        String starterVersion = "1.4.0";
+        // one minor ahead of the master, so outside its compatibility window
+        SemanticVersion masterVersion = SemanticVersion.parse(axelixVersionDiscoverer.getVersion());
+        String starterVersion = masterVersion.major() + "." + (masterVersion.minor() + 1) + ".0";
 
         mockDiscoveredPod(serviceId, instanceId);
         Mockito.when(instanceRegistry.get(InstanceId.of(instanceId)))
@@ -991,6 +996,7 @@ class KubernetesInstanceDiscovererTest {
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
         assertThat(profiles).singleElement().isInstanceOf(DiscoveredInstanceProfile.Registration.class);
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(1);
         assertThat(mockWebServer.takeRequest().getPath()).isEqualTo("/actuator/axelix-metadata");
     }
 

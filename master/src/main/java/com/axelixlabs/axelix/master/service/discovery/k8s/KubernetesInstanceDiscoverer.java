@@ -23,14 +23,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
+import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.service.InstanceFactory;
 import com.axelixlabs.axelix.master.service.discovery.AbstractInstancesDiscoverer;
 import com.axelixlabs.axelix.master.service.discovery.CompatibilityDetectionStrategy;
 import com.axelixlabs.axelix.master.service.discovery.InstancesDiscoverer;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.service.transport.EndpointProber;
 import com.axelixlabs.axelix.master.service.transport.ManagedServiceMetadataEndpointProber;
-import com.axelixlabs.axelix.master.service.transport.MasterPingEndpointProber;
 
 /**
  * Kubernetes implementation of {@link InstancesDiscoverer}.
@@ -52,7 +53,7 @@ public class KubernetesInstanceDiscoverer extends AbstractInstancesDiscoverer {
     public KubernetesInstanceDiscoverer(
             DiscoveryClient discoveryClient,
             ManagedServiceMetadataEndpointProber managedServiceMetadataEndpointProber,
-            MasterPingEndpointProber masterPingEndpointProber,
+            EndpointProber<MasterPing> masterPingEndpointProber,
             CompatibilityDetectionStrategy compatibilityDetectionStrategy,
             InstanceRegistry instanceRegistry,
             InstanceFactory instanceFactory) {

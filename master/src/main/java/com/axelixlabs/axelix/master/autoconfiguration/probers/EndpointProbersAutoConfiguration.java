@@ -27,9 +27,11 @@ import org.springframework.core.io.Resource;
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.master.contract.details.InstanceDetails;
+import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
 import com.axelixlabs.axelix.master.service.serde.DetailsJacksonMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.serde.GcLogFileMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.serde.HeapDumpMessageDeserializationStrategy;
+import com.axelixlabs.axelix.master.service.serde.MasterPingJacksonMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.service.transport.CachingEndpointProber;
 import com.axelixlabs.axelix.master.service.transport.DefaultEndpointProber;
@@ -151,6 +153,14 @@ public class EndpointProbersAutoConfiguration {
                 securityContextExecutor,
                 ActuatorEndpoints.GET_DETAILS,
                 httpClient);
+    }
+
+    // Ping
+    @Bean
+    public DefaultEndpointProber<MasterPing> masterPingEndpointProber(
+            MasterPingJacksonMessageDeserializationStrategy deserializationStrategy) {
+        return new DefaultEndpointProber<>(
+                instanceRegistry, deserializationStrategy, securityContextExecutor, ActuatorEndpoints.PING, httpClient);
     }
 
     // Beans

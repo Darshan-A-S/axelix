@@ -49,7 +49,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
+import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
+import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
@@ -61,8 +63,9 @@ import com.axelixlabs.axelix.master.service.discovery.k8s.KubernetesServiceInsta
 import com.axelixlabs.axelix.master.service.serde.MasterPingJacksonMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.serde.MetadataJacksonMessageDeserializationStrategy;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.service.transport.DefaultEndpointProber;
+import com.axelixlabs.axelix.master.service.transport.EndpointProber;
 import com.axelixlabs.axelix.master.service.transport.ManagedServiceMetadataEndpointProber;
-import com.axelixlabs.axelix.master.service.transport.MasterPingEndpointProber;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.auth.StaticTestSecurityContextExecutor;
 
@@ -92,7 +95,7 @@ class KubernetesInstanceDiscovererTest {
     private ManagedServiceMetadataEndpointProber managedServiceMetadataEndpointProber;
 
     @Autowired
-    private MasterPingEndpointProber masterPingEndpointProber;
+    private EndpointProber<MasterPing> masterPingEndpointProber;
 
     @Autowired
     private CompatibilityDetectionStrategy compatibilityDetectionStrategy;
@@ -133,14 +136,15 @@ class KubernetesInstanceDiscovererTest {
         }
 
         @Bean
-        public MasterPingEndpointProber masterPingEndpointProber(
+        public DefaultEndpointProber<MasterPing> masterPingEndpointProber(
                 InstanceRegistry instanceRegistry,
                 SecurityContextExecutor securityContextExecutor,
                 HttpClient httpClient) {
-            return new MasterPingEndpointProber(
+            return new DefaultEndpointProber<>(
                     instanceRegistry,
                     new MasterPingJacksonMessageDeserializationStrategy(new ObjectMapper()),
                     securityContextExecutor,
+                    ActuatorEndpoints.PING,
                     httpClient);
         }
 

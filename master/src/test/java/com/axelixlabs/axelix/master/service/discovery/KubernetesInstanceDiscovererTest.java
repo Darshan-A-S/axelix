@@ -18,7 +18,6 @@
 package com.axelixlabs.axelix.master.service.discovery;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Optional;
@@ -107,7 +106,7 @@ class KubernetesInstanceDiscovererTest {
     @Autowired
     private DefaultInstanceFactory instanceFactory;
 
-    private URI uri;
+    private KubernetesDiscoveryStubs stubs;
 
     private KubernetesInstanceDiscoverer subject;
 
@@ -172,7 +171,7 @@ class KubernetesInstanceDiscovererTest {
     void startServer() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        uri = URI.create("http://" + mockWebServer.getHostName() + ":" + mockWebServer.getPort());
+        stubs = new KubernetesDiscoveryStubs(discoveryClient, mockWebServer);
 
         subject = new KubernetesInstanceDiscoverer(
                 discoveryClient,
@@ -195,31 +194,8 @@ class KubernetesInstanceDiscovererTest {
         String response =
                 TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
-        mockWebServer.setDispatcher(new Dispatcher() {
-            @Override
-            public @NotNull MockResponse dispatch(@NotNull RecordedRequest request) {
-                String path = request.getPath();
-                assert request.getPath() != null;
-
-                if (path.equals("/actuator/axelix-metadata")) {
-                    return new MockResponse()
-                            .setBody(response)
-                            .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE);
-                }
-                return new MockResponse().setResponseCode(404);
-            }
-        });
-
-        // TODO: that is not compile-time safe. Can we do better?
-        ServiceInstance serviceInstance = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), activeInstanceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(activeInstanceId));
-        Mockito.when(discoveryClient.getInstances(activeInstanceId)).thenReturn(List.of(serviceInstance));
+        stubs.respondOn("/actuator/axelix-metadata", response);
+        stubs.stubDiscovery(stubs.k8sInstance(activeInstanceId, activeInstanceId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -242,20 +218,8 @@ class KubernetesInstanceDiscovererTest {
     void shouldDiscoverInstanceWhenGroupIdIsEmpty() {
         String activeInstanceId = UUID.randomUUID().toString();
 
-        String response = TestMetadataFactory.toJson(TestMetadataFactory.create("", "petclinic"));
-
-        mockWebServer.enqueue(
-                new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance serviceInstance = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), activeInstanceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(activeInstanceId));
-        Mockito.when(discoveryClient.getInstances(activeInstanceId)).thenReturn(List.of(serviceInstance));
+        stubs.enqueueResponses(TestMetadataFactory.toJson(TestMetadataFactory.create("", "petclinic")));
+        stubs.stubDiscovery(stubs.k8sInstance(activeInstanceId, activeInstanceId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -269,23 +233,10 @@ class KubernetesInstanceDiscovererTest {
         String serviceId = UUID.randomUUID().toString();
         String instanceId = UUID.randomUUID().toString();
 
-        String response =
+        stubs.enqueueResponses(
                 TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic")
-                        .version("1.5.0-SNAPSHOT"));
-
-        mockWebServer.enqueue(
-                new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance serviceInstance = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceId)
-                .set(Select.field("serviceId"), serviceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(serviceId));
-        Mockito.when(discoveryClient.getInstances(serviceId)).thenReturn(List.of(serviceInstance));
+                        .version("1.5.0-SNAPSHOT")));
+        stubs.stubDiscovery(stubs.k8sInstance(serviceId, instanceId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -306,34 +257,10 @@ class KubernetesInstanceDiscovererTest {
         String goodVersionResponse =
                 TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(badVersionResponse)
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(goodVersionResponse)
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        // firstService -> bad application version instance
-        ServiceInstance firstServiceBadVersion = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), firstServiceInstanceBadVersionId)
-                .set(Select.field("serviceId"), firstServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        // secondService -> good application version instance
-        ServiceInstance secondServiceGoodVersion = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), secondServiceInstanceGoodVersionId)
-                .set(Select.field("serviceId"), secondServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(firstServiceId, secondServiceId));
-        Mockito.when(discoveryClient.getInstances(firstServiceId)).thenReturn(List.of(firstServiceBadVersion));
-        Mockito.when(discoveryClient.getInstances(secondServiceId)).thenReturn(List.of(secondServiceGoodVersion));
+        stubs.enqueueResponses(badVersionResponse, goodVersionResponse);
+        stubs.stubDiscovery(
+                stubs.k8sInstance(firstServiceId, firstServiceInstanceBadVersionId),
+                stubs.k8sInstance(secondServiceId, secondServiceInstanceGoodVersionId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -356,21 +283,8 @@ class KubernetesInstanceDiscovererTest {
         String testServiceId = "test-service";
         String testInstanceId = UUID.randomUUID().toString();
 
-        mockWebServer.setDispatcher(new Dispatcher() {
-            @Override
-            public @NotNull MockResponse dispatch(@NotNull RecordedRequest request) {
-                return new MockResponse().setResponseCode(404);
-            }
-        });
-
-        ServiceInstance k8sPod = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), testInstanceId)
-                .set(Select.field("serviceId"), testServiceId)
-                .set(Select.field("secure"), false)
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(testServiceId));
-        Mockito.when(discoveryClient.getInstances(testServiceId)).thenReturn(List.of(k8sPod));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(404));
+        stubs.stubDiscovery(stubs.k8sInstance(testServiceId, testInstanceId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -417,24 +331,9 @@ class KubernetesInstanceDiscovererTest {
             }
         });
 
-        ServiceInstance healthyK8sPod = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), healthyInstanceId)
-                .set(Select.field("serviceId"), testServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        ServiceInstance timeoutK8sPod = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), timeoutInstanceId)
-                .set(Select.field("serviceId"), testServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(testServiceId));
-        Mockito.when(discoveryClient.getInstances(testServiceId)).thenReturn(List.of(healthyK8sPod, timeoutK8sPod));
+        stubs.stubDiscovery(
+                stubs.k8sInstance(testServiceId, healthyInstanceId),
+                stubs.k8sInstance(testServiceId, timeoutInstanceId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -448,21 +347,8 @@ class KubernetesInstanceDiscovererTest {
         String testServiceId = "test-service";
         String testInstanceId = UUID.randomUUID().toString();
 
-        String response = TestMetadataFactory.toJson(TestMetadataFactory.create(null, null));
-
-        mockWebServer.enqueue(
-                new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance k8sPod = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), testInstanceId)
-                .set(Select.field("serviceId"), testServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(testServiceId));
-        Mockito.when(discoveryClient.getInstances(testServiceId)).thenReturn(List.of(k8sPod));
+        stubs.enqueueResponses(TestMetadataFactory.toJson(TestMetadataFactory.create(null, null)));
+        stubs.stubDiscovery(stubs.k8sInstance(testServiceId, testInstanceId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -479,32 +365,10 @@ class KubernetesInstanceDiscovererTest {
         String responseWithApplicationId =
                 TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
 
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(responseWithoutApplicationId)
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-        mockWebServer.enqueue(new MockResponse()
-                .setBody(responseWithApplicationId)
-                .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        ServiceInstance instanceMissingApplicationId = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceWithoutApplicationId)
-                .set(Select.field("serviceId"), testServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        ServiceInstance instanceHavingApplicationId = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceWithApplicationId)
-                .set(Select.field("serviceId"), testServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(testServiceId));
-        Mockito.when(discoveryClient.getInstances(testServiceId))
-                .thenReturn(List.of(instanceMissingApplicationId, instanceHavingApplicationId));
+        stubs.enqueueResponses(responseWithoutApplicationId, responseWithApplicationId);
+        stubs.stubDiscovery(
+                stubs.k8sInstance(testServiceId, instanceWithoutApplicationId),
+                stubs.k8sInstance(testServiceId, instanceWithApplicationId));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -524,27 +388,17 @@ class KubernetesInstanceDiscovererTest {
 
         mockWebServer.enqueue(new MockResponse().setBody(response).addHeader("Content-Type", "application/json"));
 
-        ServiceInstance healthyK8SPod = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), healthyK8SInstanceId)
-                .set(Select.field("serviceId"), testServiceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
         ServiceInstance connectionRefusedPod = Instancio.of(KubernetesServiceInstance.class)
                 .set(Select.field("instanceId"), connectionRefusedInstanceId)
                 .set(Select.field("serviceId"), testServiceId)
                 .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
+                .set(Select.field("host"), mockWebServer.getHostName())
                 // the assumption is that ports under 1024 cannot be allocated by mockwebserver (require root
                 // privileges)
                 .set(Select.field("port"), 10)
                 .create();
 
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(testServiceId));
-        Mockito.when(discoveryClient.getInstances(testServiceId))
-                .thenReturn(List.of(healthyK8SPod, connectionRefusedPod));
+        stubs.stubDiscovery(stubs.k8sInstance(testServiceId, healthyK8SInstanceId), connectionRefusedPod);
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
 
@@ -571,19 +425,8 @@ class KubernetesInstanceDiscovererTest {
             }
             """;
 
-        mockWebServer.setDispatcher(new Dispatcher() {
-            @Override
-            public @NotNull MockResponse dispatch(@NotNull RecordedRequest request) {
-                if ("/actuator/axelix-ping".equals(request.getPath())) {
-                    return new MockResponse()
-                            .setBody(response)
-                            .addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE);
-                }
-                return new MockResponse().setResponseCode(404);
-            }
-        });
-
-        mockDiscoveredPod(serviceId, instanceId);
+        stubs.respondOn("/actuator/axelix-ping", response);
+        stubs.stubDiscovery(stubs.k8sInstance(serviceId, instanceId));
         Mockito.when(instanceRegistry.get(InstanceId.of(instanceId))).thenReturn(Optional.of(knownInstance));
 
         Set<DiscoveredInstanceProfile> profiles = subject.discover();
@@ -603,7 +446,7 @@ class KubernetesInstanceDiscovererTest {
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(503));
 
-        mockDiscoveredPod(serviceId, instanceId);
+        stubs.stubDiscovery(stubs.k8sInstance(serviceId, instanceId));
         Mockito.when(instanceRegistry.get(InstanceId.of(instanceId)))
                 .thenReturn(Optional.of(TestInstanceFactory.withStarterVersion(
                         instanceId, "1.3.0", mockWebServer.url("/actuator").toString())));
@@ -623,7 +466,7 @@ class KubernetesInstanceDiscovererTest {
         SemanticVersion masterVersion = SemanticVersion.parse(axelixVersionDiscoverer.getVersion());
         String starterVersion = masterVersion.major() + "." + (masterVersion.minor() + 1) + ".0";
 
-        mockDiscoveredPod(serviceId, instanceId);
+        stubs.stubDiscovery(stubs.k8sInstance(serviceId, instanceId));
         Mockito.when(instanceRegistry.get(InstanceId.of(instanceId)))
                 .thenReturn(Optional.of(TestInstanceFactory.withStarterVersion(
                         instanceId,
@@ -641,13 +484,9 @@ class KubernetesInstanceDiscovererTest {
         String serviceId = UUID.randomUUID().toString();
         String instanceId = UUID.randomUUID().toString();
 
-        String response =
-                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic"));
-
-        mockWebServer.enqueue(
-                new MockResponse().setBody(response).addHeader("Content-Type", ACTUATOR_RESPONSE_CONTENT_TYPE));
-
-        mockDiscoveredPod(serviceId, instanceId);
+        stubs.enqueueResponses(
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic")));
+        stubs.stubDiscovery(stubs.k8sInstance(serviceId, instanceId));
         Mockito.when(instanceRegistry.get(InstanceId.of(instanceId)))
                 .thenReturn(Optional.of(TestInstanceFactory.withStarterVersion(
                         instanceId, "1.2.0", mockWebServer.url("/actuator").toString())));
@@ -657,18 +496,5 @@ class KubernetesInstanceDiscovererTest {
         assertThat(profiles).singleElement().isInstanceOf(DiscoveredInstanceProfile.Registration.class);
         assertThat(mockWebServer.getRequestCount()).isEqualTo(1);
         assertThat(mockWebServer.takeRequest().getPath()).isEqualTo("/actuator/axelix-metadata");
-    }
-
-    private void mockDiscoveredPod(String serviceId, String instanceId) {
-        ServiceInstance pod = Instancio.of(KubernetesServiceInstance.class)
-                .set(Select.field("instanceId"), instanceId)
-                .set(Select.field("serviceId"), serviceId)
-                .set(Select.field("secure"), false)
-                .set(Select.field("host"), uri.getHost())
-                .set(Select.field("port"), uri.getPort())
-                .create();
-
-        Mockito.when(discoveryClient.getServices()).thenReturn(List.of(serviceId));
-        Mockito.when(discoveryClient.getInstances(serviceId)).thenReturn(List.of(pod));
     }
 }

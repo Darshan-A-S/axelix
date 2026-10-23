@@ -28,7 +28,10 @@ but the official [Helm chart](https://github.com/axelixlabs/axelix/tree/master/c
 **How discovery works:**
 1. **Self-registration**: apps with the Axelix Starter register themselves and heartbeat
 2. **Platform scanning** (Kubernetes): Master probes the cluster for services exposing Axelix SBS endpoints
-3. **Health monitoring**: Master periodically polls registered instances and evicts ones that stop heartbeating
+3. **Keeping the list current**: Master refreshes auto-discovered instances on every scan and evicts self-registered
+   ones that stop sending heartbeats
+
+See [How discovery works](../product/discovery.mdx) for the details.
 
 ### 🖥️ **Unified Web Interface**
 A single pane of glass for all your Spring Boot applications:

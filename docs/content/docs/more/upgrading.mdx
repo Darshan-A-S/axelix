@@ -117,7 +117,8 @@ startup. While Master is down, heartbeats simply go unanswered: the service keep
 nothing, and retries on its normal schedule. Once the new Master is up, the very next heartbeat of every service
 re-registers it from scratch, so the whole fleet reassembles itself within one heartbeat interval. That is why the
 steps below never mention your services: no coordination with service teams, no draining, and no restarts are
-needed — from a service's point of view a Master upgrade is indistinguishable from a brief network hiccup.
+needed — from a service's point of view a Master upgrade is indistinguishable from a brief network hiccup. See [How
+discovery works](../product/discovery.mdx) for how services register and heartbeat.
 
 ### Step by step
 

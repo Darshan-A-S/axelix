@@ -512,6 +512,8 @@ Auto-discovery lets Master find Spring Boot Starter–equipped applications with
 schedule set by `broadcast.schedule`, Master queries the Kubernetes API for Services in the configured namespaces,
 filters them by label, and probes `/actuator/axelix-metadata` on each match using a JWT it issues itself with
 `axelix.master.auth.jwt.signing-key`. A successful probe registers the instance; a probe failure drops it from the list.
+Starting with 1.3.0, Master refreshes the instances it already knows through the lighter `axelix-ping` endpoint
+instead. See [How discovery works](../../product/discovery.mdx) for the whole cycle.
 
 To turn the feature on, set `axelix.master.discovery.auto.enabled=true` (default `false`, i.e. off). Kubernetes is
 currently the only supported discovery platform.
@@ -542,9 +544,12 @@ Self-registration is the opposite direction of autodiscovery: Master *accepts* h
 Starter–equipped application instead of scanning for it. Each heartbeat carries the instance's actuator URL, instance
 name, and a JWT signed with the shared `axelix.master.auth.jwt.signing-key`. Master stores the registration and treats
 it as a known instance until the heartbeats stop. If no heartbeat arrives within `eviction.heartbeat-timeout`, the
-eviction sweep (scheduled by `eviction.schedule`) drops the instance.
+eviction sweep (scheduled by `eviction.schedule`) drops the instance. Starting with 1.3.0, only the first request
+is a full registration, and the heartbeats after it are lightweight. See [How discovery
+works](../../product/discovery.mdx) for the whole cycle.
 
-The endpoint is `POST /api/internal/service/register`. It is gated by the same JWT signing key set under
+The endpoint is `POST /api/internal/service/register`. Starting with 1.3.0, only the first registration goes there,
+and the heartbeats go to a neighbouring endpoint. It is gated by the same JWT signing key set under
 `axelix.master.auth.jwt.*` — without a matching key, heartbeats are rejected.
 
 On the Master side there are **no required overrides** — every property here has a working default. The feature is **on

@@ -317,6 +317,11 @@ The starter exposes the following endpoints:
         <td><code>1.0.0</code></td>
     </tr>
     <tr>
+        <td><code>axelix-ping</code></td>
+        <td>Health, memory, and transaction data Master polls for instances it already knows</td>
+        <td><code>1.3.0</code> <em>upcoming</em></td>
+    </tr>
+    <tr>
         <td><code>axelix-details</code></td>
         <td>Summary information about the instance</td>
         <td><code>1.0.0</code></td>
@@ -586,13 +591,16 @@ namespace for Services and probe each one's `/actuator/axelix-metadata`. No furt
 starter side beyond exposing the actuator endpoints and sharing the JWT signing key. Configure the master-side scan with
 `axelix.master.discovery.auto.*` — see [Discovery —
 auto-discovery](../../setting-up-master-ui/configuring-master/configuring-master.mdx#discovery--auto-discovery) on the Master page.
+For what Master does on each scan, see [How discovery works](../../product/discovery.mdx).
 
 ### Option B — Self-registration
 
 When Master cannot scan the instance's environment — a different cluster, a plain VM, an isolated network — switch on
 self-registration in the starter. The instance then posts a heartbeat carrying its actuator URL to Master on a fixed
 interval. Master accepts the post at `POST /api/internal/service/register`, which is also where you point
-`axelix.sbs.discovery.master-url`.
+`axelix.sbs.discovery.master-url`. Starting with Axelix 1.3.0, the starter sends this full registration only once and
+then switches to lightweight heartbeats, which go to an endpoint next to `master-url`. For the whole cycle, see [How
+discovery works](../../product/discovery.mdx).
 
 <Tabs groupId="spring-config" items={['application.yaml', 'application.properties']}>
   <Tab value="application.yaml">

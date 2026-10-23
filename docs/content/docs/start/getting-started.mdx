@@ -219,7 +219,7 @@ Beyond the database connection and the signing key, two decisions are worth maki
   probes the services it finds. With
   [self-registration](./configuring-master.mdx#discovery--self-registration), each service posts heartbeats to Master
   instead. The two modes can be combined — for example, auto-discovery for in-cluster services plus self-registration
-  for services Master cannot scan.
+  for services Master cannot scan. See [How discovery works](../product/discovery.mdx) for how each mode behaves.
 - **Sign-in and RBAC.** For small teams, [local users](../setting-up-master-ui/authentication/authentication.mdx#local-users)
   — where Master stores user accounts in its own database — will probably be enough. For large organizations,
   [OAuth2 / OIDC](../setting-up-master-ui/authentication/authentication.mdx#oauth2--oidc) against your identity

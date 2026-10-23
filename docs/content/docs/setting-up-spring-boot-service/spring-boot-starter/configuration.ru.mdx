@@ -324,6 +324,11 @@ Axelix ниже 1.2.0](#открытие-эндпоинтов-на-axelix-ниж
         <td><code>1.0.0</code></td>
     </tr>
     <tr>
+        <td><code>axelix-ping</code></td>
+        <td>Состояние, память и данные о транзакциях, которые Master опрашивает у уже известных ему экземпляров</td>
+        <td><code>1.3.0</code> <em>скоро</em></td>
+    </tr>
+    <tr>
         <td><code>axelix-details</code></td>
         <td>Сводная информация об инстансе</td>
         <td><code>1.0.0</code></td>
@@ -592,13 +597,16 @@ namespace в поисках Services и опрашивал `/actuator/axelix-met
 никакой дополнительной настройки, помимо открытия actuator-эндпоинтов и общего JWT-ключа подписи. Настройте сканирование
 на стороне Master через `axelix.master.discovery.auto.*` — см. [Обнаружение —
 автообнаружение](../../setting-up-master-ui/configuring-master/configuring-master.mdx#обнаружение--автообнаружение) на странице Master.
+Что Master делает при каждом сканировании, описано на странице [Как работает обнаружение](../../product/discovery.mdx).
 
 ### Вариант B — Саморегистрация
 
 Если Master не может просканировать среду сервиса — другой кластер, обычная виртуальная машина, изолированная сеть —
 включите саморегистрацию в стартере. Сервис тогда отправляет в Master heartbeat со своим actuator URL через
 фиксированный интервал. Master принимает запрос по адресу `POST /api/internal/service/register` — это же значение
-указывается в `axelix.sbs.discovery.master-url`.
+указывается в `axelix.sbs.discovery.master-url`. Начиная с Axelix 1.3.0, стартер отправляет полную регистрацию только
+один раз, а затем переходит на лёгкие heartbeat-сигналы, которые уходят на эндпоинт рядом с `master-url`. Весь цикл
+описан на странице [Как работает обнаружение](../../product/discovery.mdx).
 
 <Tabs items={['application.yaml', 'application.properties']}>
   <Tab value="application.yaml">

@@ -290,10 +290,7 @@ class DefaultHeartBeatMetadataAssemblerTest {
     void shouldReportNoScheduledTaskExecutions_whenHistoryIsAbsent() {
         // given.
         DefaultHeartBeatMetadataAssembler assembler = new DefaultHeartBeatMetadataAssembler(
-                service,
-                healthDetectionFunction,
-                insightsInfoProviderWithoutHistory(),
-                properties);
+                service, healthDetectionFunction, insightsInfoProviderWithoutHistory(), properties);
 
         // when.
         HeartBeatMetadataV2 heartBeat = assembler.assembleHeartBeatV2();

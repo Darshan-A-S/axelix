@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.sbs.spring.core.details;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,8 @@ import com.axelixlabs.axelix.sbs.spring.core.master.insights.NoOpJpaEntitiesProf
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.VmOptionsAccessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.DefaultTransactionStatsCollector;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionAttributesRegistry;
+import com.axelixlabs.axelix.sbs.spring.core.sbom.ClasspathDependencySbom;
+import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
 
 import static com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider.TEST_INSIGHTS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,7 +91,10 @@ class DefaultBasicRegistrationMetadataAssemblerTest extends AbstractDetailsShare
                 axelixVersionDiscoverer,
                 libraryInformationProvider,
                 insightsInfoProviderWithoutHistory(),
-                axelixInfoProperties);
+                axelixInfoProperties,
+                () -> Set.of(),
+                new ClasspathDependencySbom(),
+                new NoOpLogger());
 
         // when.
         BasicRegistrationMetadata serviceMetadata = assembler.assemble();

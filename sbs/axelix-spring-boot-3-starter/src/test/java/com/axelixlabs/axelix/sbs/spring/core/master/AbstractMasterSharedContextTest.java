@@ -51,7 +51,7 @@ import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesL
  * @author Artemiy Degtyarev
  */
 @SpringBootTest(classes = Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({AxelixMetadataEndpoint.class, JwtAuthTestConfiguration.class, SharedConfig.class})
+@Import({AxelixMetadataEndpoint.class, AxelixPingEndpoint.class, JwtAuthTestConfiguration.class, SharedConfig.class})
 abstract class AbstractMasterSharedContextTest {
 
     @MockBean
@@ -87,6 +87,12 @@ abstract class AbstractMasterSharedContextTest {
             try (InputStream inputStream = axelixInfoResource.getInputStream()) {
                 return AxelixInfoPropertiesLoader.load(inputStream);
             }
+        }
+
+        @Bean
+        public MasterPingAssembler masterPingAssembler(
+                HealthDetectionFunction healthDetectionFunction, InsightsInfoProvider insightsInfoProvider) {
+            return new MasterPingAssembler(healthDetectionFunction, insightsInfoProvider);
         }
 
         @Bean

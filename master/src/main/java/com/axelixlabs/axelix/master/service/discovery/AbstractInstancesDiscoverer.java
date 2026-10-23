@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.master.service.discovery;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,10 +34,18 @@ import org.springframework.util.StringUtils;
 
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.http.NoHttpPayload;
+import com.axelixlabs.axelix.common.utils.SemanticVersion;
+import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.Instance.InstanceStatus;
+import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.MemoryUsage;
+import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.service.transport.BadRequestException;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvocationException;
 import com.axelixlabs.axelix.master.service.transport.ManagedServiceMetadataEndpointProber;
+import com.axelixlabs.axelix.master.service.transport.MasterPingEndpointProber;
 
 /**
  * Abstract implementation of {@link InstancesDiscoverer} that performs common tasks like checking
@@ -57,20 +66,29 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
     //  we can do that in case of automatic discovery.
     protected static final String ACTUATOR_ENDPOINT_POSTFIX = "/actuator";
 
+    @Deprecated(forRemoval = true, since = "1.3")
+    private static final SemanticVersion PING_ENDPOINT_SINCE = SemanticVersion.parse("1.3.0-SNAPSHOT");
+
     private final Logger logger;
     private final DiscoveryClient discoveryClient;
     private final ManagedServiceMetadataEndpointProber managedServiceProber;
+    private final MasterPingEndpointProber masterPingProber;
     private final CompatibilityDetectionStrategy compatibilityDetectionStrategy;
+    private final InstanceRegistry instanceRegistry;
 
     public AbstractInstancesDiscoverer(
             Logger logger,
             DiscoveryClient discoveryClient,
             ManagedServiceMetadataEndpointProber managedServiceMetadataEndpointProber,
-            CompatibilityDetectionStrategy compatibilityDetectionStrategy) {
+            MasterPingEndpointProber masterPingEndpointProber,
+            CompatibilityDetectionStrategy compatibilityDetectionStrategy,
+            InstanceRegistry instanceRegistry) {
         this.discoveryClient = discoveryClient;
         this.managedServiceProber = managedServiceMetadataEndpointProber;
+        this.masterPingProber = masterPingEndpointProber;
         this.logger = logger;
         this.compatibilityDetectionStrategy = compatibilityDetectionStrategy;
+        this.instanceRegistry = instanceRegistry;
     }
 
     @Override
@@ -88,17 +106,71 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
 
             if (!CollectionUtils.isEmpty(instances)) {
                 result.addAll(instances.stream()
-                        .map(this::getManagedServiceMetadata)
-                        .filter(Objects::nonNull)
-                        .filter(this::isCompatibleVersion)
-                        .filter(this::hasApplicationId)
-                        .map(this::toDomainInstanceSafe)
+                        .map(this::discoverInstance)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toSet()));
             }
         }
 
         return result;
+    }
+
+    private @Nullable DiscoveredInstanceProfile discoverInstance(ServiceInstance serviceInstance) {
+        Optional<Instance> knownInstance = Optional.ofNullable(serviceInstance.getInstanceId())
+                .flatMap(instanceId -> instanceRegistry.get(InstanceId.of(instanceId)));
+
+        if (knownInstance.isPresent() && servesMasterPing(knownInstance.get())) {
+            if (!compatibilityDetectionStrategy.isCompatible(knownInstance.get().starterVersion())) {
+                logger.warn(
+                        "Skipping the instance '{}': it is registered, but its Axelix starter version '{}' is not supported "
+                                + "by this Axelix Master. This is unexpected, please report it to the Axelix maintainers",
+                        knownInstance.get().id().instanceId(),
+                        knownInstance.get().starterVersion());
+                return null;
+            }
+
+            return refresh(knownInstance.get());
+        }
+
+        return Optional.ofNullable(getManagedServiceMetadata(serviceInstance))
+                .filter(this::isCompatibleVersion)
+                .filter(this::hasApplicationId)
+                .map(this::toDomainInstanceSafe)
+                .orElse(null);
+    }
+
+    // TODO: Remove in 1.6, once the starters before 1.3 (without the ping endpoint) fall out of the window
+    @Deprecated(forRemoval = true, since = "1.3")
+    private static boolean servesMasterPing(Instance instance) {
+        return SemanticVersion.tryParse(instance.starterVersion())
+                .filter(version -> version.isAtLeast(PING_ENDPOINT_SINCE))
+                .isPresent();
+    }
+
+    private DiscoveredInstanceProfile.@Nullable Refresh refresh(Instance instance) {
+        try {
+            MasterPing masterPing = masterPingProber.invoke(instance.actuatorUrl(), NoHttpPayload.INSTANCE);
+
+            return new DiscoveredInstanceProfile.Refresh(
+                    instance.copy(
+                            toInstanceStatus(masterPing),
+                            new MemoryUsage(masterPing.getMemoryDetails().getHeap())),
+                    masterPing);
+        } catch (EndpointInvocationException | BadRequestException error) {
+            logger.warn(
+                    "Unable to fetch the master ping of the managed service with id : {}. Skipping it",
+                    instance.id().instanceId(),
+                    error);
+            return null;
+        }
+    }
+
+    private static InstanceStatus toInstanceStatus(MasterPing masterPing) {
+        return switch (masterPing.getHealthStatus()) {
+            case UP -> InstanceStatus.UP;
+            case DOWN -> InstanceStatus.DOWN;
+            case UNKNOWN -> InstanceStatus.UNKNOWN;
+        };
     }
 
     protected record IntermediateInstanceProfile(ServiceInstance serviceInstance, BasicRegistrationMetadata metadata) {}
@@ -110,7 +182,7 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
             BasicRegistrationMetadata metadata = managedServiceProber.invoke(actuatorUrl, NoHttpPayload.INSTANCE);
 
             return new IntermediateInstanceProfile(serviceInstance, metadata);
-        } catch (EndpointInvocationException error) {
+        } catch (EndpointInvocationException | BadRequestException error) {
             logger.debug(
                     "Unable to reach the managed service with id : {}. Skipping instance registration",
                     serviceInstance.getInstanceId(),
@@ -142,9 +214,11 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
         }
     }
 
-    private @Nullable DiscoveredInstanceProfile toDomainInstanceSafe(IntermediateInstanceProfile intermediateProfile) {
+    private DiscoveredInstanceProfile.@Nullable Registration toDomainInstanceSafe(
+            IntermediateInstanceProfile intermediateProfile) {
         try {
-            return new DiscoveredInstanceProfile(toDomainInstance(intermediateProfile), intermediateProfile.metadata());
+            return new DiscoveredInstanceProfile.Registration(
+                    toDomainInstance(intermediateProfile), intermediateProfile.metadata());
         } catch (IllegalArgumentException e) {
             logger.warn(
                     "Unable to convert the discovered service : {} to its internal representation to make it manageable. Skipping registration",

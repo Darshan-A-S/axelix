@@ -1,4 +1,12 @@
 {
+    "ActionInstancesSelector": {
+        "current": "Текущий"
+    },
+    "InstanceContext": {
+        "instancesCount": "Инстансы · {{count}}",
+        "commit": "Хеш коммита",
+        "uptime": "Время работы"
+    },
     "search": "Поиск",
     "noData": "Нет данных",
     "copied": "Скопировано",

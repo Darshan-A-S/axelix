@@ -1,4 +1,12 @@
 {
+    "ActionInstancesSelector": {
+        "current": "Current"
+    },
+    "InstanceContext": {
+        "instancesCount": "Instances · {{count}}",
+        "commit": "Commit hash",
+        "uptime": "Uptime"
+    },
     "search": "Search",
     "noData": "No data",
     "copied": "Copied",

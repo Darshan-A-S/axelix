@@ -97,6 +97,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
     void prepare() {
         mockWebServer.setDispatcher(new Dispatcher() {
             @Override
+            @SuppressWarnings("PMD.CyclomaticComplexity")
             public @NotNull MockResponse dispatch(@NotNull RecordedRequest request) {
                 String path = request.getPath();
                 assert path != null;

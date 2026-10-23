@@ -35,11 +35,11 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.Transaction
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link AxelixMetadataEndpointAutoConfiguration}.
+ * Integration tests for {@link AxelixMasterProtocolAutoConfiguration}.
  *
  * @author Mikhail Polivakha
  */
-class AxelixMetadataEndpointAutoConfigurationTest {
+class AxelixMasterProtocolAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withBean(TransactionStatsCollector.class, DefaultTransactionStatsCollector::new)
@@ -47,7 +47,7 @@ class AxelixMetadataEndpointAutoConfigurationTest {
             .withConfiguration(AutoConfigurations.of(
                     AxelixInfoPropertiesAutoConfiguration.class,
                     LibraryInformationProviderAutoConfiguration.class,
-                    AxelixMetadataEndpointAutoConfiguration.class));
+                    AxelixMasterProtocolAutoConfiguration.class));
 
     @Test
     void shouldCreateMetadataEndpointWithoutHealthEndpoint() {
@@ -71,7 +71,7 @@ class AxelixMetadataEndpointAutoConfigurationTest {
                         AxelixInfoPropertiesAutoConfiguration.class,
                         LibraryInformationProviderAutoConfiguration.class,
                         TransactionMonitoringAutoConfiguration.class,
-                        AxelixMetadataEndpointAutoConfiguration.class))
+                        AxelixMasterProtocolAutoConfiguration.class))
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(TransactionStatsCollector.class);
                     assertThat(context).doesNotHaveBean(TransactionAttributesRegistry.class);

@@ -22,9 +22,9 @@ import java.lang.management.ManagementFactory;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration;
-import org.springframework.boot.actuate.health.HealthEndpoint;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointAutoConfiguration;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
@@ -56,7 +56,8 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.Transaction
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionStatsCollector;
 
 /**
- * Auto-configuration for the {@link AxelixMetadataEndpoint}.
+ * Auto-configuration of the endpoints that Axelix Master communicates with, i.e. {@link AxelixMetadataEndpoint}
+ * and {@link AxelixPingEndpoint}, as well as the beans they depend on.
  *
  * @since 18.09.2025
  * @author Nikita Kirillov
@@ -70,7 +71,7 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.Transaction
             LibraryInformationProviderAutoConfiguration.class,
             TransactionMonitoringAutoConfiguration.class,
         })
-public class AxelixMetadataEndpointAutoConfiguration {
+public class AxelixMasterProtocolAutoConfiguration {
 
     @Bean
     public AxelixVersionDiscoverer axelixVersionDiscoverer() {
@@ -124,9 +125,9 @@ public class AxelixMetadataEndpointAutoConfiguration {
     public BasicRegistrationMetadataAssembler serviceMetadataAssembler(
             HealthDetectionFunction healthDetectionFunction,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
-            AxelixInfoProperties axelixInfoProperties,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider,
+            AxelixInfoProperties axelixInfoProperties,
             InstanceFeaturesDetector instanceFeaturesDetector) {
 
         return new DefaultBasicRegistrationMetadataAssembler(

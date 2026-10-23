@@ -34,7 +34,7 @@ import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixHeapDumpEndpoint
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixInfoPropertiesAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixLoggersEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixLogsEndpointAutoConfiguration;
-import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixMetadataEndpointAutoConfiguration;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixMasterProtocolAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixMetricsAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixMetricsPublisherAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.EndpointPropertiesSupportAutoConfiguration;
@@ -65,7 +65,7 @@ import com.axelixlabs.axelix.sbs.spring.autoconfiguration.ValidationListenerAuto
             AxelixDetailsEndpointAutoConfiguration.class,
             AxelixEnvironmentEndpointAutoConfiguration.class,
             AxelixHeapDumpEndpointAutoConfiguration.class,
-            AxelixMetadataEndpointAutoConfiguration.class,
+            AxelixMasterProtocolAutoConfiguration.class,
             AxelixMetricsAutoConfiguration.class,
             AxelixMetricsPublisherAutoConfiguration.class,
             AxelixGcEndpointAutoConfiguration.class,

@@ -56,7 +56,8 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.Transaction
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionStatsCollector;
 
 /**
- * Auto-configuration for the {@link AxelixMetadataEndpoint}.
+ * Auto-configuration of the endpoints that Axelix Master communicates with, i.e. {@link AxelixMetadataEndpoint}
+ * and {@link AxelixPingEndpoint}, as well as the beans they depend on.
  *
  * @since 18.09.2025
  * @author Nikita Kirillov
@@ -70,7 +71,7 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.Transaction
             LibraryInformationProviderAutoConfiguration.class,
             TransactionMonitoringAutoConfiguration.class,
         })
-public class AxelixMetadataEndpointAutoConfiguration {
+public class AxelixMasterProtocolAutoConfiguration {
 
     @Bean
     public AxelixVersionDiscoverer axelixVersionDiscoverer() {

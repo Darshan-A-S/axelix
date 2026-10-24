@@ -73,8 +73,6 @@ class AxelixBeansEndpointJacksonIsolationTest extends AbstractBeansSharedContext
         ResponseEntity<String> response =
                 testRestTemplate.asViewer().getForEntity("/actuator/axelix-beans", String.class);
 
-        System.out.println("DEBUG RESPONSE BODY: " + response.getBody());
-
         // then.
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         String beanPath = "$.beans[?(@.beanName == '" + CommonConfiguration.CUSTOM_SUPPLIER + "')]";

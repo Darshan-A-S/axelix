@@ -21,7 +21,6 @@ import java.util.List;
 
 import tools.jackson.databind.json.JsonMapper;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration;
 import org.springframework.boot.actuate.autoconfigure.web.ManagementContextType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -32,9 +31,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.axelixlabs.axelix.sbs.spring.core.web.AxelixJacksonHttpMessageConverter;
 
 /**
- * Configures an isolated {@link JsonMapper} and dedicated {@link AxelixJacksonHttpMessageConverter}
+ * Configures a dedicated {@link AxelixJacksonHttpMessageConverter} with an isolated Jackson mapper
  * in the context that serves Actuator (main context or separate management port context), ensuring Axelix
- * endpoint serialization is isolated from the application's Jackson configuration.
+ * endpoint serialization is isolated from the application's Jackson configuration without exposing the
+ * mapper to the host application context.
  *
  * @author Darshan A S
  */
@@ -43,24 +43,14 @@ import com.axelixlabs.axelix.sbs.spring.core.web.AxelixJacksonHttpMessageConvert
 public class AxelixJacksonManagementContextConfiguration {
 
     @Bean
-    public JsonMapper axelixEndpointJsonMapper() {
-        return JsonMapper.builder().findAndAddModules().build();
-    }
-
-    @Bean
-    public AxelixJacksonHttpMessageConverter axelixJacksonHttpMessageConverter(
-            @Qualifier("axelixEndpointJsonMapper") JsonMapper axelixEndpointJsonMapper) {
-        return new AxelixJacksonHttpMessageConverter(axelixEndpointJsonMapper);
-    }
-
-    @Bean
-    public WebMvcConfigurer axelixEndpointWebMvcConfigurer(
-            AxelixJacksonHttpMessageConverter axelixJacksonHttpMessageConverter) {
+    public WebMvcConfigurer axelixEndpointWebMvcConfigurer() {
+        AxelixJacksonHttpMessageConverter converter = new AxelixJacksonHttpMessageConverter(
+                JsonMapper.builder().findAndAddModules().build());
         return new WebMvcConfigurer() {
             @Override
             @SuppressWarnings("removal")
             public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-                converters.add(0, axelixJacksonHttpMessageConverter);
+                converters.add(0, converter);
             }
         };
     }

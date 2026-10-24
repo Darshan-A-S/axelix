@@ -715,3 +715,35 @@ projects:
     reference:
       label: P6Spy on GitHub
       url: https://github.com/p6spy/p6spy
+
+  - id: spring-data-solr
+    name: Spring Data for Apache Solr
+    status: SUNSET
+    summary: >-
+      Discontinued in early 2020 and past its support timeline since February 2023; the repository
+      is archived. The last release is 4.3.15 from November 2021.
+    coordinates:
+      - org.springframework.data:spring-data-solr
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: The Spring team recommends moving to another search module such as Spring Data Elasticsearch, or using SolrJ directly
+    reference:
+      label: Spring Data for Apache Solr discontinued
+      url: https://spring.io/blog/2020/04/07/spring-data-for-apache-solr-discontinued
+
+  - id: spring-data-geode
+    name: Spring Data for Apache Geode
+    status: SUNSET
+    summary: >-
+      No longer maintained as an open-source project by Broadcom, and the repository is archived.
+      The last releases are 2.7.18 (November 2023) for Geode and 2.3.9.RELEASE (April 2021) for
+      the earlier GemFire module.
+    coordinates:
+      - org.springframework.data:spring-data-geode
+      - org.springframework.data:spring-data-gemfire
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No open-source Spring Data successor exists; applications move to another data store or use the Apache Geode client directly
+    reference:
+      label: Archived Spring Data for Apache Geode repository
+      url: https://github.com/spring-projects/spring-data-geode

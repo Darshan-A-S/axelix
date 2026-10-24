@@ -87,3 +87,35 @@ projects:
     reference:
       label: jBCrypt on GitHub
       url: https://github.com/jeremyh/jBCrypt
+
+  - id: spring-cloud-security
+    name: Spring Cloud Security
+    status: SUNSET
+    summary: >-
+      No longer maintained and archived; Spring lists it as end of life. The last release is
+      2.2.5.RELEASE from April 2021.
+    coordinates:
+      - org.springframework.cloud:spring-cloud-security
+      - org.springframework.cloud:spring-cloud-starter-security
+      - org.springframework.cloud:spring-cloud-starter-oauth2
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Spring Security's built-in OAuth 2.0 client and resource server support, with Spring Cloud Gateway's TokenRelay for token propagation
+    reference:
+      label: Archived Spring Cloud Security repository
+      url: https://github.com/spring-cloud/spring-cloud-security
+
+  - id: spring-security-saml-extension
+    name: Spring Security SAML Extension
+    status: SUNSET
+    summary: >-
+      Reached end of life on 6 October 2021 and the repository is archived. SAML 2.0 support now
+      lives in Spring Security itself.
+    coordinates:
+      - org.springframework.security.extensions:spring-security-saml2-core
+    succession:
+      kind: SUPERSEDED_BY
+      value: org.springframework.security:spring-security-saml2-service-provider
+    reference:
+      label: Spring Security SAML extension end-of-life notice
+      url: https://spring.io/blog/2020/09/22/spring-security-saml-extensions-1-x-eol-on-october-6-2021

@@ -199,3 +199,51 @@ projects:
     reference:
       label: Apache Pulsar
       url: https://pulsar.apache.org/
+
+  - id: reactor-kafka
+    name: Reactor Kafka
+    status: SUNSET
+    summary: >-
+      Discontinued in May 2025; open-source support ended on 2026-06-30 and the repository is
+      archived. The last release is 1.3.25 from November 2025.
+    coordinates:
+      - io.projectreactor.kafka:reactor-kafka
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No reactive successor exists; the Apache Kafka client or Spring for Apache Kafka are used directly
+    reference:
+      label: Reactor Kafka discontinued
+      url: https://spring.io/blog/2025/05/20/reactor-kafka-discontinued
+
+  - id: reactor-rabbitmq
+    name: Reactor RabbitMQ
+    status: SUNSET
+    summary: >-
+      No longer maintained; open-source support ended on 2023-06-30 and the repository is archived.
+      The last release is 1.5.6 from March 2023.
+    coordinates:
+      - io.projectreactor.rabbitmq:reactor-rabbitmq
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No reactive successor exists; the RabbitMQ Java client or Spring AMQP are used directly
+    reference:
+      label: Archived Reactor RabbitMQ repository
+      url: https://github.com/reactor/reactor-rabbitmq
+
+  - id: spring-pulsar-reactive
+    name: Spring for Apache Pulsar Reactive
+    status: SUNSET
+    summary: >-
+      Reactive support was removed in Spring for Apache Pulsar 2.0, and the matching Spring Boot
+      starter is gone from Spring Boot 4. The 1.2.x module and the Spring Boot 3.5.x starter are the
+      last lines that ship it.
+    coordinates:
+      - org.springframework.pulsar:spring-pulsar-reactive
+      - org.springframework.pulsar:spring-pulsar-reactive-spring-boot-starter
+      - org.springframework.boot:spring-boot-starter-pulsar-reactive
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: The imperative Spring for Apache Pulsar API, or Apache's reactive Pulsar client (org.apache.pulsar:pulsar-client-reactive-api) used directly
+    reference:
+      label: Spring for Apache Pulsar 2.0 what's new
+      url: https://github.com/spring-projects/spring-pulsar/blob/main/spring-pulsar-docs/src/main/antora/modules/ROOT/pages/whats-new.adoc

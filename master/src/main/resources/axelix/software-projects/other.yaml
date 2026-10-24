@@ -643,3 +643,40 @@ projects:
     reference:
       label: Dozer project activity notice
       url: https://github.com/DozerMapper/dozer#project-activity
+
+  - id: spring-cloud-dataflow
+    name: Spring Cloud Data Flow
+    status: SUNSET
+    summary: >-
+      No longer maintained as an open-source project by Broadcom, and the repository is archived.
+      The last release, 2.11.5, dates to September 2024 and also covers Spring Cloud Skipper.
+    coordinates:
+      - org.springframework.cloud:spring-cloud-dataflow-core
+      - org.springframework.cloud:spring-cloud-dataflow-server
+      - org.springframework.cloud:spring-cloud-dataflow-rest-client
+      - org.springframework.cloud:spring-cloud-skipper
+      - org.springframework.cloud:spring-cloud-skipper-server-core
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No open-source successor exists; stream and task orchestration has to move to another platform
+    reference:
+      label: Archived Spring Cloud Data Flow repository
+      url: https://github.com/spring-cloud/spring-cloud-dataflow
+
+  - id: spring-cloud-connectors
+    name: Spring Cloud Connectors
+    status: MAINTENANCE
+    summary: >-
+      In maintenance mode in favor of Java CFEnv: security-related updates continue, but
+      enhancement requests are not addressed. The last release is 2.0.9.RELEASE from November 2021.
+    coordinates:
+      - org.springframework.cloud:spring-cloud-connectors-core
+      - org.springframework.cloud:spring-cloud-spring-service-connector
+      - org.springframework.cloud:spring-cloud-cloudfoundry-connector
+      - org.springframework.cloud:spring-cloud-localconfig-connector
+    succession:
+      kind: SUPERSEDED_BY
+      value: io.pivotal.cfenv:java-cfenv-boot
+    reference:
+      label: Spring Cloud Connectors maintenance-mode notice
+      url: https://github.com/spring-cloud/spring-cloud-connectors

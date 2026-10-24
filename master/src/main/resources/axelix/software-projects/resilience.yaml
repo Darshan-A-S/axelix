@@ -31,3 +31,18 @@ projects:
     reference:
       label: guava-retrying on GitHub
       url: https://github.com/rholder/guava-retrying
+
+  - id: spring-retry
+    name: Spring Retry
+    status: SUNSET
+    summary: >-
+      No longer maintained as an open-source project and archived, superseded by the resilience
+      features built into Spring Framework 7. The last release is 2.0.13 from June 2026.
+    coordinates:
+      - org.springframework.retry:spring-retry
+    succession:
+      kind: SUPERSEDED_BY
+      value: Spring Framework 7 core resilience features (@Retryable, RetryTemplate in spring-core)
+    reference:
+      label: Spring Framework core resilience features
+      url: https://spring.io/blog/2025/09/09/core-spring-resilience-features

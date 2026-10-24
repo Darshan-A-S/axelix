@@ -22,15 +22,18 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixManagementContextConfiguration;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 /**
  * Verifies that every auto-configuration contributed by this starter uses
- * {@link AxelixAutoConfiguration}.
+ * {@link AxelixAutoConfiguration}, and every management context configuration uses
+ * {@link AxelixManagementContextConfiguration}.
  *
  * @author Nikita Kirillov
  * @author Ilya Naumov
@@ -51,6 +54,20 @@ class AxelixAutoConfigurationCoverageTest {
                 .should()
                 .beAnnotatedWith(AxelixAutoConfiguration.class)
                 .because("every Axelix auto-configuration must use AxelixAutoConfiguration")
+                .allowEmptyShould(false)
+                .check(AUTOCONFIGURATION_CLASSES);
+    }
+
+    @Test
+    void everyManagementContextConfigurationUsesAxelixManagementContextConfiguration() {
+        classes()
+                .that()
+                .areMetaAnnotatedWith(ManagementContextConfiguration.class)
+                .and()
+                .areNotAnnotations()
+                .should()
+                .beAnnotatedWith(AxelixManagementContextConfiguration.class)
+                .because("every Axelix management context configuration must use AxelixManagementContextConfiguration")
                 .allowEmptyShould(false)
                 .check(AUTOCONFIGURATION_CLASSES);
     }

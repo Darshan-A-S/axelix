@@ -18,13 +18,12 @@
 package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration;
-import org.springframework.boot.actuate.autoconfigure.web.ManagementContextType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixManagementContextConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthorizationFilter;
 import com.axelixlabs.axelix.sbs.spring.core.auth.WebIdentityAccessManager;
 
@@ -35,7 +34,7 @@ import com.axelixlabs.axelix.sbs.spring.core.auth.WebIdentityAccessManager;
  * @since 19.10.2026
  * @author Nikita Kirillov
  */
-@ManagementContextConfiguration(value = ManagementContextType.ANY, proxyBeanMethods = false)
+@AxelixManagementContextConfiguration
 @ConditionalOnBean(WebIdentityAccessManager.class)
 public class JwtAuthManagementContextConfiguration {
 

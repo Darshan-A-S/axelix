@@ -29,6 +29,7 @@ import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -133,5 +134,13 @@ class AxelixJacksonManagementContextConfigurationTest {
                 .isObject()
                 .containsKey("propertyName")
                 .doesNotContainKey("property_name");
+    }
+
+    @Test
+    void shouldNotRegisterConverterWhenAxelixStarterIsDisabled() {
+        new WebApplicationContextRunner()
+                .withPropertyValues("axelix.sbs.enabled=false")
+                .withUserConfiguration(AxelixJacksonManagementContextConfiguration.class)
+                .run(context -> assertThat(context).doesNotHaveBean("axelixEndpointWebMvcConfigurer"));
     }
 }

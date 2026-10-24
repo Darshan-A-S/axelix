@@ -21,14 +21,13 @@ import java.util.List;
 
 import tools.jackson.databind.json.JsonMapper;
 
-import org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration;
-import org.springframework.boot.actuate.autoconfigure.web.ManagementContextType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixManagementContextConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.web.AxelixJacksonHttpMessageConverter;
 
 /**
@@ -39,7 +38,7 @@ import com.axelixlabs.axelix.sbs.spring.core.web.AxelixJacksonHttpMessageConvert
  *
  * @author Darshan A S
  */
-@ManagementContextConfiguration(value = ManagementContextType.ANY, proxyBeanMethods = false)
+@AxelixManagementContextConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass(
         name = {

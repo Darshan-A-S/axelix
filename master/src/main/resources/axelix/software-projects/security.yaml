@@ -119,3 +119,25 @@ projects:
     reference:
       label: Spring Security SAML extension end-of-life notice
       url: https://spring.io/blog/2020/09/22/spring-security-saml-extensions-1-x-eol-on-october-6-2021
+
+  - id: spring-social
+    name: Spring Social
+    status: SUNSET
+    summary: >-
+      No longer maintained and archived; Spring lists the core project and its provider modules as
+      end of life. The last core release is 1.1.6.RELEASE from March 2018, and the provider modules
+      stopped in 2015.
+    coordinates:
+      - org.springframework.social:spring-social-core
+      - org.springframework.social:spring-social-web
+      - org.springframework.social:spring-social-config
+      - org.springframework.social:spring-social-security
+      - org.springframework.social:spring-social-facebook
+      - org.springframework.social:spring-social-twitter
+      - org.springframework.social:spring-social-linkedin
+    succession:
+      kind: SUPERSEDED_BY
+      value: org.springframework.security:spring-security-oauth2-client
+    reference:
+      label: Archived Spring Social repository
+      url: https://github.com/spring-projects/spring-social

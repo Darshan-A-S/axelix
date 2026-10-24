@@ -525,3 +525,18 @@ projects:
     reference:
       label: Spring Cloud OpenFeign feature-complete announcement
       url: https://spring.io/blog/2022/12/16/spring-cloud-2022-0-0-codename-kilburn-has-been-released#spring-cloud-openfeign-feature-complete-announcement
+
+  - id: spring-mobile
+    name: Spring Mobile
+    status: SUNSET
+    summary: >-
+      No longer active and reached end of life; the repository is archived. The last release is
+      1.1.5.RELEASE from November 2016.
+    coordinates:
+      - org.springframework.mobile:spring-mobile-device
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No Spring successor exists; device-specific rendering is usually handled by responsive front-ends
+    reference:
+      label: Archived Spring Mobile repository
+      url: https://github.com/spring-projects/spring-mobile

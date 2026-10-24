@@ -696,3 +696,57 @@ projects:
     reference:
       label: Joda-Time project status
       url: https://github.com/JodaOrg/joda-time
+
+  - id: spring-cloud-cloudfoundry
+    name: Spring Cloud for Cloud Foundry
+    status: SUNSET
+    summary: >-
+      No longer maintained: it was dropped from the Spring Cloud 2022.0 release train and the
+      repository is archived. The last release is 3.1.4 from December 2023.
+    coordinates:
+      - org.springframework.cloud:spring-cloud-cloudfoundry-commons
+      - org.springframework.cloud:spring-cloud-cloudfoundry-discovery
+      - org.springframework.cloud:spring-cloud-cloudfoundry-web
+      - org.springframework.cloud:spring-cloud-starter-cloudfoundry
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No direct replacement exists; service discovery has to move to the platform's routing or another discovery mechanism
+    reference:
+      label: Archived Spring Cloud for Cloud Foundry repository
+      url: https://github.com/spring-cloud/spring-cloud-cloudfoundry
+
+  - id: spring-cloud-app-broker
+    name: Spring Cloud App Broker
+    status: SUNSET
+    summary: >-
+      No longer maintained, and the repository is archived. The last release is 2.5.1 from
+      June 2025.
+    coordinates:
+      - org.springframework.cloud:spring-cloud-app-broker-core
+      - org.springframework.cloud:spring-cloud-app-broker-autoconfigure
+      - org.springframework.cloud:spring-cloud-app-broker-deployer-cloudfoundry
+      - org.springframework.cloud:spring-cloud-starter-app-broker
+      - org.springframework.cloud:spring-cloud-starter-app-broker-cloudfoundry
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No direct replacement exists; service brokers have to implement the Open Service Broker API without it
+    reference:
+      label: Archived Spring Cloud App Broker repository
+      url: https://github.com/spring-cloud/spring-cloud-app-broker
+
+  - id: spring-batch-admin
+    name: Spring Batch Admin
+    status: SUNSET
+    summary: >-
+      Moved to the Spring attic and not recommended for new projects. Its recommended replacement,
+      Spring Cloud Data Flow, has since been discontinued as open source too. The last release is
+      1.3.1.RELEASE from January 2015.
+    coordinates:
+      - org.springframework.batch:spring-batch-admin-manager
+      - org.springframework.batch:spring-batch-admin-resources
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No open-source Spring successor exists; job monitoring is usually built on Spring Batch's JobRepository and the Actuator/Micrometer metrics
+    reference:
+      label: Archived Spring Batch Admin repository
+      url: https://github.com/spring-attic/spring-batch-admin

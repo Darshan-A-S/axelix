@@ -747,3 +747,59 @@ projects:
     reference:
       label: Archived Spring Data for Apache Geode repository
       url: https://github.com/spring-projects/spring-data-geode
+
+  - id: spring-boot-data-geode
+    name: Spring Boot for Apache Geode
+    status: MAINTENANCE
+    summary: >-
+      Since January 2023 the project receives only CVE and critical fixes until its open-source and
+      commercial support ends; no new features are planned. The last release is 1.7.5 from
+      December 2022.
+    coordinates:
+      - org.springframework.geode:spring-geode-starter
+      - org.springframework.geode:spring-geode-starter-session
+      - org.springframework.geode:spring-geode-starter-logging
+      - org.springframework.geode:spring-geode-starter-actuator
+      - org.springframework.geode:spring-geode-starter-test
+      - org.springframework.geode:spring-geode-autoconfigure
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Spring Boot for VMware GemFire continues the line for the commercial GemFire, but is not a drop-in replacement; Apache Geode users usually move to another caching provider
+    reference:
+      label: Spring Boot for Apache Geode notice
+      url: https://github.com/spring-projects/spring-boot-data-geode#notice
+
+  - id: spring-hadoop
+    name: Spring for Apache Hadoop
+    status: SUNSET
+    summary: >-
+      Reached end of life on 5 April 2019 with no new releases planned, and the repository is
+      archived. The last release is 2.5.0.RELEASE from July 2017.
+    coordinates:
+      - org.springframework.data:spring-data-hadoop
+      - org.springframework.data:spring-data-hadoop-core
+      - org.springframework.data:spring-data-hadoop-batch
+      - org.springframework.data:spring-data-hadoop-hbase
+      - org.springframework.data:spring-data-hadoop-store
+      - org.springframework.data:spring-data-hadoop-boot
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No Spring successor exists; the Hadoop client APIs are used directly
+    reference:
+      label: Spring for Apache Hadoop end-of-life notice
+      url: https://github.com/spring-projects/spring-hadoop
+
+  - id: spring-data-jdbc-ext
+    name: Spring Data JDBC Extensions
+    status: SUNSET
+    summary: >-
+      Archived in March 2019 with no maintenance or new development going forward. The last
+      release is 1.2.1.RELEASE from November 2015.
+    coordinates:
+      - org.springframework.data:spring-data-oracle
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No Spring successor exists; Oracle-specific features are used through the Oracle JDBC driver with Spring JDBC directly
+    reference:
+      label: Archived Spring Data JDBC Extensions repository
+      url: https://github.com/spring-projects/spring-data-jdbc-ext

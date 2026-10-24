@@ -41,7 +41,11 @@ import com.axelixlabs.axelix.sbs.spring.core.web.AxelixJacksonHttpMessageConvert
  */
 @ManagementContextConfiguration(value = ManagementContextType.ANY, proxyBeanMethods = false)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass(name = "org.springframework.web.servlet.config.annotation.WebMvcConfigurer")
+@ConditionalOnClass(
+        name = {
+            "org.springframework.web.servlet.config.annotation.WebMvcConfigurer",
+            "tools.jackson.databind.json.JsonMapper"
+        })
 public class AxelixJacksonManagementContextConfiguration {
 
     @Bean

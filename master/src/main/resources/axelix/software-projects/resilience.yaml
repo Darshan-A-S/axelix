@@ -16,3 +16,18 @@ projects:
     reference:
       label: Hystrix maintenance-mode notice
       url: https://github.com/Netflix/Hystrix
+
+  - id: guava-retrying
+    name: guava-retrying
+    status: DORMANT
+    summary: >-
+      No release since 2.0.0 in July 2015 and no commits since May 2016, although the project was
+      never formally discontinued.
+    coordinates:
+      - com.github.rholder:guava-retrying
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Resilience4j Retry or Failsafe cover the same ground with a different API
+    reference:
+      label: guava-retrying on GitHub
+      url: https://github.com/rholder/guava-retrying

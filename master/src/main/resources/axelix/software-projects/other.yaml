@@ -576,3 +576,18 @@ projects:
       label: Javassist
       url: https://github.com/jboss-javassist/javassist
 
+
+  - id: reflections
+    name: Reflections
+    status: SUNSET
+    summary: >-
+      The README states that Reflections is not under active development or maintenance. The last
+      release, 0.10.2, dates to October 2021, and the last commit to June 2023.
+    coordinates:
+      - org.reflections:reflections
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: ClassGraph (io.github.classgraph:classgraph) is the common actively developed classpath scanner, though its API differs
+    reference:
+      label: Reflections unmaintained notice
+      url: https://github.com/ronmamo/reflections

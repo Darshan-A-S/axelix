@@ -370,3 +370,36 @@ projects:
       label: Objenesis
       url: https://objenesis.org/
 
+
+  - id: powermock
+    name: PowerMock
+    status: DORMANT
+    summary: >-
+      No release since 2.0.9 in November 2020 and no commits since February 2022, although the
+      project was never formally discontinued.
+    coordinates:
+      - org.powermock:powermock-core
+      - org.powermock:powermock-module-junit4
+      - org.powermock:powermock-api-mockito2
+      - org.powermock:powermock-api-easymock
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Mockito's inline mock maker (mockStatic, mockConstruction) covers most use cases; the rest usually call for refactoring the code under test
+    reference:
+      label: PowerMock on GitHub
+      url: https://github.com/powermock/powermock
+
+  - id: java-faker
+    name: Java Faker
+    status: DORMANT
+    summary: >-
+      No release since 1.0.2 in February 2020 and no commits since January 2022, although the
+      project was never formally discontinued.
+    coordinates:
+      - com.github.javafaker:javafaker
+    succession:
+      kind: SUPERSEDED_BY
+      value: net.datafaker:datafaker
+    reference:
+      label: Java Faker on GitHub
+      url: https://github.com/DiUS/java-faker

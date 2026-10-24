@@ -55,3 +55,20 @@ projects:
       label: Nimbus JOSE + JWT
       url: https://connect2id.com/products/nimbus-jose-jwt
 
+
+  - id: jasypt
+    name: Jasypt
+    status: SUNSET
+    summary: >-
+      The author states that the library is no longer maintained, and the repository is archived.
+      The last release, 1.9.3, dates to May 2019. The separate jasypt-spring-boot
+      integration is still released, but it builds on this unmaintained core.
+    coordinates:
+      - org.jasypt:jasypt
+      - org.jasypt:jasypt-spring31
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No drop-in replacement exists; secrets are usually moved to an external store such as Spring Cloud Vault, or encrypted with the JDK cryptography APIs directly
+    reference:
+      label: Archived Jasypt repository
+      url: https://github.com/jasypt/jasypt

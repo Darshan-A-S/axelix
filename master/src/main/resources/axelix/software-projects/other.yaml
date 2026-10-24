@@ -606,3 +606,40 @@ projects:
     reference:
       label: Spring Loaded on GitHub
       url: https://github.com/spring-projects/spring-loaded
+
+  - id: itext5
+    name: iText 5
+    status: MAINTENANCE
+    summary: >-
+      iText states that iText 5 is end-of-life and has been replaced by newer iText versions; only
+      security fixes are added, shipped as 5.5.13.x patch releases.
+    coordinates:
+      - com.itextpdf:itextpdf
+      - com.itextpdf:itext-pdfa
+      - com.itextpdf:itext-xtra
+      - com.itextpdf.tool:xmlworker
+    succession:
+      kind: SUPERSEDED_BY
+      value: com.itextpdf:itext-core
+    reference:
+      label: iText 5 end-of-life notice
+      url: https://github.com/itext/itextpdf
+
+  - id: dozer
+    name: Dozer
+    status: SUNSET
+    summary: >-
+      The maintainers state that the project is not active, discourage using it on new projects,
+      and advise existing users to start migrating. The last release, 7.0.0, dates to March 2024.
+    coordinates:
+      - com.github.dozermapper:dozer-core
+      - com.github.dozermapper:dozer-spring4
+      - com.github.dozermapper:dozer-spring-boot-starter
+      - com.github.dozermapper:dozer-spring-boot-autoconfigure
+      - net.sf.dozer:dozer
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: The maintainers point to MapStruct or ModelMapper; both use a different mapping model, so migration means rewriting the mapping configuration
+    reference:
+      label: Dozer project activity notice
+      url: https://github.com/DozerMapper/dozer#project-activity

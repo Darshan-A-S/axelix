@@ -508,3 +508,20 @@ projects:
     reference:
       label: Springfox on GitHub
       url: https://github.com/springfox/springfox
+
+  - id: spring-cloud-openfeign
+    name: Spring Cloud OpenFeign
+    status: MAINTENANCE
+    summary: >-
+      The Spring Cloud team treats the project as feature-complete since Spring Cloud 2022.0.0:
+      only bug fixes and possibly small community contributions are accepted. OpenFeign itself
+      is a separate, actively developed project.
+    coordinates:
+      - org.springframework.cloud:spring-cloud-starter-openfeign
+      - org.springframework.cloud:spring-cloud-openfeign-core
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: The Spring team recommends migrating to Spring HTTP Service Clients (@HttpExchange interfaces), which require rewriting the client declarations
+    reference:
+      label: Spring Cloud OpenFeign feature-complete announcement
+      url: https://spring.io/blog/2022/12/16/spring-cloud-2022-0-0-codename-kilburn-has-been-released#spring-cloud-openfeign-feature-complete-announcement

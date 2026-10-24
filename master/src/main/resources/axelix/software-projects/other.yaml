@@ -750,3 +750,19 @@ projects:
     reference:
       label: Archived Spring Batch Admin repository
       url: https://github.com/spring-attic/spring-batch-admin
+
+  - id: jsch-jcraft
+    name: JSch (JCraft)
+    status: DORMANT
+    summary: >-
+      No release since 0.1.55 in November 2018, although the original JCraft project was never
+      formally discontinued. Development continues in a community fork under different coordinates
+      that is published as a drop-in replacement.
+    coordinates:
+      - com.jcraft:jsch
+    succession:
+      kind: SUPERSEDED_BY
+      value: com.github.mwiede:jsch
+    reference:
+      label: JSch fork and migration notes
+      url: https://github.com/mwiede/jsch

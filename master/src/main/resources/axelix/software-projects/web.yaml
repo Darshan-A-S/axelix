@@ -503,8 +503,8 @@ projects:
       - io.springfox:springfox-data-rest
       - io.springfox:springfox-bean-validators
     succession:
-      kind: NO_DIRECT_REPLACEMENT
-      value: springdoc-openapi is the common actively developed way to serve OpenAPI and Swagger UI from Spring Boot, though its configuration differs
+      kind: SUPERSEDED_BY
+      value: org.springdoc:springdoc-openapi-starter-webmvc-ui
     reference:
       label: Springfox on GitHub
       url: https://github.com/springfox/springfox
@@ -540,3 +540,29 @@ projects:
     reference:
       label: Archived Spring Mobile repository
       url: https://github.com/spring-projects/spring-mobile
+
+  - id: apache-tiles
+    name: Apache Tiles
+    status: SUNSET
+    summary: >-
+      Retired by the Apache Software Foundation in December 2018 and moved to the Apache Attic in
+      November 2019. The last release is 3.0.8 from October 2017.
+    coordinates:
+      - org.apache.tiles:tiles-api
+      - org.apache.tiles:tiles-core
+      - org.apache.tiles:tiles-servlet
+      - org.apache.tiles:tiles-jsp
+      - org.apache.tiles:tiles-el
+      - org.apache.tiles:tiles-extras
+      - org.apache.tiles:tiles-template
+      - org.apache.tiles:tiles-freemarker
+      - org.apache.tiles:tiles-velocity
+      - org.apache.tiles:tiles-request-api
+      - org.apache.tiles:tiles-request-servlet
+      - org.apache.tiles:tiles-request-jsp
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: No direct replacement exists; page layouts are usually rebuilt with a template engine's own layout support, such as Thymeleaf fragments
+    reference:
+      label: Apache Tiles in the Apache Attic
+      url: https://attic.apache.org/projects/tiles.html

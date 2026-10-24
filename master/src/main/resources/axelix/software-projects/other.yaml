@@ -591,3 +591,18 @@ projects:
     reference:
       label: Reflections unmaintained notice
       url: https://github.com/ronmamo/reflections
+
+  - id: spring-loaded
+    name: Spring Loaded
+    status: DORMANT
+    summary: >-
+      No release since 1.2.8.RELEASE in September 2017 and no commits since April 2021, although
+      the project was never formally discontinued.
+    coordinates:
+      - org.springframework:springloaded
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Spring Boot DevTools restarts cover most reload needs; true class hot-swapping requires a JVM agent such as HotswapAgent
+    reference:
+      label: Spring Loaded on GitHub
+      url: https://github.com/spring-projects/spring-loaded

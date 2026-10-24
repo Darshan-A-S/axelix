@@ -489,3 +489,22 @@ projects:
       label: Swagger
       url: https://swagger.io/
 
+  - id: springfox
+    name: Springfox
+    status: DORMANT
+    summary: >-
+      No release since 3.0.0 in July 2020 and no commits since October 2020, although the project
+      was never formally discontinued.
+    coordinates:
+      - io.springfox:springfox-boot-starter
+      - io.springfox:springfox-swagger2
+      - io.springfox:springfox-swagger-ui
+      - io.springfox:springfox-oas
+      - io.springfox:springfox-data-rest
+      - io.springfox:springfox-bean-validators
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: springdoc-openapi is the common actively developed way to serve OpenAPI and Swagger UI from Spring Boot, though its configuration differs
+    reference:
+      label: Springfox on GitHub
+      url: https://github.com/springfox/springfox

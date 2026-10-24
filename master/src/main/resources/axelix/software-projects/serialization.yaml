@@ -353,3 +353,50 @@ projects:
       label: dom4j
       url: https://github.com/dom4j/dom4j
 
+  - id: super-csv
+    name: Super CSV
+    status: DORMANT
+    summary: >-
+      No release since 2.4.0 in October 2015 and no commits since January 2020. The README asks
+      for volunteers to help maintain it, but the project was never formally discontinued.
+    coordinates:
+      - net.sf.supercsv:super-csv
+      - net.sf.supercsv:super-csv-java8
+      - net.sf.supercsv:super-csv-joda
+      - net.sf.supercsv:super-csv-dozer
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Apache Commons CSV, OpenCSV or Jackson's CSV data format cover the same ground with a different API
+    reference:
+      label: Super CSV on GitHub
+      url: https://github.com/super-csv/super-csv
+
+  - id: jsoniter
+    name: jsoniter
+    status: DORMANT
+    summary: >-
+      No release since 0.9.23 in July 2018 and no commits since January 2022, although the project
+      was never formally discontinued.
+    coordinates:
+      - com.jsoniter:jsoniter
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Jackson or DSL-JSON cover the same ground with a different API
+    reference:
+      label: jsoniter on GitHub
+      url: https://github.com/json-iterator/java
+
+  - id: genson
+    name: Genson
+    status: DORMANT
+    summary: >-
+      No release since 1.6 in August 2019 and no commits since January 2022, although the project
+      was never formally discontinued.
+    coordinates:
+      - com.owlike:genson
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Jackson or a JSON-B implementation such as Eclipse Yasson cover the same ground with a different API
+    reference:
+      label: Genson on GitHub
+      url: https://github.com/owlike/genson

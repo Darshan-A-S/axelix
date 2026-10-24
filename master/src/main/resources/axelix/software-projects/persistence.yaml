@@ -700,3 +700,18 @@ projects:
     reference:
       label: cache2k on GitHub
       url: https://github.com/cache2k/cache2k
+
+  - id: p6spy
+    name: P6Spy
+    status: DORMANT
+    summary: >-
+      No release since 3.9.1 in July 2020 and no commits since February 2022, although the project
+      was never formally discontinued.
+    coordinates:
+      - p6spy:p6spy
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: datasource-proxy (net.ttddyy:datasource-proxy) is the common actively developed JDBC proxy for statement logging
+    reference:
+      label: P6Spy on GitHub
+      url: https://github.com/p6spy/p6spy

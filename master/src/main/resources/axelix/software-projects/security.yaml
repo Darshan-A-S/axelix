@@ -72,3 +72,18 @@ projects:
     reference:
       label: Archived Jasypt repository
       url: https://github.com/jasypt/jasypt
+
+  - id: jbcrypt
+    name: jBCrypt
+    status: DORMANT
+    summary: >-
+      No release since 0.4, published to Maven Central in February 2017, and no commits since
+      February 2015, although the project was never formally discontinued.
+    coordinates:
+      - org.mindrot:jbcrypt
+    succession:
+      kind: NO_DIRECT_REPLACEMENT
+      value: Spring Security's BCryptPasswordEncoder (org.springframework.security:spring-security-crypto) is the common actively maintained BCrypt implementation
+    reference:
+      label: jBCrypt on GitHub
+      url: https://github.com/jeremyh/jBCrypt

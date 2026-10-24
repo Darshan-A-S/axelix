@@ -680,3 +680,19 @@ projects:
     reference:
       label: Spring Cloud Connectors maintenance-mode notice
       url: https://github.com/spring-cloud/spring-cloud-connectors
+
+  - id: joda-time
+    name: Joda-Time
+    status: MAINTENANCE
+    summary: >-
+      The authors consider Joda-Time a largely finished project with no major enhancements planned,
+      and ask Java 8+ users to migrate to java.time. Releases continue for time-zone data updates,
+      most recently 2.15.0.
+    coordinates:
+      - joda-time:joda-time
+    succession:
+      kind: SUPERSEDED_BY
+      value: java.time (JSR-310) in the JDK
+    reference:
+      label: Joda-Time project status
+      url: https://github.com/JodaOrg/joda-time

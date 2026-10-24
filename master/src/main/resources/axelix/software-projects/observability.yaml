@@ -205,3 +205,22 @@ projects:
       label: LatencyUtils
       url: https://github.com/LatencyUtils/LatencyUtils
 
+  - id: netflix-servo
+    name: Netflix Servo
+    status: MAINTENANCE
+    summary: >-
+      Netflix marks Servo as deprecated: it receives minimal maintenance to keep dependent software
+      working, with no active development or planned features. The last release is 0.13.2 from
+      March 2021.
+    coordinates:
+      - com.netflix.servo:servo-core
+      - com.netflix.servo:servo-atlas
+      - com.netflix.servo:servo-graphite
+      - com.netflix.servo:servo-aws
+      - com.netflix.servo:servo-apache
+    succession:
+      kind: SUPERSEDED_BY
+      value: com.netflix.spectator:spectator-api
+    reference:
+      label: Servo deprecation notice
+      url: https://github.com/Netflix/servo

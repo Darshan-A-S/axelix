@@ -50,9 +50,8 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
     private final InsightsInfoProvider insightsInfoProvider;
     private final AxelixInfoProperties axelixInfoProperties;
     private final InstanceFeaturesDetector instanceFeaturesDetector;
-
-    // read once: the dependencies of the running instance never change
-    private final @Nullable String sbom;
+    private final ClasspathDependencySbom classpathDependencySbom;
+    private final Logger logger;
 
     public DefaultBasicRegistrationMetadataAssembler(
             HealthDetectionFunction healthDetectionFunction,
@@ -70,7 +69,8 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
         this.insightsInfoProvider = insightsInfoProvider;
         this.axelixInfoProperties = axelixInfoProperties;
         this.instanceFeaturesDetector = instanceFeaturesDetector;
-        this.sbom = readSbom(classpathDependencySbom, logger);
+        this.classpathDependencySbom = classpathDependencySbom;
+        this.logger = logger;
     }
 
     @Override
@@ -90,10 +90,14 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
                         .heap(memoryMXBean.getHeapMemoryUsage().getUsed()))
                 .insights(insightsInfoProvider.getInsight())
                 .detectedFeatures(new ArrayList<>(instanceFeaturesDetector.detect()))
-                .sbom(sbom);
+                .sbom(readSbom());
     }
 
-    private static @Nullable String readSbom(ClasspathDependencySbom classpathDependencySbom, Logger logger) {
+    /**
+     * Reads the SBOM on every call instead of caching it: it is only needed when the instance gets registered, and
+     * holding a potentially large document for the entire lifetime of the application is not worth it.
+     */
+    private @Nullable String readSbom() {
         try {
             return classpathDependencySbom
                     .read()

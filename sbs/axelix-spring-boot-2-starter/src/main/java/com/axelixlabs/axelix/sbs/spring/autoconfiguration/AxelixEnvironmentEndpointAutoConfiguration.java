@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
+import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.utils.PropertyNameNormalizer;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.auth.RequiredAuthorityCheckService;
@@ -87,7 +88,8 @@ public class AxelixEnvironmentEndpointAutoConfiguration {
     }
 
     @Bean
-    public AxelixEnvironmentEndpoint axelixEnvironmentEndpoint(EnvironmentService environmentService) {
-        return new AxelixEnvironmentEndpoint(environmentService);
+    public AxelixEnvironmentEndpoint axelixEnvironmentEndpoint(
+            EnvironmentService environmentService, SecurityContextExecutor securityContextExecutor) {
+        return new AxelixEnvironmentEndpoint(environmentService, securityContextExecutor);
     }
 }

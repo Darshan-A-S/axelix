@@ -46,6 +46,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 
 import com.axelixlabs.axelix.common.auth.core.Role;
+import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.testfixtures.TestRoles;
 import com.axelixlabs.axelix.common.utils.PropertyNameNormalizer;
 import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthTestConfiguration;
@@ -392,8 +393,9 @@ class AxelixEnvironmentEndpointTest {
         }
 
         @Bean
-        public AxelixEnvironmentEndpoint axelixEnvironmentEndpoint(EnvironmentService environmentService) {
-            return new AxelixEnvironmentEndpoint(environmentService);
+        public AxelixEnvironmentEndpoint axelixEnvironmentEndpoint(
+                EnvironmentService environmentService, SecurityContextExecutor securityContextExecutor) {
+            return new AxelixEnvironmentEndpoint(environmentService, securityContextExecutor);
         }
 
         @Bean

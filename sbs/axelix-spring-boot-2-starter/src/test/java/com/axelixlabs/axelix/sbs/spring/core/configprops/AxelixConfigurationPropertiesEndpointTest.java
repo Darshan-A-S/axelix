@@ -296,8 +296,9 @@ public class AxelixConfigurationPropertiesEndpointTest {
 
         @Bean
         public AxelixConfigurationPropertiesEndpoint axelixConfigurationPropertiesEndpoint(
-                DefaultConfigurationPropertiesService configurationPropertiesService) {
-            return new AxelixConfigurationPropertiesEndpoint(configurationPropertiesService);
+                DefaultConfigurationPropertiesService configurationPropertiesService,
+                SecurityContextExecutor securityContextExecutor) {
+            return new AxelixConfigurationPropertiesEndpoint(configurationPropertiesService, securityContextExecutor);
         }
     }
 }

@@ -37,6 +37,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.axelixlabs.axelix.common.auth.core.AuthenticationSchemes;
+import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.common.testfixtures.TestRoles;
 import com.axelixlabs.axelix.common.testfixtures.UserUtils;
@@ -111,8 +112,9 @@ class JwtAuthorizationFilterSeparateManagementPortTest {
     static class EnvEndpointConfiguration {
 
         @Bean
-        public AxelixEnvironmentEndpoint axelixEnvironmentEndpoint(EnvironmentService environmentService) {
-            return new AxelixEnvironmentEndpoint(environmentService);
+        public AxelixEnvironmentEndpoint axelixEnvironmentEndpoint(
+                EnvironmentService environmentService, SecurityContextExecutor securityContextExecutor) {
+            return new AxelixEnvironmentEndpoint(environmentService, securityContextExecutor);
         }
 
         @Bean

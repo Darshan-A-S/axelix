@@ -49,6 +49,7 @@ import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.InstanceSbom;
 import com.axelixlabs.axelix.master.domain.ecosystem.platform.Platform;
 import com.axelixlabs.axelix.master.domain.ecosystem.platform.PlatformName;
 import com.axelixlabs.axelix.master.domain.ecosystem.platform.PlatformReleaseLine;
@@ -107,14 +108,7 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
     public DependencyAnalysisResponse analyzeFor(InstanceId instanceId) {
         Instance instance = instanceRegistry.getOrThrow(instanceId);
 
-        byte[] rawSbom =
-                endpointInvoker.invoke(instanceId, ActuatorEndpoints.GET_DEPENDENCIES_SBOM, NoHttpPayload.INSTANCE);
-
-        if (rawSbom.length == 0) {
-            throw new SbomNotAvailableException(instanceId);
-        }
-
-        ParsedSbom sbom = sbomParser.parse(rawSbom);
+        ParsedSbom sbom = sbomParser.parse(rawSbomOf(instanceId));
 
         List<AnalyzedDependency> dependencies = sbom.components().stream()
                 .map(component -> new AnalyzedDependency(
@@ -129,33 +123,23 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
 
     @Override
     public byte[] getRawSbomFor(InstanceId instanceId) {
-        Instance instance = instanceRegistry.getOrThrow(instanceId);
+        instanceRegistry.getOrThrow(instanceId);
 
-        Optional<ApplicationDependencies> stored = applicationDependenciesRepository.findByApplication(
-                instance.applicationId().groupId(), instance.applicationId().artifactId());
-
-        if (stored.isPresent()) {
-            return stored.get().sbom().getBytes(StandardCharsets.UTF_8);
-        }
-
-        byte[] rawSbom =
-                endpointInvoker.invoke(instanceId, ActuatorEndpoints.GET_DEPENDENCIES_SBOM, NoHttpPayload.INSTANCE);
-
-        if (rawSbom.length == 0) {
-            throw new SbomNotAvailableException(instanceId);
-        }
-
-        return rawSbom;
+        return rawSbomOf(instanceId);
     }
 
     @Override
-    public void store(ApplicationId applicationId, String sbom) {
+    public void store(Instance instance, String sbom) {
+        ApplicationId applicationId = instance.applicationId();
+
         try {
             sbomParser.parse(sbom.getBytes(StandardCharsets.UTF_8));
         } catch (SbomParsingException e) {
             log.warn("Ignoring the malformed dependency SBOM reported by '{}'", applicationId, e);
             return;
         }
+
+        jdbcAggregateTemplate.upsert(new InstanceSbom(instance.id(), sbom, Instant.now()));
 
         Optional<ApplicationDependencies> current = applicationDependenciesRepository.findByApplication(
                 applicationId.groupId(), applicationId.artifactId());
@@ -173,6 +157,25 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
         } catch (DataAccessException e) {
             log.warn("Unable to store the dependency SBOM of '{}'", applicationId, e);
         }
+    }
+
+    // TODO: Drop the fallback to the instance in 1.6, together with ActuatorEndpoints.GET_DEPENDENCIES_SBOM.
+    //  Until then, it serves the instances with starters older than 1.3, which do not report the SBOM on registration
+    private byte[] rawSbomOf(InstanceId instanceId) {
+        InstanceSbom stored = jdbcAggregateTemplate.findById(instanceId, InstanceSbom.class);
+
+        if (stored != null) {
+            return stored.sbom().getBytes(StandardCharsets.UTF_8);
+        }
+
+        byte[] rawSbom =
+                endpointInvoker.invoke(instanceId, ActuatorEndpoints.GET_DEPENDENCIES_SBOM, NoHttpPayload.INSTANCE);
+
+        if (rawSbom.length == 0) {
+            throw new SbomNotAvailableException(instanceId);
+        }
+
+        return rawSbom;
     }
 
     @Override

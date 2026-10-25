@@ -42,9 +42,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.axelixlabs.axelix.master.api.error.handle.ApiErrorCodes;
+import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
+import com.axelixlabs.axelix.master.service.ecosystem.DependencyAnalysisService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.CycloneDxDocuments;
 import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
@@ -152,6 +155,9 @@ class DependenciesApiTest extends AbstractProtectedEndpointTest {
     @Autowired
     private InstanceRegistry registry;
 
+    @Autowired
+    private DependencyAnalysisService dependencyAnalysisService;
+
     @BeforeAll
     static void startServer() throws IOException {
         mockWebServer = new MockWebServer();
@@ -256,6 +262,23 @@ class DependenciesApiTest extends AbstractProtectedEndpointTest {
                         .build());
         assertThatJson(response.getBody()).isEqualTo(readFixture());
         assertSuccessfulCallback(MasterWebEndpoints.DEPENDENCIES_DOWNLOAD_SBOM, viewer.getActor());
+    }
+
+    @Test
+    void shouldDownloadTheSbomStoredOnRegistrationWithoutAskingTheInstance() {
+        // given. the instance reported its SBOM on the registration, while its actuator serves none.
+        Instance instance = registry.getOrThrow(InstanceId.of(instanceWithoutSbom));
+        String sbom = CycloneDxDocuments.of("com.axelixlabs:playground-app:1.0.0", "org.slf4j:slf4j-api:2.0.9");
+        dependencyAnalysisService.store(instance, sbom);
+
+        // when.
+        ResponseEntity<String> response = restTemplate
+                .asViewer()
+                .getForEntity("/api/external/dependencies/{instanceId}/download", String.class, instanceWithoutSbom);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(sbom);
     }
 
     @Test

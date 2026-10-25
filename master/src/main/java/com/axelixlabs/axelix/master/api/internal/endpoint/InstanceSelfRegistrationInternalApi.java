@@ -125,7 +125,7 @@ public class InstanceSelfRegistrationInternalApi {
                 databaseHistoricalApplicationSnapshotService.reloadCurrentState(metadata);
                 scheduledTaskExecutionHistoryService.append(scheduledTaskExecutionResults);
                 if (metadata.getSbom() != null) {
-                    dependencyAnalysisService.store(instance.applicationId(), metadata.getSbom());
+                    dependencyAnalysisService.store(instance, request.getSbom());
                 }
             });
 

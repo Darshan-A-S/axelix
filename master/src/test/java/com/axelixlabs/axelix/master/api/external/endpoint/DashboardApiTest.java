@@ -218,21 +218,21 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
     void shouldReturnDependenciesDashboardAggregatedAcrossServices() {
         // given.
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-a"),
+                registeredInstanceOf("com.example", "service-a"),
                 CycloneDxDocuments.of(
                         "com.example:service-a:1.0.0",
                         "org.springframework.cloud:spring-cloud-starter-sleuth:3.1.11",
                         "org.hdrhistogram:HdrHistogram:2.2.2",
                         "org.springframework:spring-core:6.1.5"));
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-b"),
+                registeredInstanceOf("com.example", "service-b"),
                 CycloneDxDocuments.of(
                         "com.example:service-b:1.0.0",
                         "org.hdrhistogram:HdrHistogram:2.2.2",
                         "io.prometheus:simpleclient:0.16.0",
                         "io.prometheus:simpleclient_common:0.16.0"));
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-c"),
+                registeredInstanceOf("com.example", "service-c"),
                 CycloneDxDocuments.of(
                         "com.example:service-c:1.0.0",
                         "ch.qos.logback:logback-classic:1.5.18",
@@ -291,7 +291,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
     void shouldSkipUnparsableSbomInDependenciesDashboard() {
         // given.
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-a"),
+                registeredInstanceOf("com.example", "service-a"),
                 CycloneDxDocuments.of("com.example:service-a:1.0.0", "ch.qos.logback:logback-classic:1.5.18"));
         // the store() rejects a malformed SBOM, so the row is inserted directly
         jdbcAggregateTemplate.insert(new ApplicationDependencies(
@@ -374,5 +374,11 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
                         new PersistenceInsights().transactions(List.of())),
                 new HistoricalApplicationSnapshot.Versions(
                         "1.0.0", "3.5.2", "6.2.1", new JavaVersion(javaVersion, 0, 0, 0), jdkVendor, kotlinVersion));
+    }
+
+    private Instance registeredInstanceOf(String groupId, String artifactId) {
+        Instance instance = TestInstanceFactory.create(UUID.randomUUID().toString(), groupId, artifactId);
+        registry.register(instance);
+        return instance;
     }
 }

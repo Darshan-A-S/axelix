@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="1.3-004-mysql-create-instance-sboms-table" author="Axelix Team">
+    <preConditions onFail="MARK_RAN" onError="HALT">
+      <not>
+        <tableExists tableName="instance_sboms"/>
+      </not>
+    </preConditions>
+
+    <comment>
+      Holds the complete SBOM reported by each instance on the self-registration. It is kept apart from the instances
+      table, so that loading the instances never drags the SBOM along, and it goes away together with its instance.
+    </comment>
+
+    <createTable tableName="instance_sboms">
+      <column name="instance_id" type="VARCHAR(768)">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_instance_sboms"
+                     foreignKeyName="fk_instance_sboms_instance" references="instances(instance_id)"
+                     deleteCascade="true"/>
+      </column>
+      <column name="sbom" type="MEDIUMTEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="reported_at" type="DATETIME(3)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+</databaseChangeLog>

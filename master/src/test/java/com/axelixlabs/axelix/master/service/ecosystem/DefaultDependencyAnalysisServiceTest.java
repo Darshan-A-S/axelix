@@ -36,6 +36,7 @@ import com.axelixlabs.axelix.master.api.external.response.dashboard.Dependencies
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.InstanceSbom;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.CycloneDxDocuments;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
@@ -72,17 +73,19 @@ class DefaultDependencyAnalysisServiceTest {
     @BeforeEach
     void setUp() {
         jdbcAggregateTemplate.deleteAll(ApplicationDependencies.class);
+        jdbcAggregateTemplate.deleteAll(Instance.class);
     }
 
     @Test
     void shouldReplaceTheSbomOfTheApplicationOnEveryStore() {
         // given.
         subject.store(
-                APPLICATION_ID, CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9"));
+                registeredInstanceOf(APPLICATION_ID),
+                CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9"));
 
         // when. a newer version of the same application registers.
         String newer = CycloneDxDocuments.of("com.axelixlabs.test:app:1.1.0", "org.slf4j:slf4j-api:2.0.13");
-        subject.store(APPLICATION_ID, newer);
+        subject.store(registeredInstanceOf(APPLICATION_ID), newer);
 
         // then.
         assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
@@ -92,13 +95,14 @@ class DefaultDependencyAnalysisServiceTest {
     }
 
     @Test
-    void shouldReturnStoredSbomWhenAvailableInDatabase() {
-        // given.
-        Instance instance =
-                TestInstanceFactory.create("instance-id-1", APPLICATION_ID.groupId(), APPLICATION_ID.artifactId());
-        instanceRegistry.register(instance);
+    void shouldReturnTheStoredSbomOfTheInstanceRatherThanOfItsApplication() {
+        // given. two instances of the same application run different versions, the newer one registers last.
+        Instance instance = registeredInstanceOf(APPLICATION_ID);
         String sbom = CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9");
-        subject.store(APPLICATION_ID, sbom);
+        subject.store(instance, sbom);
+        subject.store(
+                registeredInstanceOf(APPLICATION_ID),
+                CycloneDxDocuments.of("com.axelixlabs.test:app:1.1.0", "org.slf4j:slf4j-api:2.0.13"));
 
         // when.
         byte[] rawSbom = subject.getRawSbomFor(instance.id());
@@ -108,9 +112,26 @@ class DefaultDependencyAnalysisServiceTest {
     }
 
     @Test
+    void shouldDropTheSbomOfTheInstanceTogetherWithTheInstance() {
+        // given.
+        Instance instance = registeredInstanceOf(APPLICATION_ID);
+        subject.store(instance, CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9"));
+
+        // when.
+        instanceRegistry.deRegister(instance.id());
+
+        // then.
+        assertThat(jdbcAggregateTemplate.findAll(InstanceSbom.class)).isEmpty();
+    }
+
+    @Test
     void shouldKeepTheTransactionUsableWhenAnotherInstanceStoresTheSbomConcurrently() throws Exception {
         // SQLite does not let two transactions write concurrently, so the race ends with a lock error there
         assumeFalse(environment.getRequiredProperty("spring.datasource.url").startsWith("jdbc:sqlite"));
+
+        Instance first = registeredInstanceOf(APPLICATION_ID);
+        Instance second = registeredInstanceOf(APPLICATION_ID);
+        Instance otherInstance = registeredInstanceOf(ApplicationId.of("com.axelixlabs.test", "other"));
 
         // given. the first instance of a new application inserts its SBOM, but does not commit yet.
         String firstApplicationSbom =
@@ -119,7 +140,7 @@ class DefaultDependencyAnalysisServiceTest {
         CountDownLatch commitFirst = new CountDownLatch(1);
         CompletableFuture<Void> firstInstance =
                 CompletableFuture.runAsync(() -> transactionTemplate.executeWithoutResult(_ -> {
-                    subject.store(APPLICATION_ID, firstApplicationSbom);
+                    subject.store(first, firstApplicationSbom);
                     firstStored.countDown();
                     await(commitFirst);
                 }));
@@ -133,9 +154,9 @@ class DefaultDependencyAnalysisServiceTest {
                 CycloneDxDocuments.of("com.axelixlabs.test:other:1.0.0", "org.slf4j:slf4j-api:2.0.9");
         CompletableFuture<Void> secondInstance =
                 CompletableFuture.runAsync(() -> transactionTemplate.executeWithoutResult(_ -> {
-                    subject.store(APPLICATION_ID, secondApplicationSbom);
+                    subject.store(second, secondApplicationSbom);
                     // the transaction is still usable after the failed insert above
-                    subject.store(ApplicationId.of("com.axelixlabs.test", "other"), otherApplicationSbom);
+                    subject.store(otherInstance, otherApplicationSbom);
                 }));
         Thread.sleep(1000);
         commitFirst.countDown();
@@ -153,10 +174,10 @@ class DefaultDependencyAnalysisServiceTest {
     void shouldKeepThePreviousSbomWhenTheNewOneIsMalformed() {
         // given.
         String previous = CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9");
-        subject.store(APPLICATION_ID, previous);
+        subject.store(registeredInstanceOf(APPLICATION_ID), previous);
 
         // when.
-        subject.store(APPLICATION_ID, "{ \"bomFormat\": \"CycloneDX\"");
+        subject.store(registeredInstanceOf(APPLICATION_ID), "{ \"bomFormat\": \"CycloneDX\"");
 
         // then.
         assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
@@ -175,7 +196,7 @@ class DefaultDependencyAnalysisServiceTest {
                         .toArray(String[]::new));
 
         // when.
-        subject.store(APPLICATION_ID, sbom);
+        subject.store(registeredInstanceOf(APPLICATION_ID), sbom);
 
         // then.
         assertThat(sbom.length()).isGreaterThan(64 * 1024);
@@ -206,7 +227,7 @@ class DefaultDependencyAnalysisServiceTest {
                 "{ \"bomFormat\": \"CycloneDX\"",
                 Instant.now()));
         subject.store(
-                APPLICATION_ID,
+                registeredInstanceOf(APPLICATION_ID),
                 CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.hdrhistogram:HdrHistogram:2.2.2"));
 
         // when.
@@ -219,6 +240,13 @@ class DefaultDependencyAnalysisServiceTest {
             assertThat(project.serviceCount()).isEqualTo(1);
             assertThat(project.share()).isEqualTo(100.0);
         });
+    }
+
+    private Instance registeredInstanceOf(ApplicationId applicationId) {
+        Instance instance = TestInstanceFactory.create(
+                UUID.randomUUID().toString(), applicationId.groupId(), applicationId.artifactId());
+        instanceRegistry.register(instance);
+        return instance;
     }
 
     private static void await(CountDownLatch countDownLatch) {

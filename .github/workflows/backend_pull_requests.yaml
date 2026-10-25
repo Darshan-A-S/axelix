@@ -95,7 +95,6 @@ jobs:
               - 'sbs/axelix-spring-boot-3-starter/**'
               - 'playgrounds/spring-petclinic-gradle-sb-3/**'
               - 'playgrounds/feature-service-maven-sb-3/**'
-              - 'playgrounds/reactive-greeting-service-gradle-sb-3/**'
 
             sb4_specific_trigger:
               - 'sbs/axelix-spring-boot-4-starter/**'

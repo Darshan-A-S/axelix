@@ -2,7 +2,6 @@
         publish-local build-plugins publish-starter-sb-2 publish-starter-sb-3 publish-starter-sb-4 \
         build-spring-petclinic-maven-sb-2 build-notification-service-gradle-sb-2 \
         build-feature-service-maven-sb-3 build-spring-petclinic-gradle-sb-3 \
-        build-reactive-greeting-service-gradle-sb-3 \
         build-spring-petclinic-maven-sb-4 build-api-gateway-gradle-sb-4 \
         build-reactive-greeting-service-gradle-sb-4 publish-plugins \
         publish-gradle-plugin publish-maven-plugin master-oss master-oss-image
@@ -19,7 +18,6 @@ clean-playgrounds:
 	cd playgrounds/notification-service-gradle-sb-2 && ./gradlew clean
 	cd playgrounds/feature-service-maven-sb-3 && ./mvnw clean
 	cd playgrounds/spring-petclinic-gradle-sb-3 && ./gradlew clean
-	cd playgrounds/reactive-greeting-service-gradle-sb-3 && ./gradlew clean
 	cd playgrounds/spring-petclinic-maven-sb-4 && ./mvnw clean
 	cd playgrounds/api-gateway-gradle-sb-4 && ./gradlew clean
 	cd playgrounds/reactive-greeting-service-gradle-sb-4 && ./gradlew clean
@@ -35,7 +33,6 @@ spotless-all:
 	cd playgrounds/notification-service-gradle-sb-2 && ./gradlew spotlessApply
 	cd playgrounds/feature-service-maven-sb-3 && ./mvnw spotless:apply
 	cd playgrounds/spring-petclinic-gradle-sb-3 && ./gradlew spotlessApply
-	cd playgrounds/reactive-greeting-service-gradle-sb-3 && ./gradlew spotlessApply
 	cd playgrounds/spring-petclinic-maven-sb-4 && ./mvnw spring-javaformat:apply
 	cd playgrounds/api-gateway-gradle-sb-4 && ./gradlew spotlessApply
 	cd playgrounds/reactive-greeting-service-gradle-sb-4 && ./gradlew spotlessApply
@@ -76,8 +73,7 @@ ifeq ($(BUILD_SB2),true)
 PLAYGROUND_TARGETS += build-spring-petclinic-maven-sb-2 build-notification-service-gradle-sb-2
 endif
 ifeq ($(BUILD_SB3),true)
-PLAYGROUND_TARGETS += build-spring-petclinic-gradle-sb-3 build-feature-service-maven-sb-3 \
-                      build-reactive-greeting-service-gradle-sb-3
+PLAYGROUND_TARGETS += build-spring-petclinic-gradle-sb-3 build-feature-service-maven-sb-3
 endif
 ifeq ($(BUILD_SB4),true)
 PLAYGROUND_TARGETS += build-spring-petclinic-maven-sb-4 build-api-gateway-gradle-sb-4 \
@@ -144,10 +140,6 @@ build-feature-service-maven-sb-3: publish-maven-plugin publish-starter-sb-3
 build-spring-petclinic-gradle-sb-3: publish-gradle-plugin publish-starter-sb-3
 	@echo "=== Running Gradle build for Petclinic Spring Boot 3 ==="
 	cd playgrounds/spring-petclinic-gradle-sb-3 && JAVA_HOME=$(LOCAL_JAVA_17) ./gradlew build
-
-build-reactive-greeting-service-gradle-sb-3: publish-gradle-plugin publish-starter-sb-3
-	@echo "=== Running Gradle build for Reactive Greeting Service (WebFlux) Spring Boot 3 ==="
-	cd playgrounds/reactive-greeting-service-gradle-sb-3 && JAVA_HOME=$(LOCAL_JAVA_17) ./gradlew build
 
 build-spring-petclinic-maven-sb-4: publish-maven-plugin publish-starter-sb-4
 	@echo "=== Running Maven build for Petclinic Spring Boot 4 ==="

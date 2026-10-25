@@ -33,7 +33,7 @@ import com.axelixlabs.axelix.common.domain.http.DefaultHttpPayload;
 import com.axelixlabs.axelix.common.domain.http.QueryParameter;
 import com.axelixlabs.axelix.common.domain.http.SingleValueQueryParameter;
 import com.axelixlabs.axelix.master.contract.logs.LogEntriesTail;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.mcp.McpEndpoints;
 import com.axelixlabs.axelix.master.service.convert.response.Converter;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;

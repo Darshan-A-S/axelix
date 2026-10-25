@@ -20,7 +20,7 @@ package com.axelixlabs.axelix.master.service.export;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

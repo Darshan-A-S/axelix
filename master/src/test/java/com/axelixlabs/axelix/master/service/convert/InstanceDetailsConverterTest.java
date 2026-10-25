@@ -39,7 +39,7 @@ import com.axelixlabs.axelix.master.contract.details.OsDetails;
 import com.axelixlabs.axelix.master.contract.details.RuntimeDetails;
 import com.axelixlabs.axelix.master.contract.details.SpringDetails;
 import com.axelixlabs.axelix.master.contract.metadata.GarbageCollector;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.service.convert.response.details.DetailsConversionRequest;
 import com.axelixlabs.axelix.master.service.convert.response.details.InstanceDetailsConverter;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;

@@ -19,7 +19,7 @@ package com.axelixlabs.axelix.master.service.discovery;
 
 import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
-import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
 
 /**
  * It is a simple data class whose sole purpose is to carry the state that we have

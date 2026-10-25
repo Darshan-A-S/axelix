@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 
 import com.axelixlabs.axelix.master.api.external.response.InstancesGridResponse.InstanceShortProfile;
 import com.axelixlabs.axelix.master.api.external.response.InstancesGridResponse.InstanceStatus;
-import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
 
 /**
  * Converter that is capable to translate the given {@link Instance} to the {@link InstanceShortProfile}.

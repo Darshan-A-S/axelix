@@ -28,7 +28,7 @@ import org.jspecify.annotations.NonNull;
 import com.axelixlabs.axelix.common.auth.core.SecurityContext;
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoint;
 import com.axelixlabs.axelix.common.domain.http.HttpPayload;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.filter.auth.ExternalApiCookieAuthorizationFilter;
 import com.axelixlabs.axelix.master.mcp.auth.McpIdentityAccessManager;

@@ -38,7 +38,7 @@ import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskDisableR
 import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskEnableRequest;
 import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskExecuteRequest;
 import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskIntervalModifyRequest;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.exception.auth.InvalidCronExpressionException;
 import com.axelixlabs.axelix.master.service.serde.JacksonMessageSerializationStrategy;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;

@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.domain;
+package com.axelixlabs.axelix.master.domain.instance;
 
 import java.time.Instant;
 
@@ -25,7 +25,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
-import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
+import com.axelixlabs.axelix.master.domain.ApplicationId;
+import com.axelixlabs.axelix.master.domain.JavaVersion;
+import com.axelixlabs.axelix.master.domain.MemoryUsage;
 
 /**
  * @param id                      The id of the instance. This id must be unique among all the other instances that are

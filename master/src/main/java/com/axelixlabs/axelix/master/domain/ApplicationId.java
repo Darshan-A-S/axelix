@@ -17,6 +17,8 @@
  */
 package com.axelixlabs.axelix.master.domain;
 
+import com.axelixlabs.axelix.master.domain.instance.Instance;
+
 /**
  * The id of the application that a given {@link Instance} belongs to. It is composed of the {@code groupId} and the
  * {@code artifactId} (the G and A inside the GAV coordinate) and is shared by all the instances of the same

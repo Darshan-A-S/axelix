@@ -19,7 +19,7 @@ package com.axelixlabs.axelix.master.service.discovery;
 
 import java.util.Set;
 
-import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
 
 /**
  * The SPI interface for discovering {@link Instance instances} of running applications.

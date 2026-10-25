@@ -18,7 +18,7 @@
 package com.axelixlabs.axelix.master.service.profile;
 
 import com.axelixlabs.axelix.master.api.external.response.profile.InstanceProfileResponse;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 
 /**

@@ -27,7 +27,7 @@ import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
 import com.axelixlabs.axelix.master.mcp.McpEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 

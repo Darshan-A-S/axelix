@@ -49,7 +49,7 @@ import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskCronExpr
 import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskEnableRequest;
 import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskExecuteRequest;
 import com.axelixlabs.axelix.master.contract.scheduledtask.ScheduledTaskIntervalModifyRequest;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;

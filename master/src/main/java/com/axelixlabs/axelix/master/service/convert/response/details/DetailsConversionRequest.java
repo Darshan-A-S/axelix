@@ -18,7 +18,7 @@
 package com.axelixlabs.axelix.master.service.convert.response.details;
 
 import com.axelixlabs.axelix.master.contract.details.InstanceDetails;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 
 /**
  * Request for details conversion. Required by {@link InstanceDetailsConverter}.

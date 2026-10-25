@@ -22,11 +22,11 @@ import java.time.Instant;
 import org.jspecify.annotations.Nullable;
 
 import com.axelixlabs.axelix.master.domain.ApplicationId;
-import com.axelixlabs.axelix.master.domain.Instance;
-import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
-import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
+import com.axelixlabs.axelix.master.domain.instance.DetectedFeatures;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 
 /**
  * Test fixture factory for {@link Instance}.

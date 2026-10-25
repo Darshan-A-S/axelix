@@ -24,12 +24,12 @@ import java.util.Set;
 
 import org.jspecify.annotations.NullMarked;
 
-import com.axelixlabs.axelix.master.domain.Instance;
-import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 
-import static com.axelixlabs.axelix.master.domain.Instance.InstanceStatus;
+import static com.axelixlabs.axelix.master.domain.instance.Instance.InstanceStatus;
 
 /**
  * Central registry of all the {@link Instance instances} that this Master deployment is aware about.

@@ -17,6 +17,8 @@
  */
 package com.axelixlabs.axelix.master.domain;
 
+import com.axelixlabs.axelix.master.domain.instance.Instance;
+
 /**
  * Memory usage of the given {@link Instance} in bytes.
  *

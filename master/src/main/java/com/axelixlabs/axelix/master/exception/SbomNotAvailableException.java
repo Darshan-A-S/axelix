@@ -17,7 +17,7 @@
  */
 package com.axelixlabs.axelix.master.exception;
 
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 
 /**
  * Thrown when a managed instance is reachable but serves no dependency SBOM, which means the application was built

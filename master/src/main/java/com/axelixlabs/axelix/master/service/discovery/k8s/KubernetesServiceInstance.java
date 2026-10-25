@@ -24,7 +24,7 @@ import org.jspecify.annotations.NullUnmarked;
 
 import org.springframework.cloud.client.ServiceInstance;
 
-import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
 
 /**
  * Represents a Kubernetes service instance for {@link KubernetesDiscoveryClient}.

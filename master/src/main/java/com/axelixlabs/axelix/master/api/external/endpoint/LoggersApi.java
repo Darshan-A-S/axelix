@@ -40,7 +40,7 @@ import com.axelixlabs.axelix.master.api.external.request.loggers.LogLevelLoggerB
 import com.axelixlabs.axelix.master.api.external.request.loggers.LogLevelLoggerBulkResetRequest;
 import com.axelixlabs.axelix.master.contract.logger.GroupLogLevelChangeRequest;
 import com.axelixlabs.axelix.master.contract.logger.LogLevelChangeRequest;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.service.BulkInstancesValidator;
 import com.axelixlabs.axelix.master.service.serde.JacksonMessageSerializationStrategy;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;

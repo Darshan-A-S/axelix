@@ -25,7 +25,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 import com.axelixlabs.axelix.master.contract.masterping.MasterPing;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
-import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
 import com.axelixlabs.axelix.master.service.InstanceFactory;
 import com.axelixlabs.axelix.master.service.discovery.AbstractInstancesDiscoverer;
 import com.axelixlabs.axelix.master.service.discovery.CompatibilityDetectionStrategy;

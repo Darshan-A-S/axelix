@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.request.state.StateExportRequest;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.service.convert.request.StateExportRequestConverter;
 import com.axelixlabs.axelix.master.service.export.StateArchiveFileNameGenerator;
 import com.axelixlabs.axelix.master.service.export.StateExport;

@@ -34,12 +34,12 @@ import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
-import com.axelixlabs.axelix.master.domain.Instance;
-import com.axelixlabs.axelix.master.domain.Instance.InstanceStatus;
-import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
-import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
+import com.axelixlabs.axelix.master.domain.instance.DetectedFeatures;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
+import com.axelixlabs.axelix.master.domain.instance.Instance.InstanceStatus;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 
 /**
  * Default implementation {@link InstanceFactory}.

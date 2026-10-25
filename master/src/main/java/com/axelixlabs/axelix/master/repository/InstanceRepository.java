@@ -27,10 +27,10 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.axelixlabs.axelix.master.domain.Instance;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.Instance;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 
-import static com.axelixlabs.axelix.master.domain.Instance.InstanceStatus;
+import static com.axelixlabs.axelix.master.domain.instance.Instance.InstanceStatus;
 
 /**
  * Repository for {@link Instance} aggregate.

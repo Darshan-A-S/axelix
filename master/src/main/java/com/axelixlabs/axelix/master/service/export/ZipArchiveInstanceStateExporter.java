@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.stereotype.Service;
 
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.exception.StateExportException;
 import com.axelixlabs.axelix.master.service.export.collect.InstanceStateCollector;
 

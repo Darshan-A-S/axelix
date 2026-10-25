@@ -38,7 +38,7 @@ import com.axelixlabs.axelix.master.contract.logger.LoggersFeedGroup;
 import com.axelixlabs.axelix.master.contract.logger.LoggersFeedLogger;
 import com.axelixlabs.axelix.master.contract.logger.LoggersGroupProfile;
 import com.axelixlabs.axelix.master.contract.logger.SingleLoggerProfile;
-import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.service.BulkInstancesValidator;
 import com.axelixlabs.axelix.master.service.serde.JacksonMessageSerializationStrategy;
 import com.axelixlabs.axelix.master.service.transport.BadRequestException;

@@ -48,7 +48,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.contract.metadata.PersistenceInsights;
 import com.axelixlabs.axelix.master.domain.OssRdbms;
-import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
+import com.axelixlabs.axelix.master.domain.instance.DetectedFeatures;
 import com.axelixlabs.axelix.master.repository.dialect.SQLiteDialect;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 

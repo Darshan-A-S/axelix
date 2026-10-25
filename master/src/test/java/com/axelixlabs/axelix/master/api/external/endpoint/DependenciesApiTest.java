@@ -36,14 +36,18 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.axelixlabs.axelix.master.api.error.handle.ApiErrorCodes;
+import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
+import com.axelixlabs.axelix.master.service.ecosystem.DependencyAnalysisService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.CycloneDxDocuments;
 import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
@@ -151,6 +155,9 @@ class DependenciesApiTest extends AbstractProtectedEndpointTest {
     @Autowired
     private InstanceRegistry registry;
 
+    @Autowired
+    private DependencyAnalysisService dependencyAnalysisService;
+
     @BeforeAll
     static void startServer() throws IOException {
         mockWebServer = new MockWebServer();
@@ -238,11 +245,76 @@ class DependenciesApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
+    @Test
+    void shouldDownloadRawSbom() {
+        // when.
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/dependencies/{instanceId}/download", String.class, instanceWithSbom);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
+        assertThat(response.getHeaders().getContentDisposition())
+                .isEqualTo(ContentDisposition.attachment()
+                        .filename("dependencies.cdx.json")
+                        .build());
+        assertThatJson(response.getBody()).isEqualTo(readFixture());
+        assertSuccessfulCallback(MasterWebEndpoints.DEPENDENCIES_DOWNLOAD_SBOM, viewer.getActor());
+    }
+
+    @Test
+    void shouldDownloadTheSbomStoredOnRegistrationWithoutAskingTheInstance() {
+        // given. the instance reported its SBOM on the registration, while its actuator serves none.
+        Instance instance = registry.getOrThrow(InstanceId.of(instanceWithoutSbom));
+        String sbom = CycloneDxDocuments.of("com.axelixlabs:playground-app:1.0.0", "org.slf4j:slf4j-api:2.0.9");
+        dependencyAnalysisService.store(instance, sbom);
+
+        // when.
+        ResponseEntity<String> response = restTemplate
+                .asViewer()
+                .getForEntity("/api/external/dependencies/{instanceId}/download", String.class, instanceWithoutSbom);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(sbom);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDownloadingSbomAndInstanceServesNone() {
+        // when.
+        ResponseEntity<String> response = restTemplate
+                .asViewer()
+                .getForEntity("/api/external/dependencies/{instanceId}/download", String.class, instanceWithoutSbom);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).contains(ApiErrorCodes.SBOM_NOT_AVAILABLE.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenDownloadingSbomForUnregisteredInstance() {
+        String instanceId = UUID.randomUUID().toString();
+
+        // when.
+        ResponseEntity<String> response = restTemplate
+                .asViewer()
+                .getForEntity("/api/external/dependencies/{instanceId}/download", String.class, instanceId);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
     @Override
     protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
-        return Set.of(new TestableMasterWebEndpoint(
-                MasterWebEndpoints.DEPENDENCIES_READ,
-                "/api/external/dependencies/00000000-0000-0000-0000-000000000001"));
+        return Set.of(
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.DEPENDENCIES_READ,
+                        "/api/external/dependencies/00000000-0000-0000-0000-000000000001"),
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.DEPENDENCIES_DOWNLOAD_SBOM,
+                        "/api/external/dependencies/00000000-0000-0000-0000-000000000001/download"));
     }
 
     private static String readFixture() {

@@ -19,7 +19,7 @@ package com.axelixlabs.axelix.master.service.ecosystem;
 
 import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dependencies.DependencyAnalysisResponse;
-import com.axelixlabs.axelix.master.domain.ApplicationId;
+import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.exception.SbomNotAvailableException;
@@ -43,12 +43,22 @@ public interface DependencyAnalysisService {
     DependencyAnalysisResponse analyzeFor(InstanceId instanceId);
 
     /**
-     * Replaces the dependency SBOM of the given application.
+     * Retrieves the raw CycloneDX SBOM of the given instance.
      *
-     * @param applicationId the application that reported the SBOM
-     * @param sbom          the SBOM exactly as the Axelix build plugins generated it
+     * @param instanceId the instance whose SBOM to retrieve
+     * @return the raw CycloneDX SBOM bytes
+     * @throws InstanceNotFoundException when the instance is not known to this Axelix Master
+     * @throws SbomNotAvailableException when the instance serves no SBOM
      */
-    void store(ApplicationId applicationId, String sbom);
+    byte[] getRawSbomFor(InstanceId instanceId);
+
+    /**
+     * Replaces the dependency SBOM of the given instance and of its application.
+     *
+     * @param instance the instance that reported the SBOM
+     * @param sbom     the SBOM exactly as the Axelix build plugins generated it
+     */
+    void store(Instance instance, String sbom);
 
     /**
      * @return the aggregated dependency health across every application that reported its SBOM

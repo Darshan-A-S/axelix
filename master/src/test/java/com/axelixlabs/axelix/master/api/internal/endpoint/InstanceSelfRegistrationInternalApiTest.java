@@ -52,6 +52,7 @@ import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.SnapshotId;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.domain.InstanceSbom;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
 import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
@@ -389,6 +390,10 @@ public class InstanceSelfRegistrationInternalApiTest {
         assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
                 .singleElement()
                 .extracting(ApplicationDependencies::sbom)
+                .isEqualTo(sbom);
+        assertThat(jdbcAggregateTemplate.findAll(InstanceSbom.class))
+                .singleElement()
+                .extracting(InstanceSbom::sbom)
                 .isEqualTo(sbom);
     }
 

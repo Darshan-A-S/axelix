@@ -17,6 +17,12 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -47,5 +53,22 @@ public class DependenciesApi {
     @GetMapping(path = ApiPaths.DependenciesApi.INSTANCE_ID)
     public DependencyAnalysisResponse getDependencyAnalysis(@PathVariable("instanceId") String instanceId) {
         return dependencyAnalysisService.analyzeFor(InstanceId.of(instanceId));
+    }
+
+    /**
+     * Download the raw CycloneDX SBOM of the given instance.
+     */
+    @GetMapping(path = ApiPaths.DependenciesApi.DOWNLOAD_SBOM)
+    public ResponseEntity<Resource> downloadSbom(@PathVariable("instanceId") String instanceId) {
+        byte[] rawSbom = dependencyAnalysisService.getRawSbomFor(InstanceId.of(instanceId));
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename("dependencies.cdx.json")
+                                .build()
+                                .toString())
+                .body(new ByteArrayResource(rawSbom));
     }
 }

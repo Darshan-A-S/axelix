@@ -68,6 +68,8 @@ class MasterWebEndpointResolverTest {
                 // Template variable followed by a static segment.
                 Arguments.of("/garbage-collector/logs/42/enable", HttpMethod.POST, MasterWebEndpoints.GC_LOG_ENABLE),
                 Arguments.of(
+                        "/dependencies/42/download", HttpMethod.GET, MasterWebEndpoints.DEPENDENCIES_DOWNLOAD_SBOM),
+                Arguments.of(
                         "/scheduled-tasks/42/modify/cron-expression",
                         HttpMethod.POST,
                         MasterWebEndpoints.SCHEDULED_TASK_MODIFY_CRON),

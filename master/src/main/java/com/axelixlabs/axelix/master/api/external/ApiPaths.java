@@ -353,6 +353,11 @@ public final class ApiPaths {
          * Endpoint to retrieve the dependency analysis of a given application instance.
          */
         public static final String INSTANCE_ID = "/dependencies/{instanceId}";
+
+        /**
+         * Endpoint to download the raw CycloneDX SBOM of a given application instance.
+         */
+        public static final String DOWNLOAD_SBOM = "/dependencies/{instanceId}/download";
     }
 
     public static final class UpgradesApi {

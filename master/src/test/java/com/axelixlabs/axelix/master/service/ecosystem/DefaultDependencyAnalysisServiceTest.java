@@ -17,6 +17,7 @@
  */
 package com.axelixlabs.axelix.master.service.ecosystem;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +35,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse;
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
+import com.axelixlabs.axelix.master.domain.Instance;
+import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.CycloneDxDocuments;
+import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.database.DatabaseMatrixTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +66,9 @@ class DefaultDependencyAnalysisServiceTest {
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private InstanceRegistry instanceRegistry;
+
     @BeforeEach
     void setUp() {
         jdbcAggregateTemplate.deleteAll(ApplicationDependencies.class);
@@ -82,6 +89,22 @@ class DefaultDependencyAnalysisServiceTest {
                 .singleElement()
                 .extracting(ApplicationDependencies::sbom)
                 .isEqualTo(newer);
+    }
+
+    @Test
+    void shouldReturnStoredSbomWhenAvailableInDatabase() {
+        // given.
+        Instance instance =
+                TestInstanceFactory.create("instance-id-1", APPLICATION_ID.groupId(), APPLICATION_ID.artifactId());
+        instanceRegistry.register(instance);
+        String sbom = CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9");
+        subject.store(APPLICATION_ID, sbom);
+
+        // when.
+        byte[] rawSbom = subject.getRawSbomFor(instance.id());
+
+        // then.
+        assertThat(new String(rawSbom, StandardCharsets.UTF_8)).isEqualTo(sbom);
     }
 
     @Test

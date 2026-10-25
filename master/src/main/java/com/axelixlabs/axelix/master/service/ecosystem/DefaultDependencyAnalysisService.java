@@ -128,6 +128,27 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
     }
 
     @Override
+    public byte[] getRawSbomFor(InstanceId instanceId) {
+        Instance instance = instanceRegistry.getOrThrow(instanceId);
+
+        Optional<ApplicationDependencies> stored = applicationDependenciesRepository.findByApplication(
+                instance.applicationId().groupId(), instance.applicationId().artifactId());
+
+        if (stored.isPresent()) {
+            return stored.get().sbom().getBytes(StandardCharsets.UTF_8);
+        }
+
+        byte[] rawSbom =
+                endpointInvoker.invoke(instanceId, ActuatorEndpoints.GET_DEPENDENCIES_SBOM, NoHttpPayload.INSTANCE);
+
+        if (rawSbom.length == 0) {
+            throw new SbomNotAvailableException(instanceId);
+        }
+
+        return rawSbom;
+    }
+
+    @Override
     public void store(ApplicationId applicationId, String sbom) {
         try {
             sbomParser.parse(sbom.getBytes(StandardCharsets.UTF_8));

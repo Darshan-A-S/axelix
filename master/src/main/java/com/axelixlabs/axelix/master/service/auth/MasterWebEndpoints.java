@@ -202,6 +202,8 @@ public final class MasterWebEndpoints {
     // Dependencies
     public static final MasterWebEndpoint DEPENDENCIES_READ =
             register("dependencies:read", HttpMethod.GET, ApiPaths.DependenciesApi.INSTANCE_ID, null);
+    public static final MasterWebEndpoint DEPENDENCIES_DOWNLOAD_SBOM =
+            register("dependencies:download-sbom", HttpMethod.GET, ApiPaths.DependenciesApi.DOWNLOAD_SBOM, null);
 
     // Upgrades
     public static final MasterWebEndpoint UPGRADES_READ =

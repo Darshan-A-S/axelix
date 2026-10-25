@@ -43,6 +43,16 @@ public interface DependencyAnalysisService {
     DependencyAnalysisResponse analyzeFor(InstanceId instanceId);
 
     /**
+     * Retrieves the raw CycloneDX SBOM of the given instance.
+     *
+     * @param instanceId the instance whose SBOM to retrieve
+     * @return the raw CycloneDX SBOM bytes
+     * @throws InstanceNotFoundException when the instance is not known to this Axelix Master
+     * @throws SbomNotAvailableException when the instance serves no SBOM
+     */
+    byte[] getRawSbomFor(InstanceId instanceId);
+
+    /**
      * Replaces the dependency SBOM of the given application.
      *
      * @param applicationId the application that reported the SBOM

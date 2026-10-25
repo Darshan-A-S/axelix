@@ -17,7 +17,6 @@
  */
 package com.axelixlabs.axelix.master.service.ecosystem;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -77,38 +76,24 @@ class DefaultDependencyAnalysisServiceTest {
     }
 
     @Test
-    void shouldReplaceTheSbomOfTheApplicationOnEveryStore() {
+    void shouldReplaceTheSbomOfTheInstanceAndOfTheApplicationOnEveryStore() {
         // given.
-        subject.store(
-                registeredInstanceOf(APPLICATION_ID),
-                CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9"));
+        Instance instance = registeredInstanceOf(APPLICATION_ID);
+        subject.store(instance, CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9"));
 
-        // when. a newer version of the same application registers.
+        // when. the same instance reports a newer SBOM.
         String newer = CycloneDxDocuments.of("com.axelixlabs.test:app:1.1.0", "org.slf4j:slf4j-api:2.0.13");
-        subject.store(registeredInstanceOf(APPLICATION_ID), newer);
+        subject.store(instance, newer);
 
         // then.
         assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
                 .singleElement()
                 .extracting(ApplicationDependencies::sbom)
                 .isEqualTo(newer);
-    }
-
-    @Test
-    void shouldReturnTheStoredSbomOfTheInstanceRatherThanOfItsApplication() {
-        // given. two instances of the same application run different versions, the newer one registers last.
-        Instance instance = registeredInstanceOf(APPLICATION_ID);
-        String sbom = CycloneDxDocuments.of("com.axelixlabs.test:app:1.0.0", "org.slf4j:slf4j-api:2.0.9");
-        subject.store(instance, sbom);
-        subject.store(
-                registeredInstanceOf(APPLICATION_ID),
-                CycloneDxDocuments.of("com.axelixlabs.test:app:1.1.0", "org.slf4j:slf4j-api:2.0.13"));
-
-        // when.
-        byte[] rawSbom = subject.getRawSbomFor(instance.id());
-
-        // then.
-        assertThat(new String(rawSbom, StandardCharsets.UTF_8)).isEqualTo(sbom);
+        assertThat(jdbcAggregateTemplate.findAll(InstanceSbom.class))
+                .singleElement()
+                .extracting(InstanceSbom::sbom)
+                .isEqualTo(newer);
     }
 
     @Test

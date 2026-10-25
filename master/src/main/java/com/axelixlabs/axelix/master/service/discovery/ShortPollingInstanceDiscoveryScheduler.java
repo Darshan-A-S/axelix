@@ -136,8 +136,7 @@ public class ShortPollingInstanceDiscoveryScheduler {
             registrations.stream()
                     .filter(registration -> registration.metadata().getSbom() != null)
                     .forEach(registration -> dependencyAnalysisService.store(
-                            registration.instance().applicationId(),
-                            registration.metadata().getSbom()));
+                            registration.instance(), registration.metadata().getSbom()));
             refreshes.forEach(refresh -> databaseHistoricalApplicationSnapshotService.reloadTransactions(
                     refresh.instance().applicationId(), refresh.masterPing().getTransactions()));
         });

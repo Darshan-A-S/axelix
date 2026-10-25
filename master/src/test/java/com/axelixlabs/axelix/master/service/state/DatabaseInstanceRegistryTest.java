@@ -167,7 +167,7 @@ class DatabaseInstanceRegistryTest {
     }
 
     @Test
-    void refresh_shouldUpdateStatusHeapAndHeartBeatTimestampOnly() {
+    void refresh_FromHeartbeat_shouldUpdateStatusHeapAndHeartBeatTimestampOnly() {
         // given.
         Instant staleHeartBeat = Instant.now().minus(1, ChronoUnit.HOURS);
         Instance instance = TestInstanceFactory.createInstanceWithHeartbeat("refresh-id-1", staleHeartBeat);
@@ -176,7 +176,7 @@ class DatabaseInstanceRegistryTest {
         instanceRegistry.register(untouched);
 
         // when.
-        instanceRegistry.refresh(instance.id(), Instance.InstanceStatus.DOWN, new MemoryUsage(2048d));
+        instanceRegistry.refreshFromHeartbeat(instance.id(), Instance.InstanceStatus.DOWN, new MemoryUsage(2048d));
 
         // then.
         Instance refreshed = instanceRegistry.get(instance.id()).orElseThrow();
@@ -197,27 +197,74 @@ class DatabaseInstanceRegistryTest {
     }
 
     @Test
-    void refresh_shouldNotCreateUnknownInstance() {
+    void refresh_FromHeartbeat_shouldNotCreateUnknownInstance() {
         // when.
-        instanceRegistry.refresh(InstanceId.of("unknown-id"), Instance.InstanceStatus.UP, new MemoryUsage(2048d));
+        instanceRegistry.refreshFromHeartbeat(
+                InstanceId.of("unknown-id"), Instance.InstanceStatus.UP, new MemoryUsage(2048d));
 
         // then.
         assertThat(instanceRegistry.getAll()).isEmpty();
     }
 
     @Test
-    void registerAll_shouldPersistAllInstances() {
+    void refreshFromAutoDiscovery_shouldUpdateStatusAndHeapWithoutRecordingHeartbeat() {
         // given.
-        List<Instance> instances = List.of(
-                TestInstanceFactory.create("batch-id-1"),
-                TestInstanceFactory.create("batch-id-2"),
-                TestInstanceFactory.create("batch-id-3"));
+        Instance instance = TestInstanceFactory.createInstanceWithHeartbeat("auto-discovered-id-1", null);
+        instanceRegistry.register(instance);
 
-        // when
-        instanceRegistry.register(instances);
+        // when.
+        instanceRegistry.refreshFromAutoDiscovery(instance.id(), Instance.InstanceStatus.DOWN, new MemoryUsage(2048d));
 
         // then.
-        assertThat(instanceRegistry.getAll()).hasSize(3);
+        Instance refreshed = instanceRegistry.get(instance.id()).orElseThrow();
+        assertThat(refreshed.status()).isEqualTo(Instance.InstanceStatus.DOWN);
+        assertThat(refreshed.memoryUsage()).isEqualTo(new MemoryUsage(2048d));
+        assertThat(refreshed.latestHeartBeat()).isNull();
+    }
+
+    @Test
+    void truncateAllExcept_shouldKeepSelfRegisteredAndDiscoveredNowInstancesOnly() {
+        // given.
+        Instance selfRegistered = TestInstanceFactory.createInstanceWithHeartbeat("self-registered-id", Instant.now());
+        Instance stillDiscovered = TestInstanceFactory.createInstanceWithHeartbeat("still-discovered-id", null);
+        Instance noLongerDiscovered = TestInstanceFactory.createInstanceWithHeartbeat("no-longer-discovered-id", null);
+        instanceRegistry.register(selfRegistered);
+        instanceRegistry.register(stillDiscovered);
+        instanceRegistry.register(noLongerDiscovered);
+
+        // when.
+        instanceRegistry.truncateAllExcept(List.of(stillDiscovered.id()));
+
+        // then.
+        assertThat(instanceRegistry.getAll())
+                .extracting(Instance::id)
+                .containsExactlyInAnyOrder(selfRegistered.id(), stillDiscovered.id());
+    }
+
+    @Test
+    void truncateAllExcept_shouldKeepSelfRegisteredInstancesWhenNothingIsDiscovered() {
+        // given.
+        Instance selfRegistered = TestInstanceFactory.createInstanceWithHeartbeat("self-registered-id", Instant.now());
+        instanceRegistry.register(selfRegistered);
+        instanceRegistry.register(TestInstanceFactory.createInstanceWithHeartbeat("no-longer-discovered-id", null));
+
+        // when.
+        instanceRegistry.truncateAllExcept(List.of());
+
+        // then.
+        assertThat(instanceRegistry.getAll()).extracting(Instance::id).containsExactly(selfRegistered.id());
+    }
+
+    @Test
+    void truncateAllExcept_shouldRemoveEveryInstanceWhenNothingIsDiscoveredOrSelfRegistered() {
+        // given.
+        instanceRegistry.register(TestInstanceFactory.createInstanceWithHeartbeat("no-longer-discovered-id", null));
+
+        // when.
+        instanceRegistry.truncateAllExcept(List.of());
+
+        // then.
+        assertThat(instanceRegistry.getAll()).isEmpty();
     }
 
     @Test

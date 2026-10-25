@@ -69,8 +69,11 @@ public interface InstanceRepository extends ListCrudRepository<Instance, Instanc
     int deleteWhereHeartbeatOlderThan(@Param("threshold") Instant threshold);
 
     @Modifying
-    @Query("DELETE FROM instances WHERE latest_heart_beat IS NULL")
-    void deleteAllWithoutHeartbeat();
+    @Query("DELETE FROM instances WHERE instance_id NOT IN (:instanceIds)")
+    void deleteAllExcept(@Param("instanceIds") Collection<String> instanceIds);
+
+    @Query("SELECT instance_id FROM instances WHERE latest_heart_beat IS NOT NULL")
+    List<String> findAllSelfRegisteredIds();
 
     @Modifying
     @Query("""
@@ -87,4 +90,16 @@ public interface InstanceRepository extends ListCrudRepository<Instance, Instanc
             @Param("status") InstanceStatus status,
             @Param("heap") double heap,
             @Param("heartBeat") Instant heartBeat);
+
+    @Modifying
+    @Query("""
+        UPDATE instances
+        SET
+            status = :status,
+            heap = :heap
+        WHERE
+            instance_id = :instanceId
+        """)
+    void refreshInstanceStatusWithoutHeartbeat(
+            @Param("instanceId") String instanceId, @Param("status") InstanceStatus status, @Param("heap") double heap);
 }

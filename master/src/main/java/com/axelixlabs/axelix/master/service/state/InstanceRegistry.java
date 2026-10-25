@@ -17,7 +17,6 @@
  */
 package com.axelixlabs.axelix.master.service.state;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -55,18 +54,17 @@ public interface InstanceRegistry {
     void register(Instance instance);
 
     /**
-     * Refreshes the status and the memory usage of the given {@link Instance}.
+     * Refreshes the status and the memory usage of the given self-registered {@link Instance},
+     * and records its heartbeat.
      */
-    void refresh(InstanceId instanceId, InstanceStatus status, MemoryUsage memoryUsage);
+    void refreshFromHeartbeat(InstanceId instanceId, InstanceStatus status, MemoryUsage memoryUsage);
 
     /**
-     * Reloads the registry, by removing all previously auto-discovered Instances,
-     * and inserts the following discovered instances instead. The Instances that have
-     * self-registered are not removed by this call.
-     *
-     * @param instances Instances to register as a replacement of previously auto-discovered instances.
+     * Refreshes the status and the memory usage of the given auto-discovered {@link Instance}.
+     * Unlike {@link #refreshFromHeartbeat}, does not record the heartbeat, since the auto-discovered
+     * instances are the ones that have none.
      */
-    void register(Collection<Instance> instances);
+    void refreshFromAutoDiscovery(InstanceId instanceId, InstanceStatus status, MemoryUsage memoryUsage);
 
     /**
      * Deregisters the {@link Instance} by the instanceId.
@@ -117,4 +115,12 @@ public interface InstanceRegistry {
      * @throws InstanceNotFoundException if there is no instance with the given id.
      */
     List<Instance> findSiblings(InstanceId instanceId) throws InstanceNotFoundException;
+
+    /**
+     * Removes every {@link Instance} that is neither self-registered nor among the given auto-discovered ones,
+     * i.e. the instances that are no longer auto-discovered.
+     *
+     * @param discoveredNow the instances auto-discovered during the current discovery, to be retained
+     */
+    void truncateAllExcept(List<InstanceId> discoveredNow);
 }

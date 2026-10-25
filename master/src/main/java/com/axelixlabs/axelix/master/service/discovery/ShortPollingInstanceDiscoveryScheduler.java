@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +34,13 @@ import com.axelixlabs.axelix.common.auth.core.PasswordlessUser;
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
+import com.axelixlabs.axelix.master.domain.MemoryUsage;
 import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
 import com.axelixlabs.axelix.master.domain.instance.Instance;
+import com.axelixlabs.axelix.master.domain.instance.InstanceId;
 import com.axelixlabs.axelix.master.service.convert.ScheduledTaskExecutionResultConverter;
+import com.axelixlabs.axelix.master.service.discovery.DiscoveredInstanceProfile.Refresh;
+import com.axelixlabs.axelix.master.service.discovery.DiscoveredInstanceProfile.Registration;
 import com.axelixlabs.axelix.master.service.ecosystem.DependencyAnalysisService;
 import com.axelixlabs.axelix.master.service.scheduled.ScheduledTaskExecutionHistoryService;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
@@ -103,23 +108,18 @@ public class ShortPollingInstanceDiscoveryScheduler {
                 """, this.getClass().getSimpleName());
         }
 
-        Set<Instance> instances = discoveredInstances.stream()
-                .map(DiscoveredInstanceProfile::instance)
-                .collect(Collectors.toSet());
-
-        List<DiscoveredInstanceProfile.Registration> registrations = discoveredInstances.stream()
-                .filter(DiscoveredInstanceProfile.Registration.class::isInstance)
-                .map(DiscoveredInstanceProfile.Registration.class::cast)
+        List<Registration> registrations = discoveredInstances.stream()
+                .filter(Registration.class::isInstance)
+                .map(Registration.class::cast)
                 .toList();
 
-        List<DiscoveredInstanceProfile.Refresh> refreshes = discoveredInstances.stream()
-                .filter(DiscoveredInstanceProfile.Refresh.class::isInstance)
-                .map(DiscoveredInstanceProfile.Refresh.class::cast)
+        List<Refresh> refreshes = discoveredInstances.stream()
+                .filter(Refresh.class::isInstance)
+                .map(Refresh.class::cast)
                 .toList();
 
-        Set<BasicRegistrationMetadata> collectiveMetadata = registrations.stream()
-                .map(DiscoveredInstanceProfile.Registration::metadata)
-                .collect(Collectors.toSet());
+        Set<BasicRegistrationMetadata> collectiveMetadata =
+                registrations.stream().map(Registration::metadata).collect(Collectors.toSet());
 
         // TODO: Once the scheduled task execution history is enabled (GH-1617), report the executions of the
         //  known instances via the master ping as well, with a delivery acknowledgement for the starter's history
@@ -128,17 +128,44 @@ public class ShortPollingInstanceDiscoveryScheduler {
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
 
+        List<InstanceId> discoveredNow = Stream.concat(
+                        registrations.stream().map(Registration::instance),
+                        refreshes.stream().map(Refresh::instance))
+                .map(Instance::id)
+                .toList();
+
         transactionTemplate.executeWithoutResult(_ -> {
-            instanceRegistry.register(instances);
             databaseHistoricalApplicationSnapshotService.reloadCurrentStateBulk(collectiveMetadata);
             scheduledTaskExecutionHistoryService.append(scheduledTaskExecutionResults);
-            // Just like the self-registration, the SBOM is only reported on the registration, never on a refresh
-            registrations.stream()
-                    .filter(registration -> registration.metadata().getSbom() != null)
-                    .forEach(registration -> dependencyAnalysisService.store(
-                            registration.instance(), registration.metadata().getSbom()));
-            refreshes.forEach(refresh -> databaseHistoricalApplicationSnapshotService.reloadTransactions(
-                    refresh.instance().applicationId(), refresh.masterPing().getTransactions()));
+            instanceRegistry.truncateAllExcept(discoveredNow);
+            processRegistrations(registrations);
+            processRefreshes(refreshes);
         });
+    }
+
+    private void processRefreshes(List<Refresh> refreshes) {
+        for (Refresh refresh : refreshes) {
+            databaseHistoricalApplicationSnapshotService.reloadTransactions(
+                    refresh.instance().applicationId(), refresh.masterPing().getTransactions());
+
+            instanceRegistry.refreshFromAutoDiscovery(
+                    refresh.instance().id(),
+                    Instance.InstanceStatus.fromHealthStatus(
+                            refresh.masterPing().getHealthStatus()),
+                    new MemoryUsage(refresh.masterPing().getMemoryDetails().getHeap()));
+        }
+    }
+
+    private void processRegistrations(List<Registration> registrations) {
+        for (Registration registration : registrations) {
+            // The SBOM references the instance, so the instance has to be registered first
+            instanceRegistry.register(registration.instance());
+
+            // Just like the self-registration, the SBOM is only reported on the registration, never on a refresh
+            if (registration.metadata().getSbom() != null) {
+                dependencyAnalysisService.store(
+                        registration.instance(), registration.metadata().getSbom());
+            }
+        }
     }
 }

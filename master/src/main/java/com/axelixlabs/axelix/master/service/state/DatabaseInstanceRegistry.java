@@ -18,8 +18,8 @@
 package com.axelixlabs.axelix.master.service.state;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -65,15 +65,14 @@ public class DatabaseInstanceRegistry implements InstanceRegistry {
     }
 
     @Override
-    public void refresh(InstanceId instanceId, Instance.InstanceStatus status, MemoryUsage memoryUsage) {
+    public void refreshFromHeartbeat(InstanceId instanceId, Instance.InstanceStatus status, MemoryUsage memoryUsage) {
         instanceRepository.refreshInstanceStatus(instanceId.instanceId(), status, memoryUsage.heap(), Instant.now());
     }
 
     @Override
-    public void register(Collection<Instance> instances) {
-        // The assumption is that every Instance without the heartbeat has come from auto-discovery
-        instanceRepository.deleteAllWithoutHeartbeat();
-        jdbcAggregateTemplate.insertAll(instances);
+    public void refreshFromAutoDiscovery(
+            InstanceId instanceId, Instance.InstanceStatus status, MemoryUsage memoryUsage) {
+        instanceRepository.refreshInstanceStatusWithoutHeartbeat(instanceId.instanceId(), status, memoryUsage.heap());
     }
 
     @Override
@@ -108,5 +107,18 @@ public class DatabaseInstanceRegistry implements InstanceRegistry {
         return siblings.stream()
                 .sorted(Comparator.comparing(Instance::name, String.CASE_INSENSITIVE_ORDER))
                 .toList();
+    }
+
+    @Override
+    public void truncateAllExcept(List<InstanceId> discoveredNow) {
+        Set<String> toBeRetained = new HashSet<>(instanceRepository.findAllSelfRegisteredIds());
+        discoveredNow.forEach(instanceId -> toBeRetained.add(instanceId.instanceId()));
+
+        // The SBOMs of the removed instances are removed along with them, by the cascading foreign key
+        if (toBeRetained.isEmpty()) {
+            instanceRepository.deleteAll();
+        } else {
+            instanceRepository.deleteAllExcept(toBeRetained);
+        }
     }
 }

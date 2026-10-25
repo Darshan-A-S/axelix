@@ -58,6 +58,7 @@ import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
 import com.axelixlabs.axelix.master.domain.instance.DetectedFeatures;
 import com.axelixlabs.axelix.master.domain.instance.Instance;
 import com.axelixlabs.axelix.master.domain.instance.InstanceId;
+import com.axelixlabs.axelix.master.domain.instance.InstanceSbom;
 import com.axelixlabs.axelix.master.repository.InstanceRepository;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.CycloneDxDocuments;
@@ -392,6 +393,11 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
                 .singleElement()
                 .satisfies(dependencies -> assertThat(dependencies.reportedAt()).isEqualTo(reportedAt));
+        // and the SBOM of the instance is kept, even though nothing has reported it again.
+        assertThat(jdbcAggregateTemplate.findById(InstanceId.of(instanceId), InstanceSbom.class))
+                .isNotNull()
+                .extracting(InstanceSbom::sbom)
+                .isEqualTo(sbom);
     }
 
     @Test

@@ -166,7 +166,7 @@ public class InstanceSelfRegistrationInternalApi {
                 Instance.InstanceStatus.fromHealthStatus(heartBeatMetadataV2.getHealthStatus());
 
         transactionTemplate.executeWithoutResult(_ -> {
-            instanceRegistry.refresh(
+            instanceRegistry.refreshFromHeartbeat(
                     instanceId,
                     status,
                     new MemoryUsage(heartBeatMetadataV2.getMemoryDetails().getHeap()));

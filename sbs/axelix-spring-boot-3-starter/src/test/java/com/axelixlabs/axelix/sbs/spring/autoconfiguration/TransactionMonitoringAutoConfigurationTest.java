@@ -27,7 +27,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
 import org.springframework.boot.test.context.FilteredClassLoader;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.web.client.RestTemplate;
 
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.TransactionMonitoringAutoConfiguration.Log4j2InMemoryPaginationAppenderConfiguration;
@@ -52,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class TransactionMonitoringAutoConfigurationTest {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+    private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(TransactionMonitoringAutoConfiguration.class));
 
     @Test
@@ -164,6 +165,17 @@ class TransactionMonitoringAutoConfigurationTest {
                     assertThat(context).hasSingleBean(TransactionMonitoringAutoConfiguration.class);
                     assertThat(context).doesNotHaveBean(LogbackInMemoryPaginationAppenderConfiguration.class);
                     assertThat(context).doesNotHaveBean(Log4j2InMemoryPaginationAppenderConfiguration.class);
+                });
+    }
+
+    @Test
+    void shouldBackOffCompletely_whenApplicationIsReactive() {
+        new ReactiveWebApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(TransactionMonitoringAutoConfiguration.class))
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).doesNotHaveBean(TransactionMonitoringAutoConfiguration.class);
+                    assertThat(context).doesNotHaveBean(TransactionStatsCollector.class);
                 });
     }
 }

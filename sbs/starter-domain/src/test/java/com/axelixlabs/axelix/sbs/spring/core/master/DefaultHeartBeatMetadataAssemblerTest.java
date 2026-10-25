@@ -96,6 +96,15 @@ class DefaultHeartBeatMetadataAssemblerTest {
     @Autowired
     private HeartBeatConfigurationProperties properties;
 
+    @Autowired
+    private AxelixVersionDiscoverer axelixVersionDiscoverer;
+
+    @Autowired
+    private LibraryInformationProvider libraryInformationProvider;
+
+    @Autowired
+    private AxelixInfoProperties axelixInfoProperties;
+
     @TestConfiguration
     static class CurrentConfig {
 
@@ -115,9 +124,7 @@ class DefaultHeartBeatMetadataAssemblerTest {
                     basicRegistrationMetadataAssembler,
                     healthDetectionFunction,
                     insightsInfoProvider,
-                    heartBeatConfigurationProperties,
-                    new ClasspathDependencySbom(DEPENDENCIES_RESOURCE),
-                    new NoOpLogger());
+                    heartBeatConfigurationProperties);
         }
 
         @Bean
@@ -162,7 +169,9 @@ class DefaultHeartBeatMetadataAssemblerTest {
                     libraryInformationProvider,
                     insightsInfoProvider,
                     axelixInfoProperties,
-                    () -> Set.of());
+                    () -> Set.of(),
+                    new ClasspathDependencySbom(DEPENDENCIES_RESOURCE),
+                    new NoOpLogger());
         }
     }
 
@@ -186,25 +195,25 @@ class DefaultHeartBeatMetadataAssemblerTest {
         assertThat(basicMetadata.getGcInUse()).isNotNull();
         assertThat(basicMetadata.getSoftwareVersions().getSpringBoot()).isEqualTo(SpringBootVersion.getVersion());
         assertThat(basicMetadata.getSoftwareVersions().getSpringFramework()).isEqualTo(SpringVersion.getVersion());
-        assertThat(metadata.getSbom()).contains("\"bomFormat\": \"CycloneDX\"").contains("\"specVersion\": \"1.6\"");
+        assertThat(basicMetadata.getSbom())
+                .contains("\"bomFormat\": \"CycloneDX\"")
+                .contains("\"specVersion\": \"1.6\"");
     }
 
     @Test
     void shouldRegisterWithoutSbomWhenTheApplicationCarriesNone() {
         // given. the application was built without an Axelix build plugin.
         DefaultHeartBeatMetadataAssembler assembler = new DefaultHeartBeatMetadataAssembler(
-                service,
+                metadataAssemblerWith(new ClasspathDependencySbom("axelix/sbom-test/no-such-file.cdx.json")),
                 healthDetectionFunction,
                 insightsInfoProvider,
-                properties,
-                new ClasspathDependencySbom("axelix/sbom-test/no-such-file.cdx.json"),
-                new NoOpLogger());
+                properties);
 
         // when.
         InitialSelfRegistrationRequest metadata = assembler.assembleRegistrationRequest();
 
         // then.
-        assertThat(metadata.getSbom()).isNull();
+        assertThat(metadata.getBasicRegistrationMetadata().getSbom()).isNull();
     }
 
     @Test
@@ -219,10 +228,14 @@ class DefaultHeartBeatMetadataAssemblerTest {
 
         // when.
         DefaultHeartBeatMetadataAssembler assembler = new DefaultHeartBeatMetadataAssembler(
-                service, healthDetectionFunction, insightsInfoProvider, properties, unreadableSbom, new NoOpLogger());
+                metadataAssemblerWith(unreadableSbom), healthDetectionFunction, insightsInfoProvider, properties);
 
         // then.
-        assertThat(assembler.assembleRegistrationRequest().getSbom()).isNull();
+        assertThat(assembler
+                        .assembleRegistrationRequest()
+                        .getBasicRegistrationMetadata()
+                        .getSbom())
+                .isNull();
     }
 
     @Test
@@ -252,19 +265,9 @@ class DefaultHeartBeatMetadataAssemblerTest {
     void shouldReturnDifferentInstanceNameForDifferentInstances() {
         // given.
         DefaultHeartBeatMetadataAssembler assembler1 = new DefaultHeartBeatMetadataAssembler(
-                service,
-                healthDetectionFunction,
-                insightsInfoProvider,
-                properties,
-                new ClasspathDependencySbom(),
-                new NoOpLogger());
+                service, healthDetectionFunction, insightsInfoProvider, properties);
         DefaultHeartBeatMetadataAssembler assembler2 = new DefaultHeartBeatMetadataAssembler(
-                service,
-                healthDetectionFunction,
-                insightsInfoProvider,
-                properties,
-                new ClasspathDependencySbom(),
-                new NoOpLogger());
+                service, healthDetectionFunction, insightsInfoProvider, properties);
 
         // when.
         InitialSelfRegistrationRequest metadata1 = assembler1.assembleRegistrationRequest();
@@ -274,5 +277,17 @@ class DefaultHeartBeatMetadataAssemblerTest {
         assertThat(metadata1.getInstanceName()).startsWith("testApp-");
         assertThat(metadata2.getInstanceName()).startsWith("testApp-");
         assertThat(metadata1.getInstanceName()).isNotEqualTo(metadata2.getInstanceName());
+    }
+
+    private DefaultBasicRegistrationMetadataAssembler metadataAssemblerWith(ClasspathDependencySbom sbom) {
+        return new DefaultBasicRegistrationMetadataAssembler(
+                healthDetectionFunction,
+                axelixVersionDiscoverer,
+                libraryInformationProvider,
+                insightsInfoProvider,
+                axelixInfoProperties,
+                () -> Set.of(),
+                sbom,
+                new NoOpLogger());
     }
 }

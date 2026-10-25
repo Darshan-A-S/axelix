@@ -559,11 +559,12 @@ public class InstanceSelfRegistrationInternalApiTest {
     }
 
     /**
-     * @param sbom the SBOM, embedded into the request as a JSON string
+     * @param sbom the SBOM, embedded into the basic registration metadata as a JSON string
      */
     private static String requestWithSbom(String sbom) {
         String escaped = sbom.replace("\"", "\\\"").replace("\n", "\\n");
-        return JSON_REQUEST.replace("\"instanceId\" :", "\"sbom\" : \"%s\",\n   \"instanceId\" :".formatted(escaped));
+        return JSON_REQUEST.replace(
+                "\"serviceVersion\" :", "\"sbom\" : \"%s\",\n     \"serviceVersion\" :".formatted(escaped));
     }
 
     @Test

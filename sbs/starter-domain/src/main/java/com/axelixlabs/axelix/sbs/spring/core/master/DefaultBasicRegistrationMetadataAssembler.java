@@ -17,9 +17,13 @@
  */
 package com.axelixlabs.axelix.sbs.spring.core.master;
 
+import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+
+import org.jspecify.annotations.Nullable;
 
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.BasicRegistrationMetadata;
@@ -27,7 +31,9 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.GarbageCollector;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.MemoryDetails;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.SoftwareVersions;
 import com.axelixlabs.axelix.sbs.spring.core.details.GarbageCollectorInfoAssembler;
+import com.axelixlabs.axelix.sbs.spring.core.log.Logger;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.sbom.ClasspathDependencySbom;
 
 /**
  * Default implementation of {@link BasicRegistrationMetadataAssembler}.
@@ -45,13 +51,18 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
     private final AxelixInfoProperties axelixInfoProperties;
     private final InstanceFeaturesDetector instanceFeaturesDetector;
 
+    // read once: the dependencies of the running instance never change
+    private final @Nullable String sbom;
+
     public DefaultBasicRegistrationMetadataAssembler(
             HealthDetectionFunction healthDetectionFunction,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider,
             AxelixInfoProperties axelixInfoProperties,
-            InstanceFeaturesDetector instanceFeaturesDetector) {
+            InstanceFeaturesDetector instanceFeaturesDetector,
+            ClasspathDependencySbom classpathDependencySbom,
+            Logger logger) {
 
         this.healthDetectionFunction = healthDetectionFunction;
         this.axelixVersionDiscoverer = axelixVersionDiscoverer;
@@ -59,6 +70,7 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
         this.insightsInfoProvider = insightsInfoProvider;
         this.axelixInfoProperties = axelixInfoProperties;
         this.instanceFeaturesDetector = instanceFeaturesDetector;
+        this.sbom = readSbom(classpathDependencySbom, logger);
     }
 
     @Override
@@ -77,7 +89,20 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
                 .memoryDetails(new MemoryDetails()
                         .heap(memoryMXBean.getHeapMemoryUsage().getUsed()))
                 .insights(insightsInfoProvider.getInsight())
-                .detectedFeatures(new ArrayList<>(instanceFeaturesDetector.detect()));
+                .detectedFeatures(new ArrayList<>(instanceFeaturesDetector.detect()))
+                .sbom(sbom);
+    }
+
+    private static @Nullable String readSbom(ClasspathDependencySbom classpathDependencySbom, Logger logger) {
+        try {
+            return classpathDependencySbom
+                    .read()
+                    .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
+                    .orElse(null);
+        } catch (UncheckedIOException e) {
+            logger.info("Failed to read the dependency SBOM, registering without it: {}", e.getMessage());
+            return null;
+        }
     }
 
     private SoftwareVersions buildSoftwareVersionInUse() {

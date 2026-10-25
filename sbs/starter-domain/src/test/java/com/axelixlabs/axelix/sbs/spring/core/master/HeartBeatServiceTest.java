@@ -141,9 +141,7 @@ class HeartBeatServiceTest {
                     basicRegistrationMetadataAssembler,
                     healthDetectionFunction,
                     insightsInfoProvider,
-                    heartBeatConfigurationProperties,
-                    new ClasspathDependencySbom(),
-                    new NoOpLogger());
+                    heartBeatConfigurationProperties);
         }
 
         @Bean
@@ -189,7 +187,9 @@ class HeartBeatServiceTest {
                     libraryInformationProvider,
                     insightsInfoProvider,
                     axelixInfoProperties,
-                    () -> Set.of());
+                    () -> Set.of(),
+                    new ClasspathDependencySbom(),
+                    new NoOpLogger());
         }
     }
 

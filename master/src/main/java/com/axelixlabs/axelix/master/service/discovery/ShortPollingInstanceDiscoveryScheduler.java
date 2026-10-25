@@ -36,6 +36,7 @@ import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
 import com.axelixlabs.axelix.master.service.convert.ScheduledTaskExecutionResultConverter;
+import com.axelixlabs.axelix.master.service.ecosystem.DependencyAnalysisService;
 import com.axelixlabs.axelix.master.service.scheduled.ScheduledTaskExecutionHistoryService;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
@@ -63,6 +64,7 @@ public class ShortPollingInstanceDiscoveryScheduler {
     private final TransactionTemplate transactionTemplate;
     private final ScheduledTaskExecutionResultConverter scheduledTaskExecutionResultConverter;
     private final ScheduledTaskExecutionHistoryService scheduledTaskExecutionHistoryService;
+    private final DependencyAnalysisService dependencyAnalysisService;
 
     public ShortPollingInstanceDiscoveryScheduler(
             InstancesDiscoverer instancesDiscoverer,
@@ -72,7 +74,8 @@ public class ShortPollingInstanceDiscoveryScheduler {
             DatabaseHistoricalApplicationSnapshotService databaseHistoricalApplicationSnapshotService,
             TransactionTemplate transactionTemplate,
             ScheduledTaskExecutionResultConverter scheduledTaskExecutionResultConverter,
-            ScheduledTaskExecutionHistoryService scheduledTaskExecutionHistoryService) {
+            ScheduledTaskExecutionHistoryService scheduledTaskExecutionHistoryService,
+            DependencyAnalysisService dependencyAnalysisService) {
 
         this.instancesDiscoverer = instancesDiscoverer;
         this.instanceRegistry = instanceRegistry;
@@ -82,6 +85,7 @@ public class ShortPollingInstanceDiscoveryScheduler {
         this.transactionTemplate = transactionTemplate;
         this.scheduledTaskExecutionResultConverter = scheduledTaskExecutionResultConverter;
         this.scheduledTaskExecutionHistoryService = scheduledTaskExecutionHistoryService;
+        this.dependencyAnalysisService = dependencyAnalysisService;
     }
 
     @Scheduled(cron = "${axelix.master.discovery.auto.broadcast.schedule}")
@@ -128,6 +132,12 @@ public class ShortPollingInstanceDiscoveryScheduler {
             instanceRegistry.register(instances);
             databaseHistoricalApplicationSnapshotService.reloadCurrentStateBulk(collectiveMetadata);
             scheduledTaskExecutionHistoryService.append(scheduledTaskExecutionResults);
+            // Just like the self-registration, the SBOM is only reported on the registration, never on a refresh
+            registrations.stream()
+                    .filter(registration -> registration.metadata().getSbom() != null)
+                    .forEach(registration -> dependencyAnalysisService.store(
+                            registration.instance().applicationId(),
+                            registration.metadata().getSbom()));
             refreshes.forEach(refresh -> databaseHistoricalApplicationSnapshotService.reloadTransactions(
                     refresh.instance().applicationId(), refresh.masterPing().getTransactions()));
         });

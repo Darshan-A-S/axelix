@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +36,9 @@ import org.springframework.core.io.Resource;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
+import com.axelixlabs.axelix.sbs.spring.core.log.SLF4JLogger;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.sbom.ClasspathDependencySbom;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 
 import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader.AXELIX_INFO_LOCATION;
@@ -99,7 +102,9 @@ class DefaultBasicRegistrationMetadataAssemblerTest {
                     libraryInformationProvider,
                     insightsInfoProvider,
                     axelixInfoProperties,
-                    () -> Set.of());
+                    () -> Set.of(),
+                    new ClasspathDependencySbom(),
+                    new SLF4JLogger(LoggerFactory.getLogger(DefaultBasicRegistrationMetadataAssembler.class)));
         }
     }
 

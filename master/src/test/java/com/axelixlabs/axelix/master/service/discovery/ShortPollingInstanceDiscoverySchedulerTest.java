@@ -51,6 +51,7 @@ import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.master.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.contract.metadata.ScheduledTaskExecution;
+import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot;
 import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.SnapshotId;
 import com.axelixlabs.axelix.master.domain.Instance;
@@ -59,6 +60,7 @@ import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
 import com.axelixlabs.axelix.master.domain.features.DetectedFeatures;
 import com.axelixlabs.axelix.master.repository.InstanceRepository;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.CycloneDxDocuments;
 import com.axelixlabs.axelix.master.utils.TestMetadataFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 
@@ -115,6 +117,7 @@ class ShortPollingInstanceDiscoverySchedulerTest {
         jdbcAggregateTemplate.deleteAll(ScheduledTaskExecutionResult.class);
         instanceRepository.deleteAll();
         jdbcAggregateTemplate.deleteAll(HistoricalApplicationSnapshot.class);
+        jdbcAggregateTemplate.deleteAll(ApplicationDependencies.class);
         stubs = new KubernetesDiscoveryStubs(discoveryClient, mockWebServer);
     }
 
@@ -334,6 +337,61 @@ class ShortPollingInstanceDiscoverySchedulerTest {
                 .satisfies(transaction -> assertThat(
                                 transaction.getTransactionalKey().getMethodName())
                         .isEqualTo("findOwners"));
+    }
+
+    @Test
+    void shouldStoreSbomOnlyWhenInstanceIsRegistered() throws InterruptedException {
+        // given.
+        String service = "service-with-sbom";
+        String instanceId = UUID.randomUUID().toString();
+        String sbom = CycloneDxDocuments.of(
+                "org.springframework.samples:petclinic:1.0.0",
+                "org.springframework.cloud:spring-cloud-starter-sleuth:3.1.11");
+
+        String metadataResponse =
+                TestMetadataFactory.toJson(TestMetadataFactory.create("org.springframework.samples", "petclinic")
+                        .version("1.3.0")
+                        .sbom(sbom));
+
+        // language=json
+        String masterPingResponse = """
+            {
+              "healthStatus" : "UP",
+              "memoryDetails" : {
+                "heap" : 500
+              },
+              "transactions" : [ ]
+            }
+            """;
+
+        stubs.enqueueResponses(metadataResponse, masterPingResponse);
+        stubs.stubDiscovery(stubs.k8sInstance(service, instanceId));
+
+        // when.
+        subject.performDiscovery();
+
+        // then.
+        assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
+                .singleElement()
+                .satisfies(dependencies -> {
+                    assertThat(dependencies.applicationId().groupId()).isEqualTo("org.springframework.samples");
+                    assertThat(dependencies.applicationId().artifactId()).isEqualTo("petclinic");
+                    assertThat(dependencies.sbom()).isEqualTo(sbom);
+                });
+        Instant reportedAt = jdbcAggregateTemplate
+                .findAll(ApplicationDependencies.class)
+                .getFirst()
+                .reportedAt();
+
+        // when. the instance is already known, so it is only refreshed via the master ping.
+        subject.performDiscovery();
+
+        // then. the SBOM was neither fetched nor stored again.
+        assertThat(mockWebServer.takeRequest().getPath()).isEqualTo("/actuator/axelix-metadata");
+        assertThat(mockWebServer.takeRequest().getPath()).isEqualTo("/actuator/axelix-ping");
+        assertThat(jdbcAggregateTemplate.findAll(ApplicationDependencies.class))
+                .singleElement()
+                .satisfies(dependencies -> assertThat(dependencies.reportedAt()).isEqualTo(reportedAt));
     }
 
     @Test

@@ -95,9 +95,14 @@ class AxelixMetadataEndpointTest extends AbstractMasterSharedContextTest {
                   "entitiesMap" : null
                 },
                 "scheduledTaskExecutions" : [ ]
-              }
+              },
+              "sbom" : "#{json-unit.any-string}"
             }
             """);
+        JsonAssertions.assertThatJson(result.getBody())
+                .node("sbom")
+                .asString()
+                .contains("\"bomFormat\": \"CycloneDX\"");
     }
 
     @ProtectedEndpointTests(method = HttpMethod.GET, path = "/actuator/axelix-metadata")

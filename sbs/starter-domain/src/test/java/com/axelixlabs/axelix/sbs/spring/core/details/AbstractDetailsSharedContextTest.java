@@ -42,6 +42,8 @@ import com.axelixlabs.axelix.sbs.spring.core.master.DefaultBasicRegistrationMeta
 import com.axelixlabs.axelix.sbs.spring.core.master.HealthDetectionFunction;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.sbom.ClasspathDependencySbom;
+import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 
 import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader.AXELIX_INFO_LOCATION;
@@ -147,7 +149,9 @@ abstract class AbstractDetailsSharedContextTest {
                     libraryInformationProvider,
                     insightsInfoProvider,
                     axelixInfoProperties,
-                    () -> Set.of());
+                    () -> Set.of(),
+                    new ClasspathDependencySbom(),
+                    new NoOpLogger());
         }
     }
 }

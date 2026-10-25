@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 import java.lang.management.ManagementFactory;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
@@ -34,6 +35,7 @@ import com.axelixlabs.axelix.common.domain.version.PropertiesAxelixVersionDiscov
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.sbs.spring.core.gclog.GcLogService;
+import com.axelixlabs.axelix.sbs.spring.core.log.SLF4JLogger;
 import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.AxelixMetadataEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.master.AxelixPingEndpoint;
@@ -54,6 +56,7 @@ import com.axelixlabs.axelix.sbs.spring.core.master.insights.VmOptionsAccessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.NoOpTransactionStatsCollector;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionAttributesRegistry;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionStatsCollector;
+import com.axelixlabs.axelix.sbs.spring.core.sbom.ClasspathDependencySbom;
 
 /**
  * Auto-configuration of the endpoints that Axelix Master communicates with, i.e. {@link AxelixMetadataEndpoint}
@@ -136,7 +139,9 @@ public class AxelixMasterProtocolAutoConfiguration {
                 libraryInformationProvider,
                 insightsInfoProvider,
                 axelixInfoProperties,
-                instanceFeaturesDetector);
+                instanceFeaturesDetector,
+                new ClasspathDependencySbom(),
+                new SLF4JLogger(LoggerFactory.getLogger(DefaultBasicRegistrationMetadataAssembler.class)));
     }
 
     @Bean

@@ -23,6 +23,7 @@ import java.util.EnumSet;
 
 import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +39,9 @@ import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthTestConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.InstanceFeature;
+import com.axelixlabs.axelix.sbs.spring.core.log.SLF4JLogger;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.sbom.ClasspathDependencySbom;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.sbs.spring.core.utils.auth.ProtectedEndpointTests;
@@ -94,7 +97,9 @@ class AxelixMetadataEndpointTest {
                     libraryInformationProvider,
                     insightsInfoProvider,
                     axelixInfoProperties,
-                    () -> EnumSet.of(InstanceFeature.CACHES, InstanceFeature.SCHEDULED_TASKS));
+                    () -> EnumSet.of(InstanceFeature.CACHES, InstanceFeature.SCHEDULED_TASKS),
+                    new ClasspathDependencySbom("axelix/sbom-test/dependencies.cdx.json"),
+                    new SLF4JLogger(LoggerFactory.getLogger(DefaultBasicRegistrationMetadataAssembler.class)));
         }
 
         @Bean
@@ -158,8 +163,13 @@ class AxelixMetadataEndpointTest {
                         + "      \"entitiesMap\" : null\n"
                         + "    },\n"
                         + "    \"scheduledTaskExecutions\" : [ ]\n"
-                        + "  }\n"
+                        + "  },\n"
+                        + "  \"sbom\" : \"#{json-unit.any-string}\"\n"
                         + "}");
+        JsonAssertions.assertThatJson(result.getBody())
+                .node("sbom")
+                .asString()
+                .contains("\"bomFormat\": \"CycloneDX\"");
     }
 
     @ProtectedEndpointTests(method = HttpMethod.GET, path = "/actuator/axelix-metadata")

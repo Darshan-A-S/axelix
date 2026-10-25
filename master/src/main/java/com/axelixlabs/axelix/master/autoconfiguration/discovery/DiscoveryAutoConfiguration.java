@@ -43,6 +43,7 @@ import com.axelixlabs.axelix.master.service.discovery.InstancesDiscoverer;
 import com.axelixlabs.axelix.master.service.discovery.ShortPollingInstanceDiscoveryScheduler;
 import com.axelixlabs.axelix.master.service.discovery.k8s.KubernetesDiscoveryClient;
 import com.axelixlabs.axelix.master.service.discovery.k8s.KubernetesInstanceDiscoverer;
+import com.axelixlabs.axelix.master.service.ecosystem.DependencyAnalysisService;
 import com.axelixlabs.axelix.master.service.scheduled.ScheduledTaskExecutionHistoryService;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
@@ -67,7 +68,8 @@ public class DiscoveryAutoConfiguration {
             DatabaseHistoricalApplicationSnapshotService databaseHistoricalApplicationSnapshotService,
             TransactionTemplate transactionTemplate,
             ScheduledTaskExecutionResultConverter scheduledTaskExecutionResultConverter,
-            ScheduledTaskExecutionHistoryService scheduledTaskExecutionHistoryService) {
+            ScheduledTaskExecutionHistoryService scheduledTaskExecutionHistoryService,
+            DependencyAnalysisService dependencyAnalysisService) {
         return new ShortPollingInstanceDiscoveryScheduler(
                 instancesDiscoverer,
                 instanceRegistry,
@@ -76,7 +78,8 @@ public class DiscoveryAutoConfiguration {
                 databaseHistoricalApplicationSnapshotService,
                 transactionTemplate,
                 scheduledTaskExecutionResultConverter,
-                scheduledTaskExecutionHistoryService);
+                scheduledTaskExecutionHistoryService,
+                dependencyAnalysisService);
     }
 
     @AutoConfiguration

@@ -45,6 +45,19 @@ A few facts worth pinning down before you copy any of the snippets below.
     - **Self-registration** — the starter posts a heartbeat to Master on a fixed interval. Use this when Master cannot
       scan the instance's environment (different network, no platform integration, plain VMs).
 
+### Reactive (WebFlux) applications
+
+<UpcomingReleaseNotice />
+
+Starting with Axelix 1.3.0, all three starters work in reactive applications built on Spring WebFlux, not only in
+servlet (Spring MVC) applications. The starter detects which web stack your application runs on, so there is nothing
+extra to add or configure: the dependency, the build plugin, and the properties on this page are the same for both.
+The Axelix endpoints and the JWT authorization in front of them work the same way, including when Actuator runs on a
+separate `management.server.port`.
+
+One feature stays servlet-only. [Transaction monitoring](#transaction-monitoring), and with it the Transaction Control
+and Entities Map pages, is not available in WebFlux applications.
+
 ## Add the dependency
 
 Declare the starter coordinate matching your Boot major version.
@@ -897,6 +910,9 @@ Transaction monitoring is what powers the Transaction Control page and the relat
 registers the Hibernate N+1 integrator. The collected insights travel to Master inside the instance's registration
 metadata (exposed through `axelix-metadata`), so there is no separate actuator endpoint to expose. It is **on by
 default** once the starter is on the classpath.
+
+Transaction monitoring works only in servlet (Spring MVC) applications. In a reactive (WebFlux) application the starter
+doesn't turn it on, whatever the property says. See [Reactive (WebFlux) applications](#reactive-webflux-applications).
 
 Set `axelix.sbs.transaction.monitoring.enabled` to `false` to turn it off entirely — no bean post-processors, no data
 source proxying, no cleanup filter, and no Hibernate integrator. Use this to shave the associated overhead, to rule out

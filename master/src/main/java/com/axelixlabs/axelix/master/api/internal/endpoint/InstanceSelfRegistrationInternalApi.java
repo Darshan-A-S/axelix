@@ -163,11 +163,7 @@ public class InstanceSelfRegistrationInternalApi {
         }
 
         Instance.InstanceStatus status =
-                switch (heartBeatMetadataV2.getHealthStatus()) {
-                    case UP -> Instance.InstanceStatus.UP;
-                    case DOWN -> Instance.InstanceStatus.DOWN;
-                    case UNKNOWN -> Instance.InstanceStatus.UNKNOWN;
-                };
+                Instance.InstanceStatus.fromHealthStatus(heartBeatMetadataV2.getHealthStatus());
 
         transactionTemplate.executeWithoutResult(_ -> {
             instanceRegistry.refresh(

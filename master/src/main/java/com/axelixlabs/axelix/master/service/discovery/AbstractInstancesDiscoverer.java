@@ -152,7 +152,7 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
 
             return new DiscoveredInstanceProfile.Refresh(
                     instance.copy(
-                            toInstanceStatus(masterPing),
+                            InstanceStatus.fromHealthStatus(masterPing.getHealthStatus()),
                             new MemoryUsage(masterPing.getMemoryDetails().getHeap())),
                     masterPing);
         } catch (EndpointInvocationException | BadRequestException error) {
@@ -162,14 +162,6 @@ public abstract class AbstractInstancesDiscoverer implements InstancesDiscoverer
                     error);
             return null;
         }
-    }
-
-    private static InstanceStatus toInstanceStatus(MasterPing masterPing) {
-        return switch (masterPing.getHealthStatus()) {
-            case UP -> InstanceStatus.UP;
-            case DOWN -> InstanceStatus.DOWN;
-            case UNKNOWN -> InstanceStatus.UNKNOWN;
-        };
     }
 
     protected record IntermediateInstanceProfile(ServiceInstance serviceInstance, BasicRegistrationMetadata metadata) {}

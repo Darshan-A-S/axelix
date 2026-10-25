@@ -31,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.axelixlabs.axelix.master.contract.metadata.BasicRegistrationMetadata;
-import com.axelixlabs.axelix.master.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.master.contract.metadata.InstanceFeature;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
@@ -75,7 +74,7 @@ public class DefaultInstanceFactory implements InstanceFactory {
                 metadata.getCommitShortSha(),
                 extractDeployTimestamp(deploymentAt, instanceId, instanceName),
                 latestHeartBeat,
-                convertServiceStatus(metadata.getHealthStatus()),
+                InstanceStatus.fromHealthStatus(metadata.getHealthStatus()),
                 new MemoryUsage(metadata.getMemoryDetails().getHeap()),
                 instanceActuatorUrl,
                 convertDetectedFeatures(metadata.getDetectedFeatures()));
@@ -96,14 +95,6 @@ public class DefaultInstanceFactory implements InstanceFactory {
         }
 
         return ApplicationId.of(metadata.getGroupId(), metadata.getArtifactId());
-    }
-
-    private InstanceStatus convertServiceStatus(HealthStatus healthStatus) {
-        return switch (healthStatus) {
-            case UP -> InstanceStatus.UP;
-            case DOWN -> InstanceStatus.DOWN;
-            case UNKNOWN -> InstanceStatus.UNKNOWN;
-        };
     }
 
     @Nullable

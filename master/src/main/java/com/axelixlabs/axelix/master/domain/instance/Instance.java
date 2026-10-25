@@ -25,6 +25,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.axelixlabs.axelix.master.contract.metadata.HealthStatus;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.JavaVersion;
 import com.axelixlabs.axelix.master.domain.MemoryUsage;
@@ -99,6 +100,14 @@ public record Instance(
     public enum InstanceStatus {
         UP,
         DOWN,
-        UNKNOWN,
+        UNKNOWN;
+
+        public static InstanceStatus fromHealthStatus(HealthStatus healthStatus) {
+            return switch (healthStatus) {
+                case UP -> UP;
+                case DOWN -> DOWN;
+                case UNKNOWN -> UNKNOWN;
+            };
+        }
     }
 }

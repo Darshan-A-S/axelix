@@ -310,19 +310,19 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
     void shouldReturnUsedLibrariesWithTheirVersionDistribution() {
         // given.
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-a"),
+                registeredInstanceOf("com.example", "service-a"),
                 CycloneDxDocuments.of(
                         "com.example:service-a:1.0.0",
                         "org.hdrhistogram:HdrHistogram:2.2.2",
                         "com.example.platform:platform-commons:1.9.2"));
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-b"),
+                registeredInstanceOf("com.example", "service-b"),
                 CycloneDxDocuments.of(
                         "com.example:service-b:1.0.0",
                         "org.hdrhistogram:HdrHistogram:2.1.12",
                         "com.example.platform:platform-commons:1.10.0"));
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-c"),
+                registeredInstanceOf("com.example", "service-c"),
                 CycloneDxDocuments.of("com.example:service-c:1.0.0", "com.example.platform:platform-commons:1.10.0"));
 
         // when.
@@ -376,7 +376,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
     void shouldFilterAndPageUsedLibraries() {
         // given.
         dependencyAnalysisService.store(
-                ApplicationId.of("com.example", "service-a"),
+                registeredInstanceOf("com.example", "service-a"),
                 CycloneDxDocuments.of(
                         "com.example:service-a:1.0.0",
                         "org.springframework.cloud:spring-cloud-starter-sleuth:3.1.11",

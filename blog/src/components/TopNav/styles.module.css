@@ -1,122 +1,272 @@
-/* ===================== NAV ===================== */
-nav.Top {
+/* ===================== NAV =====================
+   Mirrors the marketing site's header (website/src/components/Header). */
+.Top {
   position: fixed;
-  top: 20px;
+  top: 0;
   left: 0;
   right: 0;
-  z-index: 40;
-  display: flex;
-  justify-content: center;
-  padding: 0 25px;
-  pointer-events: none;
+  z-index: 50;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line-2);
 }
-nav.Top .Capsule {
-  pointer-events: auto;
+.Bar {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 8px;
-  height: 41.9px;
-  padding: 5px 6px 5px 16px;
-  border-radius: 999px;
-  background: color-mix(in srgb, #ffffff 55%, transparent);
-  border: 1px solid color-mix(in srgb, var(--c-green-500) 22%, transparent);
-  backdrop-filter: saturate(160%) blur(18px);
-  -webkit-backdrop-filter: saturate(160%) blur(18px);
-  box-shadow:
-    0 1px 0 color-mix(in srgb, #ffffff 80%, transparent) inset,
-    0 1px 0 color-mix(in srgb, var(--c-green-500) 10%, transparent);
-  width: 100%;
-  max-width: 1400px;
-}
-nav.Top .Capsule > .Brand {
-  justify-self: start;
-}
-nav.Top .Capsule > .NavLinks {
-  justify-self: center;
-}
-nav.Top .Capsule > .NavCta {
-  justify-self: end;
-}
-.NavLinks {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.NavLink {
-  font-family: var(--font);
-  font-size: 13.5px;
-  color: var(--ink-2);
-  padding: 4px 12px;
-  border-radius: 999px;
-  transition: background 0.3s, color 0.3s;
-}
-.NavLink:hover {
-  background: color-mix(in srgb, var(--c-green-100) 60%, transparent);
-  color: var(--ink);
-}
-/* Mirror the marketing site: center nav collapses on narrow screens. */
-@media (max-width: 980px) {
-  .NavLinks {
-    display: none;
-  }
+  gap: 16px;
+  height: 64px;
+  padding: 0 clamp(20px, 3vw, 32px);
+  white-space: nowrap;
 }
 .Brand {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   color: var(--ink);
 }
 .Brand :global(.logo) {
-  width: 120px;
+  width: 110px;
   height: auto;
   display: block;
 }
-.NavCta {
+.Nav {
+  display: flex;
+  gap: 8px;
+  height: 100%;
+}
+.NavItemWrapper {
+  position: relative;
+  display: flex;
+}
+.NavItem {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding-left: 4px;
-}
-.NavCta .ExtLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 11px;
-  border-radius: 999px;
-  background: transparent;
-  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  height: 100%;
+  padding: 0 12px;
+  font-size: 14.5px;
   color: var(--ink);
-  font-family: var(--font);
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1;
-  transition: background 0.15s, border-color 0.15s;
+  transition: box-shadow 0.2s;
 }
-.NavCta .ExtLink:hover {
+.NavItem:hover,
+.NavItemOpen {
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--c-green-500);
+}
+.Caret {
+  width: 12px;
+  height: 12px;
+  color: var(--ink-3);
+  transition: transform 0.2s;
+}
+.NavItemOpen .Caret {
+  transform: rotate(180deg);
+}
+
+/* Dropdown under a nav item */
+.CompactMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  box-shadow: 0 24px 50px -24px color-mix(in srgb, var(--c-green-900) 35%, transparent);
+  white-space: normal;
+}
+/* Bridges the gap to the nav item so the pointer can cross it. */
+.CompactMenu::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 0;
+  right: 0;
+  height: 9px;
+}
+.MenuLink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background-color 0.2s;
+}
+.MenuLink:hover {
+  background: var(--bg);
+}
+.MenuLinkTitle {
+  font-size: 15px;
+  font-weight: 500;
+}
+.MenuLinkDescription {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* Right-hand links */
+.ExternalLinksWrapper {
+  justify-self: end;
+}
+.ExternalLinks {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  column-gap: 16px;
+}
+.ExternalLinksFullWidth {
+  justify-content: stretch;
+  column-gap: 8px;
+}
+.TextLink,
+.GitHubLink,
+.GetStartedLink {
+  display: flex;
+  align-items: center;
+  font-family: var(--font);
+  font-size: 13.5px;
+  line-height: 1;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+.LinkFullWidth {
+  flex: 1;
+  justify-content: center;
+  padding: 9px 12px;
+}
+.TextLink {
+  color: var(--ink);
+}
+.TextLink:hover,
+.TextLinkActive {
+  color: var(--c-green-600);
+}
+.GitHubLink {
+  padding: 8px 14px;
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+}
+.GitHubLink:hover {
   background: color-mix(in srgb, var(--ink) 6%, transparent);
   border-color: color-mix(in srgb, var(--ink) 35%, transparent);
 }
-.NavCta .ExtLink.Active {
-  background: color-mix(in srgb, var(--c-green-500) 14%, transparent);
-  border-color: color-mix(in srgb, var(--c-green-500) 30%, transparent);
-  color: var(--c-green-800);
-}
-.GhBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 9px 3px 8px;
-  border-radius: 999px;
-  background: var(--ink);
+.GetStartedLink {
+  padding: 8px 16px;
   color: #fff;
+  background: var(--ink);
   border: 1px solid var(--ink);
-  font-family: var(--font);
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1;
-  transition: background 0.15s, border-color 0.15s;
 }
-.GhBtn:hover {
-  background: #000;
-  border-color: #000;
+.GetStartedLink:hover {
+  color: #fff;
+  background: var(--c-green-900);
+  border-color: var(--c-green-900);
+}
+
+/* Burger menu (narrow screens) */
+.Burger {
+  display: none;
+  justify-content: flex-end;
+}
+.BurgerButton {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+.BurgerButton:hover {
+  background: color-mix(in srgb, var(--c-green-100) 60%, transparent);
+}
+.Line {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--ink);
+  border-radius: 999px;
+  transition: transform 0.25s, opacity 0.25s;
+  transform-origin: center;
+}
+.Line1Open {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.Line2Open {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.Line3Open {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+.MobileMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: clamp(20px, 3vw, 32px);
+  right: clamp(20px, 3vw, 32px);
+  max-height: calc(100dvh - 80px);
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 16px;
+  background: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--c-green-500) 22%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 80%, transparent) inset,
+    0 8px 32px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 2px 8px color-mix(in srgb, var(--ink) 6%, transparent);
+  white-space: normal;
+}
+.MobileLinks {
+  display: flex;
+  flex-direction: column;
+}
+.MobileLink {
+  font-size: 14px;
+  color: var(--ink-2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.MobileLink:hover {
+  background: color-mix(in srgb, var(--c-green-100) 60%, transparent);
+  color: var(--ink);
+}
+.Group {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+}
+.GroupHeading {
+  padding: 10px 14px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-green-600);
+}
+.Divider {
+  height: 1px;
+  background: color-mix(in srgb, var(--c-green-500) 22%, transparent);
+  margin-block: 4px;
+}
+
+@media (max-width: 1024px) {
+  .Bar {
+    grid-template-columns: 1fr auto;
+  }
+  .Nav,
+  .ExternalLinksWrapper {
+    display: none;
+  }
+  .Burger {
+    display: flex;
+  }
 }

@@ -16,11 +16,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 export const HERO_HEADLINE_SEGMENTS = [
-    { text: "See what your ", highlighted: false },
+    { text: "Axelix: the agentic platform for ", highlighted: false },
     { text: "Spring Boot", highlighted: true },
-    { text: " apps are really doing in production, and ", highlighted: false },
-    { text: "what's wrong", highlighted: true },
-    { text: " with them", highlighted: false },
+    { text: " in production", highlighted: false },
 ] as const;
 
 // Feeds llms.txt (INTRO below); the hero itself no longer renders this text.

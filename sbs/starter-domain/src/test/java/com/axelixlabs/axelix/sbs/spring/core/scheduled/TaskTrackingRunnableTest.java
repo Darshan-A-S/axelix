@@ -24,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExecution;
-import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for {@link TaskTrackingRunnable}.
  *
  * @author Vyacheslav Yanin
+ * @author Nikita Kirillov
  */
 class TaskTrackingRunnableTest {
 
@@ -43,8 +43,7 @@ class TaskTrackingRunnableTest {
 
     @BeforeEach
     void setUp() {
-        history = new ScheduledTaskExecutionHistory(
-                new ScheduledTaskHistoryConfigurationProperties(30), new NoOpLogger());
+        history = new ScheduledTaskExecutionHistory(new ScheduledTaskHistoryConfigurationProperties(30));
     }
 
     @Test
@@ -84,6 +83,16 @@ class TaskTrackingRunnableTest {
     }
 
     @Test
+    void run_shouldTruncateTheMessageOfTheFailure() {
+        RuntimeException failure = new IllegalStateException("x".repeat(1500));
+
+        assertThatThrownBy(() -> new TaskTrackingRunnable(new FailingTask(failure), history).run())
+                .isSameAs(failure);
+
+        assertThat(recordedExecution().getErrorMessage()).isEqualTo("x".repeat(1000));
+    }
+
+    @Test
     void run_shouldRethrowOriginalError() {
         Error failure = new StackOverflowError();
 
@@ -96,7 +105,7 @@ class TaskTrackingRunnableTest {
     }
 
     private ScheduledTaskExecution recordedExecution() {
-        List<ScheduledTaskExecution> executions = history.mark();
+        List<ScheduledTaskExecution> executions = history.getExecutions();
         assertThat(executions).hasSize(1);
         return executions.get(0);
     }

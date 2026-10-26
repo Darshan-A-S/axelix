@@ -47,6 +47,7 @@ public class MasterPingAssembler {
                 .healthStatus(healthDetectionFunction.get())
                 .memoryDetails(new MemoryDetails()
                         .heap(memoryMXBean.getHeapMemoryUsage().getUsed()))
-                .transactions(insightsInfoProvider.getTransactions());
+                .transactions(insightsInfoProvider.getTransactions())
+                .scheduledTaskExecutions(insightsInfoProvider.getScheduledTaskExecutions());
     }
 }

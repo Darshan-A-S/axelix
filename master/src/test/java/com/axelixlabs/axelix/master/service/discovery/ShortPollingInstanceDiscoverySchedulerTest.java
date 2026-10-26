@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -165,6 +166,7 @@ class ShortPollingInstanceDiscoverySchedulerTest {
     }
 
     @Test
+    @Disabled("GH-1617: the executions are not stored until master deduplicates them")
     void shouldSaveScheduledTaskExecutionsWhenInstancesAreDiscovered() {
         String serviceWithFailedExecution = "service-with-failed-execution";
         String serviceWithSuccessfulExecution = "service-with-successful-execution";

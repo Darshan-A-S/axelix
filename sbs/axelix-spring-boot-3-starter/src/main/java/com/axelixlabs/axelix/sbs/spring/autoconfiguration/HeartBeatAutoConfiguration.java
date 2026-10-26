@@ -20,7 +20,6 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +35,6 @@ import com.axelixlabs.axelix.sbs.spring.core.master.HeartBeatLifecycleIgnitor;
 import com.axelixlabs.axelix.sbs.spring.core.master.HeartBeatMetadataAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.master.HeartBeatService;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
-import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory;
 
 /**
  * Auto-configuration for instance self-registration.
@@ -74,15 +72,13 @@ public class HeartBeatAutoConfiguration {
             HeartBeatConfigurationProperties properties,
             ObjectMapper objectMapper,
             HeartBeatMetadataAssembler heartBeatMetadataAssembler,
-            JwtEncoderService jwtEncoderService,
-            ObjectProvider<ScheduledTaskExecutionHistory> scheduledTaskExecutionHistory) {
+            JwtEncoderService jwtEncoderService) {
         return new HeartBeatService(
                 new SLF4JLogger(LoggerFactory.getLogger(HeartBeatService.class)),
                 objectMapper::writeValueAsString,
                 properties,
                 heartBeatMetadataAssembler,
-                jwtEncoderService,
-                scheduledTaskExecutionHistory.getIfAvailable());
+                jwtEncoderService);
     }
 
     @Bean

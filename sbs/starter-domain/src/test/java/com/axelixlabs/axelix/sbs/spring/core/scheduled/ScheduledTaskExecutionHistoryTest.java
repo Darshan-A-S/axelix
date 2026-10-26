@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExecution;
-import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for {@link ScheduledTaskExecutionHistory}.
  *
  * @author Vyacheslav Yanin
+ * @author Nikita Kirillov
  */
 class ScheduledTaskExecutionHistoryTest {
 
@@ -51,7 +51,7 @@ class ScheduledTaskExecutionHistoryTest {
 
         history.record(execution);
 
-        assertThat(history.mark()).containsExactly(execution);
+        assertThat(history.getExecutions()).containsExactly(execution);
     }
 
     @Test
@@ -65,7 +65,7 @@ class ScheduledTaskExecutionHistoryTest {
         history.record(second);
         history.record(third);
 
-        assertThat(history.mark()).containsExactly(second, third);
+        assertThat(history.getExecutions()).containsExactly(second, third);
     }
 
     @Test
@@ -81,143 +81,36 @@ class ScheduledTaskExecutionHistoryTest {
         history.record(second);
         history.record(third);
 
-        assertThat(history.mark()).containsExactlyInAnyOrder(other, second, third);
+        assertThat(history.getExecutions()).containsExactlyInAnyOrder(other, second, third);
     }
 
     @Test
-    void mark_shouldReturnEmptyListWhenNoExecutionsRecorded() {
-        assertThat(history.mark()).isEmpty();
+    void getExecutions_shouldReturnEmptyListWhenNoExecutionsRecorded() {
+        assertThat(history.getExecutions()).isEmpty();
     }
 
     @Test
-    void mark_shouldReturnImmutableList() {
+    void getExecutions_shouldReturnImmutableList() {
         history.record(execution(TASK_ID));
 
-        List<ScheduledTaskExecution> first = history.mark();
-        List<ScheduledTaskExecution> second = history.mark();
+        List<ScheduledTaskExecution> first = history.getExecutions();
+        List<ScheduledTaskExecution> second = history.getExecutions();
 
         assertThat(first).isEqualTo(second).isNotSameAs(second);
         assertThatThrownBy(() -> first.add(execution(TASK_ID))).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
-    void mark_shouldBeAPureRead() {
+    void getExecutions_shouldKeepTheExecutionsInTheHistory() {
         ScheduledTaskExecution execution = execution(TASK_ID);
         history.record(execution);
 
-        assertThat(history.mark()).containsExactly(execution);
-        assertThat(history.mark()).containsExactly(execution);
-    }
-
-    @Test
-    void commit_shouldRemoveExecutionsUpToTheMarkedWatermark() {
-        ScheduledTaskExecution first = execution(TASK_ID);
-        ScheduledTaskExecution second = execution(TASK_ID);
-        history.record(first);
-        history.record(second);
-        history.mark();
-
-        history.commit();
-
-        assertThat(history.mark()).isEmpty();
-    }
-
-    @Test
-    void commit_shouldKeepExecutionsRecordedAfterTheMarkedWatermark() {
-        ScheduledTaskExecution first = execution(TASK_ID);
-        ScheduledTaskExecution second = execution(TASK_ID);
-        ScheduledTaskExecution third = execution(TASK_ID);
-        history.record(first);
-        history.record(second);
-        history.mark();
-
-        history.record(third);
-        history.commit();
-
-        assertThat(history.mark()).containsExactly(third);
-    }
-
-    @Test
-    void commit_shouldRemoveEmptyTaskQueues() {
-        history.record(execution(TASK_ID));
-        history.record(execution(ANOTHER_TASK_ID));
-        history.mark();
-
-        history.commit();
-
-        assertThat(history.mark()).isEmpty();
-    }
-
-    @Test
-    void commit_shouldDoNothingWhenNothingHasBeenMarked() {
-        ScheduledTaskExecution execution = execution(TASK_ID);
-        history.record(execution);
-
-        history.commit();
-
-        assertThat(history.mark()).containsExactly(execution);
-    }
-
-    @Test
-    void rollback_shouldReleaseTheMarkedWatermarkWithoutDroppingExecutions() {
-        ScheduledTaskExecution first = execution(TASK_ID);
-        history.record(first);
-        history.mark();
-
-        history.rollback();
-
-        assertThat(history.mark()).containsExactly(first);
-    }
-
-    @Test
-    void rollback_shouldLetTheNextMarkAdvanceTheWatermark() {
-        ScheduledTaskExecution first = execution(TASK_ID);
-        history.record(first);
-        history.mark();
-        history.rollback();
-
-        ScheduledTaskExecution second = execution(TASK_ID);
-        history.record(second);
-        history.mark();
-
-        history.commit();
-
-        assertThat(history.mark()).isEmpty();
-    }
-
-    @Test
-    void mark_shouldKeepThePreviousWatermarkWhenAnotherMarkIsPending() {
-        ScheduledTaskExecution first = execution(TASK_ID);
-        history.record(first);
-        history.mark();
-
-        ScheduledTaskExecution second = execution(TASK_ID);
-        history.record(second);
-        assertThat(history.mark()).containsExactly(first, second);
-
-        history.commit();
-
-        assertThat(history.mark()).containsExactly(second);
-    }
-
-    @Test
-    void commit_shouldFreeTheWatermarkForTheFollowingMark() {
-        ScheduledTaskExecution first = execution(TASK_ID);
-        history.record(first);
-        history.mark();
-        history.commit();
-
-        ScheduledTaskExecution second = execution(TASK_ID);
-        history.record(second);
-        history.mark();
-        history.commit();
-
-        assertThat(history.mark()).isEmpty();
+        assertThat(history.getExecutions()).containsExactly(execution);
+        assertThat(history.getExecutions()).containsExactly(execution);
     }
 
     private static ScheduledTaskExecutionHistory history(int historyMaxSize) {
-        return new ScheduledTaskExecutionHistory(
-                new ScheduledTaskHistoryConfigurationProperties(historyMaxSize), new NoOpLogger());
+        return new ScheduledTaskExecutionHistory(new ScheduledTaskHistoryConfigurationProperties(historyMaxSize));
     }
 
     private static ScheduledTaskExecution execution(String taskId) {

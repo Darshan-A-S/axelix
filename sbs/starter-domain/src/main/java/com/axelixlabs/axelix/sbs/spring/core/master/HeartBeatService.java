@@ -41,7 +41,6 @@ import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 import com.axelixlabs.axelix.common.domain.http.HttpPayload;
 import com.axelixlabs.axelix.sbs.spring.core.config.HeartBeatConfigurationProperties;
 import com.axelixlabs.axelix.sbs.spring.core.log.Logger;
-import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory;
 
 /**
  * Self-registration service that automatically registers with master.
@@ -67,7 +66,6 @@ public class HeartBeatService implements Closeable {
     private final ScheduledExecutorService executor;
     private final Logger logger;
     private final JwtEncoderService jwtEncoderService;
-    private final @Nullable ScheduledTaskExecutionHistory scheduledTaskExecutionHistory;
 
     @Nullable
     private volatile String heartbeatUrl;
@@ -82,8 +80,7 @@ public class HeartBeatService implements Closeable {
             JsonSerializationFunction serializationFunction,
             HeartBeatConfigurationProperties properties,
             HeartBeatMetadataAssembler heartBeatMetadataAssembler,
-            JwtEncoderService jwtEncoderService,
-            @Nullable ScheduledTaskExecutionHistory scheduledTaskExecutionHistory) {
+            JwtEncoderService jwtEncoderService) {
 
         this.logger = logger;
         this.jwtEncoderService = jwtEncoderService;
@@ -92,7 +89,6 @@ public class HeartBeatService implements Closeable {
         this.properties = properties;
         this.serializationFunction = serializationFunction;
         this.heartBeatMetadataAssembler = heartBeatMetadataAssembler;
-        this.scheduledTaskExecutionHistory = scheduledTaskExecutionHistory;
 
         this.executor = Executors.newSingleThreadScheduledExecutor(runnable -> {
             Thread thread = new Thread(runnable, "axelix-heartbeat");
@@ -118,38 +114,24 @@ public class HeartBeatService implements Closeable {
 
                 if (is2xxSuccessful(statusCode)) {
                     logger.trace("Heartbeat successful. Master URL: {}", heartbeatUrl);
-                    if (scheduledTaskExecutionHistory != null) {
-                        scheduledTaskExecutionHistory.commit();
-                    }
                 } else if (isUnauthorized(statusCode)) {
                     logger.debug("Master heartbeat failed. Token expired. Re-generating token");
                     currentToken = jwtEncoderService.generateToken(TECH_USER);
-                    rollbackScheduledTaskHistoryMarker();
                 } else if (isConflict(statusCode)) {
                     logger.info("Master does not know this instance. Registering again");
-                    rollbackScheduledTaskHistoryMarker();
                     registered = false;
                     register();
                 } else {
                     logger.info("Master heartbeat failed, HTTP status: {}\"", statusCode);
-                    rollbackScheduledTaskHistoryMarker();
                 }
             } else {
                 register();
             }
         } catch (IOException | InterruptedException e) {
             logger.info("Error sending registration request or heartbeat to master: {}", e.getMessage());
-            rollbackScheduledTaskHistoryMarker();
         } catch (RuntimeException e) {
             // must not escape, otherwise the executor stops scheduling the heartbeat for good
             logger.info("Unexpected error during registration or heartbeat to master", e);
-            rollbackScheduledTaskHistoryMarker();
-        }
-    }
-
-    private void rollbackScheduledTaskHistoryMarker() {
-        if (scheduledTaskExecutionHistory != null) {
-            scheduledTaskExecutionHistory.rollback();
         }
     }
 

@@ -34,6 +34,7 @@ components:
         - healthStatus
         - memoryDetails
         - transactions
+        - scheduledTaskExecutions
       properties:
         healthStatus:
           description: >-
@@ -59,7 +60,9 @@ components:
             $ref: '#/components/schemas/TransactionAggregatedProfile'
         scheduledTaskExecutions:
           type: array
-          description: The results of the scheduled task executions. Absent when there are none to report.
+          description: >-
+            The latest executions of the scheduled tasks, at most the configured number per task.
+            Empty when there are none to report.
           x-axelix-introduced-in: 1.3.0
           items:
             $ref: '#/components/schemas/ScheduledTaskExecution'

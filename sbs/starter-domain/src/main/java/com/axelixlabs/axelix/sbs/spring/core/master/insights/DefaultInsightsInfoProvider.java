@@ -119,14 +119,12 @@ public class DefaultInsightsInfoProvider implements InsightsInfoProvider {
                         .featureId(FeatureId.OSIV.getId())
                         .enabled(openSessionInViewStateProvider.isOpenSessionInViewEnabled())))
                 .persistenceInsights(assemblePersistenceInsights())
-                // Scheduled-task executions are delivered through the heartbeat v2 only, see
-                // getScheduledTaskExecutions(). The initial registration never carries them.
-                .scheduledTaskExecutions(List.of());
+                .scheduledTaskExecutions(getScheduledTaskExecutions());
     }
 
     @Override
     public List<ScheduledTaskExecution> getScheduledTaskExecutions() {
-        return scheduledTaskExecutionHistory != null ? scheduledTaskExecutionHistory.mark() : List.of();
+        return scheduledTaskExecutionHistory != null ? scheduledTaskExecutionHistory.getExecutions() : List.of();
     }
 
     @Override

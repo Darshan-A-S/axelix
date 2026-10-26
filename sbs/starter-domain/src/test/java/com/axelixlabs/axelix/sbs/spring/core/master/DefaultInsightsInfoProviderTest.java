@@ -45,7 +45,6 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.Transaction
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionStatsCollector;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskHistoryConfigurationProperties;
-import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
 
 import static com.axelixlabs.axelix.common.domain.insights.FeatureId.AOT_CACHE;
 import static com.axelixlabs.axelix.common.domain.insights.FeatureId.APP_CDS;
@@ -86,8 +85,9 @@ class DefaultInsightsInfoProviderTest {
     }
 
     @Test
-    void doesNotReportScheduledTaskExecutionsInInsights_whenHistoryIsNotEmpty() {
+    void reportsScheduledTaskExecutionsInInsights_whenHistoryIsNotEmpty() {
         // given.
+        ScheduledTaskExecution execution = scheduledTaskExecution("com.example.First#run()");
         var subject = new DefaultInsightsInfoProvider(
                 osivDisabled(),
                 gcLogDisabled(),
@@ -95,13 +95,13 @@ class DefaultInsightsInfoProviderTest {
                 emptyTransactionStatsCollector(),
                 emptyTransactionAttributesRegistry(),
                 noOpJpaEntitiesProfileProvider(),
-                historyWith(scheduledTaskExecution("com.example.First#run()")));
+                historyWith(execution));
 
         // when.
         Insights insights = subject.getInsight();
 
         // then.
-        assertThat(insights.getScheduledTaskExecutions()).isEmpty();
+        assertThat(insights.getScheduledTaskExecutions()).containsExactly(execution);
     }
 
     @Test
@@ -420,7 +420,7 @@ class DefaultInsightsInfoProviderTest {
     }
 
     private static ScheduledTaskExecutionHistory emptyScheduledTaskExecutionHistory() {
-        return new ScheduledTaskExecutionHistory(new ScheduledTaskHistoryConfigurationProperties(30), new NoOpLogger());
+        return new ScheduledTaskExecutionHistory(new ScheduledTaskHistoryConfigurationProperties(30));
     }
 
     private static ScheduledTaskExecutionHistory historyWith(ScheduledTaskExecution... executions) {

@@ -43,12 +43,7 @@ public interface InsightsInfoProvider {
     List<TransactionAggregatedProfile> getTransactions();
 
     /**
-     * IMPORTANT: this is not a plain getter. The returned executions are marked as being delivered, so every call
-     * must be followed by {@link com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory#commit()}
-     * or {@link com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory#rollback()}, depending
-     * on the delivery outcome. Otherwise, the executions are going to be delivered to master once again.
-     *
-     * @return the scheduled task executions that are not yet delivered to master.
+     * @return the latest scheduled task executions, at most the configured number per task.
      */
     List<ScheduledTaskExecution> getScheduledTaskExecutions();
 }

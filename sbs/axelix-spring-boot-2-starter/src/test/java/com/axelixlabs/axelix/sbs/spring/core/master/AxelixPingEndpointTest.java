@@ -81,7 +81,8 @@ class AxelixPingEndpointTest {
                         + "  \"memoryDetails\" : {\n"
                         + "    \"heap\" : \"#{json-unit.ignore}\"\n"
                         + "  },\n"
-                        + "  \"transactions\" : [ ]\n"
+                        + "  \"transactions\" : [ ],\n"
+                        + "  \"scheduledTaskExecutions\" : [ ]\n"
                         + "}");
     }
 

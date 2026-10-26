@@ -55,7 +55,8 @@ class AxelixPingEndpointTest extends AbstractMasterSharedContextTest {
               "memoryDetails" : {
                 "heap" : "#{json-unit.ignore}"
               },
-              "transactions" : [ ]
+              "transactions" : [ ],
+              "scheduledTaskExecutions" : [ ]
             }
             """);
     }

@@ -20,6 +20,8 @@ package com.axelixlabs.axelix.sbs.spring.core.scheduled;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.jspecify.annotations.Nullable;
+
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExecution;
 
 /**
@@ -32,8 +34,8 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExec
  *   throws;</li>
  *   <li>{@code success} tells whether the delegate completed without throwing: it stays {@code true} while nothing
  *   escapes the delegate, and becomes {@code false} as soon as something does;</li>
- *   <li>{@code errorType} and {@code errorMessage} carry the type and the message of the thrown exception, and are
- *   left absent when the delegate succeeded.</li>
+ *   <li>{@code errorType} and {@code errorMessage} carry the type and the message (truncated to 1000 characters) of
+ *   the thrown exception, and are left absent when the delegate succeeded.</li>
  * </ul>
  *
  * <p>The execution is reported regardless of the outcome, and the original {@link Throwable} is rethrown afterwards.
@@ -41,8 +43,12 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExec
  * have failed without this wrapper.
  *
  * @author Vyacheslav Yanin
+ * @author Nikita Kirillov
  */
 public class TaskTrackingRunnable implements Runnable {
+
+    // the whole history is reported to master on every heartbeat, so the messages of the errors are bounded
+    private static final int MAX_ERROR_MESSAGE_LENGTH = 1000;
 
     private final Runnable trackingTask;
     private final ScheduledTaskExecutionHistory taskExecutionHistory;
@@ -66,7 +72,7 @@ public class TaskTrackingRunnable implements Runnable {
         try {
             trackingTask.run();
         } catch (Throwable e) {
-            errorMessage = e.getMessage();
+            errorMessage = truncate(e.getMessage());
             errorType = e.getClass().getSimpleName();
             success = false;
             throw e;
@@ -83,5 +89,11 @@ public class TaskTrackingRunnable implements Runnable {
 
             taskExecutionHistory.record(taskExecution);
         }
+    }
+
+    private static @Nullable String truncate(@Nullable String message) {
+        return message != null && message.length() > MAX_ERROR_MESSAGE_LENGTH
+                ? message.substring(0, MAX_ERROR_MESSAGE_LENGTH)
+                : message;
     }
 }

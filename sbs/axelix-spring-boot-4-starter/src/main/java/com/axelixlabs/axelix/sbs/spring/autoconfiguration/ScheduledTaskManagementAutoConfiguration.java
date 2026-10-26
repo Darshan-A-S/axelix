@@ -19,8 +19,6 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 
 import java.util.List;
 
-import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -29,7 +27,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.config.ScheduledTaskHolder;
 
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.annotations.AxelixAutoConfiguration;
-import com.axelixlabs.axelix.sbs.spring.core.log.SLF4JLogger;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ApplicationTaskSchedulerProvider;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.AxelixScheduledTasksEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.DefaultScheduledTasksAssembler;
@@ -106,9 +103,7 @@ public class ScheduledTaskManagementAutoConfiguration {
     @Bean
     public ScheduledTaskExecutionHistory scheduledTaskExecutionHistory(
             ScheduledTaskHistoryConfigurationProperties scheduledTaskHistoryConfigurationProperties) {
-        return new ScheduledTaskExecutionHistory(
-                scheduledTaskHistoryConfigurationProperties,
-                new SLF4JLogger(LoggerFactory.getLogger(ScheduledTaskExecutionHistory.class)));
+        return new ScheduledTaskExecutionHistory(scheduledTaskHistoryConfigurationProperties);
     }
 
     @Bean

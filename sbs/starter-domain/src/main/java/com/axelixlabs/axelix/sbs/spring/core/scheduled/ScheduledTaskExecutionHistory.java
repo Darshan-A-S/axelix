@@ -17,25 +17,17 @@
  */
 package com.axelixlabs.axelix.sbs.spring.core.scheduled;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
-import org.jspecify.annotations.Nullable;
 
 import com.axelixlabs.axelix.sbs.spring.core.SlidingWindow;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExecution;
-import com.axelixlabs.axelix.sbs.spring.core.log.Logger;
 
 /**
- * Bounded in-memory history of the scheduled task executions, kept per task until they are delivered to master.
- * The delivery follows the {@link #mark()} - {@link #commit()} / {@link #rollback()} protocol, so that the executions
- * are dropped only once they have been delivered.
+ * Bounded in-memory history of the latest scheduled task executions, kept per task. The history is reported to master
+ * as a whole every time, and master stores only the executions it does not know yet.
  *
  * @author Vyacheslav Yanin
  * @author Mikhail Polivakha
@@ -44,14 +36,10 @@ import com.axelixlabs.axelix.sbs.spring.core.log.Logger;
 public class ScheduledTaskExecutionHistory {
 
     private final Map<String, SlidingWindow<ScheduledTaskExecution>> history = new ConcurrentHashMap<>();
-    // compared by identity, so that equal executions recorded after the mark are not dropped by the commit
-    private final AtomicReference<@Nullable Set<ScheduledTaskExecution>> marked = new AtomicReference<>();
     private final ScheduledTaskHistoryConfigurationProperties properties;
-    private final Logger logger;
 
-    public ScheduledTaskExecutionHistory(ScheduledTaskHistoryConfigurationProperties properties, Logger logger) {
+    public ScheduledTaskExecutionHistory(ScheduledTaskHistoryConfigurationProperties properties) {
         this.properties = properties;
-        this.logger = logger;
     }
 
     public void record(ScheduledTaskExecution execution) {
@@ -60,39 +48,11 @@ public class ScheduledTaskExecutionHistory {
     }
 
     /**
-     * Returns the recorded executions and remembers them, so that {@link #commit()} drops them once they are
-     * delivered. A pending mark is kept as is, since replacing it would let {@link #commit()} drop the executions
-     * that have never been delivered.
+     * @return the latest executions of every task, in the order of recording within a task.
      */
-    public List<ScheduledTaskExecution> mark() {
-        List<ScheduledTaskExecution> executions = history.values().stream()
+    public List<ScheduledTaskExecution> getExecutions() {
+        return history.values().stream()
                 .flatMap(window -> window.get().stream())
                 .collect(Collectors.toUnmodifiableList());
-
-        Set<ScheduledTaskExecution> snapshot = Collections.newSetFromMap(new IdentityHashMap<>());
-        snapshot.addAll(executions);
-
-        if (!marked.compareAndSet(null, snapshot)) {
-            logger.info("The scheduled task executions are marked while the previous mark is still pending, "
-                    + "so the executions recorded since then are going to be delivered once again");
-        }
-        return executions;
-    }
-
-    /**
-     * Drops the executions remembered by the last {@link #mark()}, once they have been delivered.
-     */
-    public void commit() {
-        Set<ScheduledTaskExecution> delivered = marked.getAndSet(null);
-        if (delivered != null) {
-            history.values().forEach(window -> window.removeIf(delivered::contains));
-        }
-    }
-
-    /**
-     * Keeps the executions remembered by the last {@link #mark()} for the next delivery, since this one has failed.
-     */
-    public void rollback() {
-        marked.set(null);
     }
 }

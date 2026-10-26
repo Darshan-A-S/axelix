@@ -20,10 +20,8 @@ package com.axelixlabs.axelix.master.service.scheduled;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.axelixlabs.axelix.master.domain.ScheduledTaskExecutionResult;
-import com.axelixlabs.axelix.master.repository.ScheduledTaskExecutionResultRepository;
 
 /**
  * Default implementation for interface {@code ScheduledTaskExecutionHistoryService}
@@ -33,16 +31,8 @@ import com.axelixlabs.axelix.master.repository.ScheduledTaskExecutionResultRepos
 @Service
 public class DefaultScheduledTaskExecutionHistoryService implements ScheduledTaskExecutionHistoryService {
 
-    private final ScheduledTaskExecutionResultRepository executionResultRepository;
-
-    public DefaultScheduledTaskExecutionHistoryService(
-            ScheduledTaskExecutionResultRepository executionResultRepository) {
-        this.executionResultRepository = executionResultRepository;
-    }
-
+    // TODO (GH-1617): the executions are not stored until master deduplicates them, since the starters report the
+    //  whole history every time
     @Override
-    @Transactional
-    public void append(Set<ScheduledTaskExecutionResult> scheduledTaskExecutionResults) {
-        executionResultRepository.saveAll(scheduledTaskExecutionResults);
-    }
+    public void append(Set<ScheduledTaskExecutionResult> scheduledTaskExecutionResults) {}
 }

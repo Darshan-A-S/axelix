@@ -284,19 +284,9 @@ public class InstanceSelfRegistrationInternalApiTest {
                 });
 
         // and then.
+        // the executions are not stored until master deduplicates them (GH-1617)
         assertThat(jdbcAggregateTemplate.findAll(ScheduledTaskExecutionResult.class))
-                .singleElement()
-                .satisfies(result -> {
-                    assertThat(result.instanceId()).isEqualTo(TEST_INSTANCE_ID);
-                    assertThat(result.groupId()).isEqualTo("org.springframework.samples");
-                    assertThat(result.artifactId()).isEqualTo("petclinic");
-                    assertThat(result.taskId()).isEqualTo("com.example.OwnerJob#run()");
-                    assertThat(result.startedAt()).isEqualTo(Instant.parse("2026-09-27T10:00:00.123Z"));
-                    assertThat(result.durationMillis()).isEqualTo(1500L);
-                    assertThat(result.success()).isFalse();
-                    assertThat(result.errorType()).isEqualTo("NullPointerException");
-                    assertThat(result.errorMessage()).isEqualTo("boom");
-                });
+                .isEmpty();
 
         assertThat(capturingIamWebInterceptor.accessDeniedEndpoint()).isNull();
         assertThat(capturingIamWebInterceptor.authenticationFailureEndpoint()).isNull();

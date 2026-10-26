@@ -144,8 +144,7 @@ class HeartBeatServiceTest {
 
         @Bean
         public ScheduledTaskExecutionHistory scheduledTaskExecutionHistory() {
-            return new ScheduledTaskExecutionHistory(
-                    new ScheduledTaskHistoryConfigurationProperties(30), new NoOpLogger());
+            return new ScheduledTaskExecutionHistory(new ScheduledTaskHistoryConfigurationProperties(30));
         }
 
         @Bean
@@ -194,7 +193,7 @@ class HeartBeatServiceTest {
 
                 @Override
                 public List<ScheduledTaskExecution> getScheduledTaskExecutions() {
-                    return scheduledTaskExecutionHistory.mark();
+                    return scheduledTaskExecutionHistory.getExecutions();
                 }
             };
         }
@@ -232,7 +231,6 @@ class HeartBeatServiceTest {
     void setUp() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        scheduledTaskExecutionHistory.rollback();
     }
 
     @AfterEach
@@ -249,12 +247,7 @@ class HeartBeatServiceTest {
         properties.setMasterUrl(
                 "http://" + mockWebServer.getHostName() + ":" + mockWebServer.getPort() + masterUrlPath);
         heartBeatService = new HeartBeatService(
-                new NoOpLogger(),
-                serializationFunction,
-                properties,
-                metadataAssembler,
-                jwtEncoderService,
-                scheduledTaskExecutionHistory);
+                new NoOpLogger(), serializationFunction, properties, metadataAssembler, jwtEncoderService);
         heartBeatService.scheduleHeartBeat();
     }
 
@@ -283,7 +276,7 @@ class HeartBeatServiceTest {
     }
 
     @Test
-    void shouldNotDeliverScheduledTaskExecutionsAgainOnceHeartbeatSucceeds() throws Exception {
+    void shouldDeliverTheWholeHistoryOnEveryHeartbeat() throws Exception {
         scheduledTaskExecutionHistory.record(scheduledTaskExecution("com.example.Delivered#run()"));
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
@@ -292,7 +285,6 @@ class HeartBeatServiceTest {
 
         RecordedRequest registration = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(registration.getPath()).isEqualTo("/service/register");
-        assertThat(registration.getBody().readUtf8()).doesNotContain("com.example.Delivered#run()");
 
         RecordedRequest firstHeartbeat = mockWebServer.takeRequest(3, TimeUnit.SECONDS);
         assertThat(firstHeartbeat.getPath()).isEqualTo("/service/heartbeat/v2");
@@ -300,30 +292,11 @@ class HeartBeatServiceTest {
 
         RecordedRequest secondHeartbeat = mockWebServer.takeRequest(3, TimeUnit.SECONDS);
         assertThat(secondHeartbeat.getPath()).isEqualTo("/service/heartbeat/v2");
-        assertThat(secondHeartbeat.getBody().readUtf8()).doesNotContain("com.example.Delivered#run()");
+        assertThat(secondHeartbeat.getBody().readUtf8()).contains("com.example.Delivered#run()");
     }
 
     @Test
-    void shouldDeliverScheduledTaskExecutionsAgainWhenHeartbeatFails() throws Exception {
-        scheduledTaskExecutionHistory.record(scheduledTaskExecution("com.example.Retried#run()"));
-        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
-        mockWebServer.enqueue(new MockResponse().setResponseCode(500));
-        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
-        startHeartBeating("/service/register");
-
-        assertThat(mockWebServer.takeRequest(2, TimeUnit.SECONDS).getPath()).isEqualTo("/service/register");
-
-        RecordedRequest failedHeartbeat = mockWebServer.takeRequest(3, TimeUnit.SECONDS);
-        assertThat(failedHeartbeat.getPath()).isEqualTo("/service/heartbeat/v2");
-        assertThat(failedHeartbeat.getBody().readUtf8()).contains("com.example.Retried#run()");
-
-        RecordedRequest retriedHeartbeat = mockWebServer.takeRequest(3, TimeUnit.SECONDS);
-        assertThat(retriedHeartbeat.getPath()).isEqualTo("/service/heartbeat/v2");
-        assertThat(retriedHeartbeat.getBody().readUtf8()).contains("com.example.Retried#run()");
-    }
-
-    @Test
-    void shouldKeepHeartbeatingAndDeliverScheduledTaskExecutionsAgainWhenHeartbeatThrows() throws Exception {
+    void shouldKeepHeartbeatingWhenHeartbeatThrows() throws Exception {
         scheduledTaskExecutionHistory.record(scheduledTaskExecution("com.example.Retried#run()"));
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));

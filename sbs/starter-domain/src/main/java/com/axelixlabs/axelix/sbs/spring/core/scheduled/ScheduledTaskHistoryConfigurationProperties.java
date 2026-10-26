@@ -30,10 +30,10 @@ public class ScheduledTaskHistoryConfigurationProperties implements Validatable 
 
     public static final String CONFIG_PROPS_PREFIX = "axelix.sbs.scheduling";
 
-    private static final int DEFAULT_HISTORY_MAX_SIZE = 30;
+    private static final int DEFAULT_HISTORY_MAX_SIZE = 10;
 
     /**
-     * The maximum number of the executions kept per task until they are delivered to master.
+     * The maximum number of the latest executions kept per task and reported to master.
      */
     private int historyMaxSize = DEFAULT_HISTORY_MAX_SIZE;
 

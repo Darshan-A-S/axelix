@@ -140,6 +140,10 @@ public class HeartBeatService implements Closeable {
         } catch (IOException | InterruptedException e) {
             logger.info("Error sending registration request or heartbeat to master: {}", e.getMessage());
             rollbackScheduledTaskHistoryMarker();
+        } catch (RuntimeException e) {
+            // must not escape, otherwise the executor stops scheduling the heartbeat for good
+            logger.info("Unexpected error during registration or heartbeat to master", e);
+            rollbackScheduledTaskHistoryMarker();
         }
     }
 

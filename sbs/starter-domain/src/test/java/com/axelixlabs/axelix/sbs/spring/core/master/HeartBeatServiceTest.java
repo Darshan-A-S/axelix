@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -241,11 +242,15 @@ class HeartBeatServiceTest {
     }
 
     private void startHeartBeating(String masterUrlPath) {
+        startHeartBeating(masterUrlPath, HeartBeatServiceTest::serialize);
+    }
+
+    private void startHeartBeating(String masterUrlPath, JsonSerializationFunction serializationFunction) {
         properties.setMasterUrl(
                 "http://" + mockWebServer.getHostName() + ":" + mockWebServer.getPort() + masterUrlPath);
         heartBeatService = new HeartBeatService(
                 new NoOpLogger(),
-                HeartBeatServiceTest::serialize,
+                serializationFunction,
                 properties,
                 metadataAssembler,
                 jwtEncoderService,
@@ -315,6 +320,27 @@ class HeartBeatServiceTest {
         RecordedRequest retriedHeartbeat = mockWebServer.takeRequest(3, TimeUnit.SECONDS);
         assertThat(retriedHeartbeat.getPath()).isEqualTo("/service/heartbeat/v2");
         assertThat(retriedHeartbeat.getBody().readUtf8()).contains("com.example.Retried#run()");
+    }
+
+    @Test
+    void shouldKeepHeartbeatingAndDeliverScheduledTaskExecutionsAgainWhenHeartbeatThrows() throws Exception {
+        scheduledTaskExecutionHistory.record(scheduledTaskExecution("com.example.Retried#run()"));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
+        AtomicBoolean failed = new AtomicBoolean();
+        startHeartBeating("/service/register", payload -> {
+            if (payload instanceof HeartBeatMetadataV2 && failed.compareAndSet(false, true)) {
+                throw new IllegalStateException("boom");
+            }
+            return serialize(payload);
+        });
+
+        assertThat(mockWebServer.takeRequest(2, TimeUnit.SECONDS).getPath()).isEqualTo("/service/register");
+
+        RecordedRequest heartbeat = mockWebServer.takeRequest(4, TimeUnit.SECONDS);
+        assertThat(failed).isTrue();
+        assertThat(heartbeat.getPath()).isEqualTo("/service/heartbeat/v2");
+        assertThat(heartbeat.getBody().readUtf8()).contains("com.example.Retried#run()");
     }
 
     private static ScheduledTaskExecution scheduledTaskExecution(String taskId) {

@@ -24,22 +24,31 @@ import com.axelixlabs.axelix.sbs.spring.core.config.Validatable;
  * Configuration properties for scheduled tasks history.
  *
  * @author Vyacheslav Yanin
+ * @author Nikita Kirillov
  */
 public class ScheduledTaskHistoryConfigurationProperties implements Validatable {
 
     public static final String CONFIG_PROPS_PREFIX = "axelix.sbs.scheduling";
 
+    private static final int DEFAULT_HISTORY_MAX_SIZE = 30;
+
     /**
-     * The value of the queue limit
+     * The maximum number of the executions kept per task until they are delivered to master.
      */
-    private final int historyMaxSize;
+    private int historyMaxSize = DEFAULT_HISTORY_MAX_SIZE;
+
+    public ScheduledTaskHistoryConfigurationProperties() {}
 
     public ScheduledTaskHistoryConfigurationProperties(int historyMaxSize) {
-        this.historyMaxSize = historyMaxSize != 0 ? historyMaxSize : 30;
+        this.historyMaxSize = historyMaxSize != 0 ? historyMaxSize : DEFAULT_HISTORY_MAX_SIZE;
     }
 
     public int getHistoryMaxSize() {
         return historyMaxSize;
+    }
+
+    public void setHistoryMaxSize(int historyMaxSize) {
+        this.historyMaxSize = historyMaxSize;
     }
 
     @Override

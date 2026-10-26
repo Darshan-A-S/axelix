@@ -60,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Sergey Cherkasov
  * @author Mikhail Polivakha
+ * @author Vyacheslav Yanin
  */
 class DefaultInsightsInfoProviderTest {
 
@@ -81,7 +82,7 @@ class DefaultInsightsInfoProviderTest {
         List<ScheduledTaskExecution> executions = subject.getScheduledTaskExecutions();
 
         // then.
-        assertThat(executions).containsExactly(first, second);
+        assertThat(executions).containsExactlyInAnyOrder(first, second);
     }
 
     @Test

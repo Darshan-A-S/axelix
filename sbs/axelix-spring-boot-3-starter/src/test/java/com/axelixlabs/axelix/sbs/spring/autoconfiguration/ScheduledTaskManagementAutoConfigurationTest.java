@@ -228,6 +228,15 @@ class ScheduledTaskManagementAutoConfigurationTest {
         });
     }
 
+    @Test
+    void shouldBindHistoryMaxSize() {
+        contextRunner
+                .withPropertyValues("axelix.sbs.scheduling.history-max-size=5")
+                .run(context -> assertThat(context.getBean(ScheduledTaskHistoryConfigurationProperties.class)
+                                .getHistoryMaxSize())
+                        .isEqualTo(5));
+    }
+
     private static void assertReschedulesOnThread(AssertableApplicationContext context, String threadNamePrefix)
             throws InterruptedException {
         BlockingQueue<String> executions = context.getBean(EnableSchedulingConfig.class).executionThreads;

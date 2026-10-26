@@ -67,6 +67,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Nikita Kirillov
  * @author Mikhail Polivakha
  * @author Ilya Naumov
+ * @author Vyacheslav Yanin
  */
 @SpringBootTest(classes = DefaultHeartBeatMetadataAssemblerTest.TestApplication.class)
 @TestPropertySource(

@@ -35,6 +35,7 @@ import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvide
  * @since 05.02.2026
  * @author Nikita Kirillov
  * @author Ilya Naumov
+ * @author Vyacheslav Yanin
  */
 public class DefaultHeartBeatMetadataAssembler implements HeartBeatMetadataAssembler {
 

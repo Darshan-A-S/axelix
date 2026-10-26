@@ -100,7 +100,7 @@ public class ScheduledTaskManagementAutoConfiguration {
     @Bean
     @ConfigurationProperties(prefix = ScheduledTaskHistoryConfigurationProperties.CONFIG_PROPS_PREFIX)
     public ScheduledTaskHistoryConfigurationProperties scheduledTaskHistoryConfigurationProperties() {
-        return new ScheduledTaskHistoryConfigurationProperties(0);
+        return new ScheduledTaskHistoryConfigurationProperties();
     }
 
     @Bean

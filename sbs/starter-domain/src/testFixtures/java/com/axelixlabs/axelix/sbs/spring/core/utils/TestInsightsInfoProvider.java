@@ -31,6 +31,7 @@ import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvide
  * Test {@link InsightsInfoProvider} that returns a fixed insight payload.
  *
  * @author Mikhail Polivakha
+ * @author Vyacheslav Yanin
  */
 public final class TestInsightsInfoProvider implements InsightsInfoProvider {
 

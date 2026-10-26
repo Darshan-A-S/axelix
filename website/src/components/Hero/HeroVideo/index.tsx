@@ -22,7 +22,7 @@ import { useEffect, useRef, useState } from "react";
 
 import styles from "./styles.module.css";
 
-const YOUTUBE_ID = "S8vTZbxuVvc";
+const YOUTUBE_ID = "NiUCzGNPy-o";
 
 const POSTER_SRC = "/hero-video-poster.jpg";
 

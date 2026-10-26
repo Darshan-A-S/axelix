@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Unit tests for {@link SlidingWindow}.
  *
  * @author Mikhail Polivakha
+ * @author Nikita Kirillov
  */
 class SlidingWindowTest {
 
@@ -193,5 +194,20 @@ class SlidingWindowTest {
         // then.
         List<String> result = slidingWindow.get();
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void removeIf_shouldRemoveOnlyMatchingElementsKeepingTheOrder() {
+        // given.
+        slidingWindow.put("keep1");
+        slidingWindow.put("drop1");
+        slidingWindow.put("keep2");
+        slidingWindow.put("drop2");
+
+        // when.
+        slidingWindow.removeIf(element -> element.startsWith("drop"));
+
+        // then.
+        assertThat(slidingWindow.get()).containsExactly("keep1", "keep2");
     }
 }

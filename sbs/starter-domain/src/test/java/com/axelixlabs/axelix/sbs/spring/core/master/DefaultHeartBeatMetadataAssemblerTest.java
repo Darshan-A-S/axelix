@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -46,7 +47,12 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.heartbeatv2.HeartBeatMetad
 import com.axelixlabs.axelix.sbs.spring.core.contract.initialregistrationrequest.InitialSelfRegistrationRequest;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HealthStatus;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.DefaultInsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.NoOpJpaEntitiesProfileProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.VmOptionsAccessor;
+import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.DefaultTransactionStatsCollector;
+import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionAttributesRegistry;
 import com.axelixlabs.axelix.sbs.spring.core.sbom.ClasspathDependencySbom;
 import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
@@ -61,6 +67,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Nikita Kirillov
  * @author Mikhail Polivakha
  * @author Ilya Naumov
+ * @author Vyacheslav Yanin
  */
 @SpringBootTest(classes = DefaultHeartBeatMetadataAssemblerTest.TestApplication.class)
 @TestPropertySource(
@@ -249,6 +256,7 @@ class DefaultHeartBeatMetadataAssemblerTest {
         assertThat(heartBeat.getHealthStatus()).isEqualTo(HealthStatus.UP);
         assertThat(heartBeat.getMemoryDetails().getHeap()).isPositive();
         assertThat(heartBeat.getTransactions()).isEmpty();
+        assertThat(heartBeat.getScheduledTaskExecutions()).isEmpty();
     }
 
     @Test // GH-1292
@@ -277,6 +285,30 @@ class DefaultHeartBeatMetadataAssemblerTest {
         assertThat(metadata1.getInstanceName()).startsWith("testApp-");
         assertThat(metadata2.getInstanceName()).startsWith("testApp-");
         assertThat(metadata1.getInstanceName()).isNotEqualTo(metadata2.getInstanceName());
+    }
+
+    @Test // the heartbeat metadata assembling must not fail when the scheduled task execution history is absent.
+    void shouldReportNoScheduledTaskExecutions_whenHistoryIsAbsent() {
+        // given.
+        DefaultHeartBeatMetadataAssembler assembler = new DefaultHeartBeatMetadataAssembler(
+                service, healthDetectionFunction, insightsInfoProviderWithoutHistory(), properties);
+
+        // when.
+        HeartBeatMetadataV2 heartBeat = assembler.assembleHeartBeatV2();
+
+        // then.
+        assertThat(heartBeat.getScheduledTaskExecutions()).isEmpty();
+    }
+
+    private static DefaultInsightsInfoProvider insightsInfoProviderWithoutHistory() {
+        return new DefaultInsightsInfoProvider(
+                () -> false,
+                null,
+                new VmOptionsAccessor(List.of()),
+                new DefaultTransactionStatsCollector(),
+                new TransactionAttributesRegistry(),
+                new NoOpJpaEntitiesProfileProvider(),
+                null);
     }
 
     private DefaultBasicRegistrationMetadataAssembler metadataAssemblerWith(ClasspathDependencySbom sbom) {

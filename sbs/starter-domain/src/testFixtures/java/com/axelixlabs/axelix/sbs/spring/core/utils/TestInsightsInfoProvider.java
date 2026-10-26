@@ -23,6 +23,7 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.HotSpotInsights;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.InsightFeature;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.Insights;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.PersistenceInsights;
+import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExecution;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.TransactionAggregatedProfile;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 
@@ -30,6 +31,7 @@ import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvide
  * Test {@link InsightsInfoProvider} that returns a fixed insight payload.
  *
  * @author Mikhail Polivakha
+ * @author Vyacheslav Yanin
  */
 public final class TestInsightsInfoProvider implements InsightsInfoProvider {
 
@@ -56,5 +58,10 @@ public final class TestInsightsInfoProvider implements InsightsInfoProvider {
     @Override
     public List<TransactionAggregatedProfile> getTransactions() {
         return TEST_INSIGHTS.getPersistenceInsights().getTransactions();
+    }
+
+    @Override
+    public List<ScheduledTaskExecution> getScheduledTaskExecutions() {
+        return TEST_INSIGHTS.getScheduledTaskExecutions();
     }
 }

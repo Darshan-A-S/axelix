@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.sbs.spring.core;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -57,6 +58,12 @@ public class SlidingWindow<E> {
             }
 
             return copy;
+        }
+    }
+
+    public void removeIf(Predicate<? super E> filter) {
+        synchronized (lock) {
+            deque.removeIf(filter);
         }
     }
 

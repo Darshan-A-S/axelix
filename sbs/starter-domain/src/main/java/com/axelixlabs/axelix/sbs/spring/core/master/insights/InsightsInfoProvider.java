@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.sbs.spring.core.master.insights;
 import java.util.List;
 
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.Insights;
+import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.ScheduledTaskExecution;
 import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.TransactionAggregatedProfile;
 
 /**
@@ -27,6 +28,7 @@ import com.axelixlabs.axelix.sbs.spring.core.contract.metadata.TransactionAggreg
  *
  * @author Sergey Cherkasov
  * @author Mikhail Polivakha
+ * @author Vyacheslav Yanin
  */
 public interface InsightsInfoProvider {
 
@@ -39,4 +41,14 @@ public interface InsightsInfoProvider {
      * @return the aggregated information about the transactions inside the instance.
      */
     List<TransactionAggregatedProfile> getTransactions();
+
+    /**
+     * IMPORTANT: this is not a plain getter. The returned executions are marked as being delivered, so every call
+     * must be followed by {@link com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory#commit()}
+     * or {@link com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory#rollback()}, depending
+     * on the delivery outcome. Otherwise, the executions are going to be delivered to master once again.
+     *
+     * @return the scheduled task executions that are not yet delivered to master.
+     */
+    List<ScheduledTaskExecution> getScheduledTaskExecutions();
 }

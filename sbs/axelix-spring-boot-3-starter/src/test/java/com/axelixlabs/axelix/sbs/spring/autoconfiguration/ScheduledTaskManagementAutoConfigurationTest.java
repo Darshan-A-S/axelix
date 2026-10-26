@@ -42,6 +42,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.AxelixScheduledTasksEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.IntervalBasedTaskRescheduler;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ManagedScheduledTask;
+import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskExecutionHistory;
+import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskHistoryConfigurationProperties;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTaskService;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTasksAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.scheduled.ScheduledTasksRegistry;
@@ -88,6 +90,8 @@ class ScheduledTaskManagementAutoConfigurationTest {
             assertThat(context).hasSingleBean(ScheduledTaskService.class);
             assertThat(context).hasSingleBean(ScheduledTasksAssembler.class);
             assertThat(context).hasSingleBean(AxelixScheduledTasksEndpoint.class);
+            assertThat(context).hasSingleBean(ScheduledTaskHistoryConfigurationProperties.class);
+            assertThat(context).hasSingleBean(ScheduledTaskExecutionHistory.class);
 
             assertThat(context).getBeans(TaskRescheduler.class).hasSize(2);
             assertThat(context).hasSingleBean(IntervalBasedTaskRescheduler.class);
@@ -117,6 +121,8 @@ class ScheduledTaskManagementAutoConfigurationTest {
                     assertThat(context).doesNotHaveBean(ScheduledTasksRegistry.class);
                     assertThat(context).doesNotHaveBean(ScheduledTaskService.class);
                     assertThat(context).doesNotHaveBean(AxelixScheduledTasksEndpoint.class);
+                    assertThat(context).doesNotHaveBean(ScheduledTaskExecutionHistory.class);
+                    assertThat(context).doesNotHaveBean(ScheduledTaskHistoryConfigurationProperties.class);
                     assertThat(context).hasSingleBean(ThreadPoolTaskExecutor.class);
                     assertThat(context).hasSingleBean(ThreadPoolTaskScheduler.class);
                     assertThat(context).hasBean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME);
@@ -220,6 +226,15 @@ class ScheduledTaskManagementAutoConfigurationTest {
                 assertThat(task.isEnabled()).isFalse();
             }
         });
+    }
+
+    @Test
+    void shouldBindHistoryMaxSize() {
+        contextRunner
+                .withPropertyValues("axelix.sbs.scheduling.history-max-size=5")
+                .run(context -> assertThat(context.getBean(ScheduledTaskHistoryConfigurationProperties.class)
+                                .getHistoryMaxSize())
+                        .isEqualTo(5));
     }
 
     private static void assertReschedulesOnThread(AssertableApplicationContext context, String threadNamePrefix)

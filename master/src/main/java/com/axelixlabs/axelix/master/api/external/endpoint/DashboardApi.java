@@ -17,15 +17,24 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
+import java.util.Set;
+
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse;
+import com.axelixlabs.axelix.master.api.external.response.dashboard.DependencyLibrariesResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.LanguagesProfileResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.PersistenceDashboardResponse;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.SpringPortfolioResponse;
+import com.axelixlabs.axelix.master.domain.ecosystem.projects.Ecosystem;
+import com.axelixlabs.axelix.master.domain.ecosystem.projects.SupportStatus;
 import com.axelixlabs.axelix.master.service.ecosystem.DependencyAnalysisService;
+import com.axelixlabs.axelix.master.service.ecosystem.DependencyLibrariesQuery;
 import com.axelixlabs.axelix.master.service.ecosystem.LanguagesProfileService;
 import com.axelixlabs.axelix.master.service.ecosystem.SpringPortfolioService;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
@@ -69,6 +78,30 @@ public class DashboardApi {
     @GetMapping(path = ApiPaths.DashboardApi.DEPENDENCIES)
     public DependenciesDashboardResponse getDependenciesDashboard() {
         return dependencyAnalysisService.getDashboard();
+    }
+
+    /**
+     * Retrieve a page of the libraries used across the ecosystem, each with its version distribution.
+     *
+     * @param search     a case-insensitive part of the {@code groupId:artifactId} to look for.
+     * @param statuses   the support statuses to keep, all when absent.
+     * @param ecosystems the ecosystems to keep, all when absent.
+     * @param page       the zero-based number of the page.
+     * @param size       the maximum number of libraries on a page, between 1 and 100.
+     */
+    @GetMapping(path = ApiPaths.DashboardApi.DEPENDENCIES_LIBRARIES)
+    public DependencyLibrariesResponse getDependencyLibraries(
+            @RequestParam(value = "search", required = false) @Nullable String search,
+            @RequestParam(value = "status", required = false) @Nullable Set<SupportStatus> statuses,
+            @RequestParam(value = "ecosystem", required = false) @Nullable Set<Ecosystem> ecosystems,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        return dependencyAnalysisService.getLibraries(new DependencyLibrariesQuery(
+                search,
+                statuses != null ? statuses : Set.of(),
+                ecosystems != null ? ecosystems : Set.of(),
+                page,
+                size));
     }
 
     /**

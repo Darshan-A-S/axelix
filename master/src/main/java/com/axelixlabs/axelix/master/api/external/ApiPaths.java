@@ -142,9 +142,15 @@ public final class ApiPaths {
         public static final String PERSISTENCE = "/dashboard/persistence";
 
         /**
-         * Endpoint to retrieve the aggregated dependency health (curated projects and their footprint) across the ecosystem.
+         * Endpoint to retrieve the aggregated dependency health (applications and libraries per support status)
+         * across the ecosystem.
          */
         public static final String DEPENDENCIES = "/dashboard/dependencies";
+
+        /**
+         * Endpoint to retrieve a page of the libraries used across the ecosystem, each with its version distribution.
+         */
+        public static final String DEPENDENCIES_LIBRARIES = "/dashboard/dependencies/libraries";
 
         /**
          * Endpoint to retrieve the fleet-wide Spring Boot / Spring Framework version portfolio.

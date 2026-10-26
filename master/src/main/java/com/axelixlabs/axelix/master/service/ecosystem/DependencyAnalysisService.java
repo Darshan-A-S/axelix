@@ -18,11 +18,14 @@
 package com.axelixlabs.axelix.master.service.ecosystem;
 
 import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse;
+import com.axelixlabs.axelix.master.api.external.response.dashboard.DependencyLibrariesResponse;
 import com.axelixlabs.axelix.master.api.external.response.dependencies.DependencyAnalysisResponse;
 import com.axelixlabs.axelix.master.domain.instance.Instance;
 import com.axelixlabs.axelix.master.domain.instance.InstanceId;
+import com.axelixlabs.axelix.master.domain.ecosystem.projects.SupportStatus;
 import com.axelixlabs.axelix.master.exception.InstanceNotFoundException;
 import com.axelixlabs.axelix.master.exception.SbomNotAvailableException;
+import com.axelixlabs.axelix.master.service.transport.BadRequestException;
 
 /**
  * Keeps and analyzes the runtime dependency SBOMs of the managed applications.
@@ -64,4 +67,14 @@ public interface DependencyAnalysisService {
      * @return the aggregated dependency health across every application that reported its SBOM
      */
     DependenciesDashboardResponse getDashboard();
+
+    /**
+     * @param query which page of the libraries to return, and how to filter them
+     *
+     * @return the requested page of the libraries used across every application that reported its SBOM, the ones
+     *         in a status other than {@link SupportStatus#ACTIVE} first, then the most widely used first
+     *
+     * @throws BadRequestException when the page is negative or the size is not between 1 and 100
+     */
+    DependencyLibrariesResponse getLibraries(DependencyLibrariesQuery query);
 }

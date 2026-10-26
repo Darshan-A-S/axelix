@@ -23,12 +23,15 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,15 +44,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.axelixlabs.axelix.common.domain.ActuatorEndpoints;
 import com.axelixlabs.axelix.common.domain.http.NoHttpPayload;
 import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse;
-import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse.TrackedProject;
+import com.axelixlabs.axelix.master.api.external.response.dashboard.DependencyLibrariesResponse;
+import com.axelixlabs.axelix.master.api.external.response.dashboard.DependencyLibrariesResponse.UsedLibrary;
+import com.axelixlabs.axelix.master.api.external.response.dashboard.DependencyLibrariesResponse.VersionUsage;
 import com.axelixlabs.axelix.master.api.external.response.dependencies.AnalyzedDependency;
 import com.axelixlabs.axelix.master.api.external.response.dependencies.AppFrameworkInfo;
 import com.axelixlabs.axelix.master.api.external.response.dependencies.DependencyAnalysisResponse;
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
+import com.axelixlabs.axelix.master.domain.ecosystem.libraries.Library;
 import com.axelixlabs.axelix.master.domain.ecosystem.platform.Platform;
 import com.axelixlabs.axelix.master.domain.ecosystem.platform.PlatformName;
 import com.axelixlabs.axelix.master.domain.ecosystem.platform.PlatformReleaseLine;
+import com.axelixlabs.axelix.master.domain.ecosystem.projects.Ecosystem;
 import com.axelixlabs.axelix.master.domain.ecosystem.projects.SoftwareProject;
 import com.axelixlabs.axelix.master.domain.ecosystem.projects.SupportStatus;
 import com.axelixlabs.axelix.master.domain.instance.Instance;
@@ -60,9 +67,11 @@ import com.axelixlabs.axelix.master.repository.ApplicationDependenciesRepository
 import com.axelixlabs.axelix.master.service.ecosystem.platform.PlatformCatalog;
 import com.axelixlabs.axelix.master.service.ecosystem.projects.SoftwareProjectsCatalog;
 import com.axelixlabs.axelix.master.service.ecosystem.sbom.ParsedSbom;
+import com.axelixlabs.axelix.master.service.ecosystem.sbom.ParsedSbom.ResolvedSbomComponent;
 import com.axelixlabs.axelix.master.service.ecosystem.sbom.SbomParser;
 import com.axelixlabs.axelix.master.service.ecosystem.sbom.SbomParsingException;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.service.transport.BadRequestException;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 
 /**
@@ -74,6 +83,8 @@ import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 public class DefaultDependencyAnalysisService implements DependencyAnalysisService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultDependencyAnalysisService.class);
+
+    private static final int MAX_LIBRARIES_PAGE_SIZE = 100;
 
     private final EndpointInvoker endpointInvoker;
     private final ApplicationDependenciesRepository applicationDependenciesRepository;
@@ -180,6 +191,108 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
 
     @Override
     public DependenciesDashboardResponse getDashboard() {
+        LibrariesUsage usage = aggregateLibrariesUsage();
+
+        Map<SupportStatus, Long> librariesByStatus = new EnumMap<>(SupportStatus.class);
+        Map<Ecosystem, Map<SupportStatus, Long>> riskyLibrariesByEcosystem = new EnumMap<>(Ecosystem.class);
+
+        for (Library library : usage.applicationsCountByLibrary().keySet()) {
+            softwareProjectsCatalog.resolve(library).ifPresent(project -> {
+                librariesByStatus.merge(project.status(), 1L, Long::sum);
+                if (project.status() != SupportStatus.ACTIVE) {
+                    riskyLibrariesByEcosystem
+                            .computeIfAbsent(project.ecosystem(), _ -> new EnumMap<>(SupportStatus.class))
+                            .merge(project.status(), 1L, Long::sum);
+                }
+            });
+        }
+
+        return new DependenciesDashboardResponse(
+                usage.totalApplicationsCount(),
+                usage.applicationsWithRiskyDependencies(),
+                usage.applicationsCountByStatus(),
+                usage.applicationsCountByLibrary().size(),
+                librariesByStatus,
+                riskyLibrariesByEcosystem,
+                Instant.now());
+    }
+
+    @Override
+    public DependencyLibrariesResponse getLibraries(DependencyLibrariesQuery query) {
+        if (query.page() < 0 || query.size() < 1 || query.size() > MAX_LIBRARIES_PAGE_SIZE) {
+            throw new BadRequestException(
+                    "The page must be at least 0 and the size between 1 and %d".formatted(MAX_LIBRARIES_PAGE_SIZE));
+        }
+
+        LibrariesUsage usage = aggregateLibrariesUsage();
+
+        List<UsedLibrary> matching = usage.applicationsCountByLibrary().entrySet().stream()
+                .map(entry -> toUsedLibrary(entry.getKey(), entry.getValue(), usage))
+                .filter(library -> matches(library, query))
+                .sorted(sortResults())
+                .toList();
+
+        List<UsedLibrary> page = matching.stream()
+                .skip((long) query.page() * query.size())
+                .limit(query.size())
+                .toList();
+
+        return new DependencyLibrariesResponse(page, matching.size(), query.page(), query.size());
+    }
+
+    private static Comparator<UsedLibrary> sortResults() {
+        return Comparator.comparing((UsedLibrary library) -> !isRisky(library.status()))
+            .thenComparing(Comparator.comparingLong(UsedLibrary::applicationCount).reversed())
+            .thenComparing(library -> library.library().toString());
+    }
+
+    private UsedLibrary toUsedLibrary(Library library, long applicationCount, LibrariesUsage usage) {
+        List<VersionUsage> versions =
+                usage.applicationsCountByLibraryVersion().getOrDefault(library, Map.of()).entrySet().stream()
+                        .sorted(Map.Entry.<String, Long>comparingByKey(MavenVersionComparator.INSTANCE)
+                                .reversed())
+                        .map(entry -> new VersionUsage(entry.getKey(), entry.getValue()))
+                        .toList();
+        double share = (applicationCount * 100.0) / usage.totalApplicationsCount();
+
+        return softwareProjectsCatalog
+                .resolve(library)
+                .map(project -> new UsedLibrary(
+                        library,
+                        applicationCount,
+                        share,
+                        versions,
+                        project.status(),
+                        project.ecosystem(),
+                        project.summary(),
+                        project.succession(),
+                        project.reference()))
+                .orElseGet(() ->
+                        new UsedLibrary(library, applicationCount, share, versions, null, null, null, null, null));
+    }
+
+    private static boolean matches(UsedLibrary library, DependencyLibrariesQuery query) {
+        String search = query.search();
+        boolean matchesSearch = search == null
+                || search.isBlank()
+                || library.library()
+                        .toString()
+                        .toLowerCase(Locale.ROOT)
+                        .contains(search.trim().toLowerCase(Locale.ROOT));
+
+        return matchesSearch
+                && (query.statuses().isEmpty() || query.statuses().contains(library.status()))
+                && (query.ecosystems().isEmpty() || query.ecosystems().contains(library.ecosystem()));
+    }
+
+    private static boolean isRisky(@Nullable SupportStatus status) {
+        return status != null && status != SupportStatus.ACTIVE;
+    }
+
+    /**
+     * Walks every stored SBOM once. A service is counted once per library, and once per version of it.
+     */
+    private LibrariesUsage aggregateLibrariesUsage() {
         // TODO: We know that findAll() here is bad, especially since each row holds the full SBOM
         //  of the application, which is parsed on every request. We're just making it work now,
         //  then we're going to make it right.
@@ -188,35 +301,49 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
                 .flatMap(Optional::stream)
                 .toList();
 
-        Map<SoftwareProject, Long> servicesByProject = new HashMap<>();
-        Map<SupportStatus, Long> servicesByStatus = new EnumMap<>(SupportStatus.class);
-        long servicesWithRiskyDependencies = 0;
+        Map<Library, Long> applicationsCountByLibrary = new HashMap<>();
+        Map<Library, Map<String, Long>> applicationsCountByLibraryVersion = new HashMap<>();
+        Map<SupportStatus, Long> applicationsCountByStatus = new EnumMap<>(SupportStatus.class);
+        long applicationsWithRiskyDependencies = 0;
 
         for (ParsedSbom sbom : sboms) {
-            Set<SoftwareProject> projects = sbom.components().stream()
-                    .map(component -> softwareProjectsCatalog.resolve(component.coordinates()))
-                    .flatMap(Optional::stream)
-                    .collect(Collectors.toSet());
+            Map<Library, Set<String>> versionsByLibrary = sbom.components().stream()
+                    .collect(Collectors.groupingBy(
+                            ResolvedSbomComponent::coordinates,
+                            Collectors.mapping(ResolvedSbomComponent::version, Collectors.toSet())));
 
-            projects.forEach(project -> servicesByProject.merge(project, 1L, Long::sum));
-            Set<SupportStatus> statuses =
-                    projects.stream().map(SoftwareProject::status).collect(Collectors.toSet());
-            statuses.forEach(status -> servicesByStatus.merge(status, 1L, Long::sum));
-            if (statuses.stream().anyMatch(status -> status != SupportStatus.ACTIVE)) {
-                servicesWithRiskyDependencies++;
+            versionsByLibrary.forEach((library, versions) -> {
+                applicationsCountByLibrary.merge(library, 1L, Long::sum);
+                Map<String, Long> applicationsByVersion =
+                        applicationsCountByLibraryVersion.computeIfAbsent(library, _ -> new HashMap<>());
+                versions.forEach(version -> applicationsByVersion.merge(version, 1L, Long::sum));
+            });
+
+            Set<SupportStatus> statuses = versionsByLibrary.keySet().stream()
+                    .map(softwareProjectsCatalog::resolve)
+                    .flatMap(Optional::stream)
+                    .map(SoftwareProject::status)
+                    .collect(Collectors.toSet());
+            statuses.forEach(status -> applicationsCountByStatus.merge(status, 1L, Long::sum));
+            if (statuses.stream().anyMatch(DefaultDependencyAnalysisService::isRisky)) {
+                applicationsWithRiskyDependencies++;
             }
         }
 
-        long totalServices = sboms.size();
-        List<TrackedProject> trackedProjects = servicesByProject.entrySet().stream()
-                .map(entry -> new TrackedProject(
-                        entry.getKey(), entry.getValue(), (entry.getValue() * 100.0) / totalServices))
-                .sorted(Comparator.comparingLong(TrackedProject::serviceCount).reversed())
-                .toList();
-
-        return new DependenciesDashboardResponse(
-                totalServices, servicesWithRiskyDependencies, servicesByStatus, trackedProjects, Instant.now());
+        return new LibrariesUsage(
+                sboms.size(),
+                applicationsWithRiskyDependencies,
+                applicationsCountByStatus,
+                applicationsCountByLibrary,
+                applicationsCountByLibraryVersion);
     }
+
+    private record LibrariesUsage(
+            long totalApplicationsCount,
+            long applicationsWithRiskyDependencies,
+            Map<SupportStatus, Long> applicationsCountByStatus,
+            Map<Library, Long> applicationsCountByLibrary,
+            Map<Library, Map<String, Long>> applicationsCountByLibraryVersion) {}
 
     private Optional<ParsedSbom> parseOrSkip(ApplicationDependencies application) {
         try {

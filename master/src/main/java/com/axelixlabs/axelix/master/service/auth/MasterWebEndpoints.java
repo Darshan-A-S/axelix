@@ -198,6 +198,11 @@ public final class MasterWebEndpoints {
             register("dashboard:read-languages", HttpMethod.GET, ApiPaths.DashboardApi.LANGUAGES, null);
     public static final MasterWebEndpoint DASHBOARD_READ_DEPENDENCIES =
             register("dashboard:read-dependencies", HttpMethod.GET, ApiPaths.DashboardApi.DEPENDENCIES, null);
+    public static final MasterWebEndpoint DASHBOARD_READ_DEPENDENCIES_LIBRARIES = register(
+            "dashboard:read-dependencies-libraries",
+            HttpMethod.GET,
+            ApiPaths.DashboardApi.DEPENDENCIES_LIBRARIES,
+            null);
 
     // Dependencies
     public static final MasterWebEndpoint DEPENDENCIES_READ =

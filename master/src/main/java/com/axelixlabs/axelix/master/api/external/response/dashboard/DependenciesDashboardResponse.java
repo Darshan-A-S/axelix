@@ -18,37 +18,38 @@
 package com.axelixlabs.axelix.master.api.external.response.dashboard;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 
-import com.axelixlabs.axelix.master.domain.ecosystem.projects.SoftwareProject;
+import com.axelixlabs.axelix.master.domain.ecosystem.projects.Ecosystem;
 import com.axelixlabs.axelix.master.domain.ecosystem.projects.SupportStatus;
 
 /**
- * The aggregated dependency health of the ecosystem.
+ * The aggregated dependency health of the ecosystem. The libraries themselves are served page by page, see
+ * {@link DependencyLibrariesResponse}.
  *
- * @param totalServices                 the number of services that reported their SBOM.
- * @param servicesWithRiskyDependencies the number of services that use at least one project in a status other
- *                                      than {@link SupportStatus#ACTIVE}.
- * @param servicesByStatus              the number of services that use at least one project in the given status.
- * @param trackedProjects               the curated projects used by the services, the most widespread first.
- * @param lastScannedAt                 when the dashboard was scanned.
+ * @param totalApplications                 the number of applications that reported their SBOM.
+ * @param applicationsWithRiskyDependencies the number of applications that use at least one library in a status other
+ *                                          than {@link SupportStatus#ACTIVE}.
+ * @param applicationsByStatus              the number of applications that use at least one library in the given
+ *                                          status.
+ * @param totalLibraries                    the number of distinct libraries used across the applications, including
+ *                                          the ones Axelix knows nothing about (e.g. the organization's internal
+ *                                          libraries).
+ * @param librariesByStatus                 the number of libraries in use per status. Only the libraries Axelix
+ *                                          curates have a status.
+ * @param riskyLibrariesByEcosystem         the number of libraries in use per ecosystem, broken down by every status
+ *                                          other than {@link SupportStatus#ACTIVE}. Ecosystems without such libraries
+ *                                          are absent.
+ * @param lastScannedAt                     when the dashboard was scanned.
  *
  * @author Nikita Kirillov
+ * @author Mikhail Polivakha
  */
 public record DependenciesDashboardResponse(
-        long totalServices,
-        long servicesWithRiskyDependencies,
-        Map<SupportStatus, Long> servicesByStatus,
-        List<TrackedProject> trackedProjects,
-        Instant lastScannedAt) {
-
-    /**
-     * A curated project used by the services.
-     *
-     * @param softwareProject the curated project.
-     * @param serviceCount    the number of services that use the project.
-     * @param share           the percentage of {@code totalServices} that use the project.
-     */
-    public record TrackedProject(SoftwareProject softwareProject, long serviceCount, double share) {}
-}
+        long totalApplications,
+        long applicationsWithRiskyDependencies,
+        Map<SupportStatus, Long> applicationsByStatus,
+        long totalLibraries,
+        Map<SupportStatus, Long> librariesByStatus,
+        Map<Ecosystem, Map<SupportStatus, Long>> riskyLibrariesByEcosystem,
+        Instant lastScannedAt) {}

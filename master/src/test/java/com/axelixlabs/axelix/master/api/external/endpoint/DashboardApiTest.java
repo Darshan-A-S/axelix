@@ -215,7 +215,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
     }
 
     @Test
-    void shouldReturnDependenciesDashboardAggregatedAcrossServices() {
+    void shouldReturnDependenciesDashboardAggregatedAcrossApplications() {
         // given.
         dependencyAnalysisService.store(
                 registeredInstanceOf("com.example", "service-a"),
@@ -245,30 +245,22 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
-        assertThatJson(response.getBody()).node("totalServices").isEqualTo(3);
-        // and then. the service with only an ACTIVE project is the one not at risk.
-        assertThatJson(response.getBody()).node("servicesWithRiskyDependencies").isEqualTo(2);
-        assertThatJson(response.getBody()).node("servicesByStatus").isEqualTo("""
+        assertThatJson(response.getBody()).node("totalApplications").isEqualTo(3);
+        // and then. the application with only an ACTIVE project is the one not at risk.
+        assertThatJson(response.getBody())
+                .node("applicationsWithRiskyDependencies")
+                .isEqualTo(2);
+        assertThatJson(response.getBody()).node("applicationsByStatus").isEqualTo("""
                 { "SUNSET": 1, "DORMANT": 2, "MAINTENANCE": 1, "ACTIVE": 1 }
                 """);
-        assertThatJson(response.getBody())
-                .node("trackedProjects[0].softwareProject.id.value")
-                .isEqualTo("hdrhistogram");
-        assertThatJson(response.getBody())
-                .node("trackedProjects[0].serviceCount")
-                .isEqualTo(2);
-        assertThatJson(response.getBody())
-                .withTolerance(0.01)
-                .node("trackedProjects[0].share")
-                .isEqualTo(66.67);
-        assertThatJson(response.getBody())
-                .when(IGNORING_ARRAY_ORDER)
-                .inPath("trackedProjects[*].softwareProject.id.value")
-                .isEqualTo("[\"hdrhistogram\", \"spring-cloud-sleuth\", \"prometheus-simpleclient\", \"logback\"]");
-        assertThatJson(response.getBody())
-                .withTolerance(0.01)
-                .inPath("trackedProjects[1:].share")
-                .isEqualTo("[33.33, 33.33, 33.33]");
+        // and then. spring-core is not curated: it counts as a library, but has no status.
+        assertThatJson(response.getBody()).node("totalLibraries").isEqualTo(6);
+        assertThatJson(response.getBody()).node("librariesByStatus").isEqualTo("""
+                { "SUNSET": 1, "DORMANT": 1, "MAINTENANCE": 2, "ACTIVE": 1 }
+                """);
+        assertThatJson(response.getBody()).node("riskyLibrariesByEcosystem").isEqualTo("""
+                { "OBSERVABILITY": { "SUNSET": 1, "DORMANT": 1, "MAINTENANCE": 2 } }
+                """);
         assertThatJson(response.getBody()).node("lastScannedAt").isPresent();
         assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_DEPENDENCIES, viewer.getActor());
     }
@@ -281,10 +273,14 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThatJson(response.getBody()).node("totalServices").isEqualTo(0);
-        assertThatJson(response.getBody()).node("servicesWithRiskyDependencies").isEqualTo(0);
-        assertThatJson(response.getBody()).node("servicesByStatus").isEqualTo("{}");
-        assertThatJson(response.getBody()).node("trackedProjects").isEqualTo("[]");
+        assertThatJson(response.getBody()).node("totalApplications").isEqualTo(0);
+        assertThatJson(response.getBody())
+                .node("applicationsWithRiskyDependencies")
+                .isEqualTo(0);
+        assertThatJson(response.getBody()).node("applicationsByStatus").isEqualTo("{}");
+        assertThatJson(response.getBody()).node("totalLibraries").isEqualTo(0);
+        assertThatJson(response.getBody()).node("librariesByStatus").isEqualTo("{}");
+        assertThatJson(response.getBody()).node("riskyLibrariesByEcosystem").isEqualTo("{}");
     }
 
     @Test
@@ -306,10 +302,123 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThatJson(response.getBody()).node("totalServices").isEqualTo(1);
-        assertThatJson(response.getBody())
-                .inPath("trackedProjects[*].softwareProject.id.value")
-                .isEqualTo("[\"logback\"]");
+        assertThatJson(response.getBody()).node("totalApplications").isEqualTo(1);
+        assertThatJson(response.getBody()).node("totalLibraries").isEqualTo(1);
+    }
+
+    @Test
+    void shouldReturnUsedLibrariesWithTheirVersionDistribution() {
+        // given.
+        dependencyAnalysisService.store(
+                ApplicationId.of("com.example", "service-a"),
+                CycloneDxDocuments.of(
+                        "com.example:service-a:1.0.0",
+                        "org.hdrhistogram:HdrHistogram:2.2.2",
+                        "com.example.platform:platform-commons:1.9.2"));
+        dependencyAnalysisService.store(
+                ApplicationId.of("com.example", "service-b"),
+                CycloneDxDocuments.of(
+                        "com.example:service-b:1.0.0",
+                        "org.hdrhistogram:HdrHistogram:2.1.12",
+                        "com.example.platform:platform-commons:1.10.0"));
+        dependencyAnalysisService.store(
+                ApplicationId.of("com.example", "service-c"),
+                CycloneDxDocuments.of("com.example:service-c:1.0.0", "com.example.platform:platform-commons:1.10.0"));
+
+        // when.
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/dashboard/dependencies/libraries", String.class);
+
+        // then. the risky library comes first, even though the internal one is more widely used.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThatJson(response.getBody()).withTolerance(0.01).isEqualTo("""
+                {
+                  "libraries": [
+                    {
+                      "library": { "groupId": "org.hdrhistogram", "artifactId": "HdrHistogram" },
+                      "applicationCount": 2,
+                      "share": 66.67,
+                      "versions": [
+                        { "version": "2.2.2", "applicationCount": 1 },
+                        { "version": "2.1.12", "applicationCount": 1 }
+                      ],
+                      "status": "DORMANT",
+                      "ecosystem": "OBSERVABILITY",
+                      "summary": "${json-unit.any-string}",
+                      "succession": "${json-unit.ignore}",
+                      "reference": "${json-unit.ignore}"
+                    },
+                    {
+                      "library": { "groupId": "com.example.platform", "artifactId": "platform-commons" },
+                      "applicationCount": 3,
+                      "share": 100.0,
+                      "versions": [
+                        { "version": "1.10.0", "applicationCount": 2 },
+                        { "version": "1.9.2", "applicationCount": 1 }
+                      ],
+                      "status": null,
+                      "ecosystem": null,
+                      "summary": null,
+                      "succession": null,
+                      "reference": null
+                    }
+                  ],
+                  "matchingLibraries": 2,
+                  "page": 0,
+                  "size": 10
+                }
+                """);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_DEPENDENCIES_LIBRARIES, viewer.getActor());
+    }
+
+    @Test
+    void shouldFilterAndPageUsedLibraries() {
+        // given.
+        dependencyAnalysisService.store(
+                ApplicationId.of("com.example", "service-a"),
+                CycloneDxDocuments.of(
+                        "com.example:service-a:1.0.0",
+                        "org.springframework.cloud:spring-cloud-starter-sleuth:3.1.11",
+                        "org.hdrhistogram:HdrHistogram:2.2.2",
+                        "io.prometheus:simpleclient:0.16.0",
+                        "io.prometheus:simpleclient_common:0.16.0",
+                        "ch.qos.logback:logback-classic:1.5.18"));
+
+        // when.
+        ResponseEntity<String> byStatusAndEcosystem = restTemplate
+                .asViewer()
+                .getForEntity(
+                        "/api/external/dashboard/dependencies/libraries"
+                                + "?status=MAINTENANCE&status=SUNSET&ecosystem=OBSERVABILITY&page=1&size=2",
+                        String.class);
+        ResponseEntity<String> bySearch = restTemplate
+                .asViewer()
+                .getForEntity("/api/external/dashboard/dependencies/libraries?search=LOGBACK", String.class);
+
+        // then.
+        assertThatJson(byStatusAndEcosystem.getBody()).node("matchingLibraries").isEqualTo(3);
+        assertThatJson(byStatusAndEcosystem.getBody())
+                .inPath("libraries[*].library.artifactId")
+                .isEqualTo("[\"spring-cloud-starter-sleuth\"]");
+        assertThatJson(byStatusAndEcosystem.getBody()).node("page").isEqualTo(1);
+        assertThatJson(byStatusAndEcosystem.getBody()).node("size").isEqualTo(2);
+
+        // and then.
+        assertThatJson(bySearch.getBody())
+                .inPath("libraries[*].library.artifactId")
+                .isEqualTo("[\"logback-classic\"]");
+    }
+
+    @Test
+    void shouldRejectAnInvalidPageOfUsedLibraries() {
+        // when.
+        ResponseEntity<String> response = restTemplate
+                .asViewer()
+                .getForEntity("/api/external/dashboard/dependencies/libraries?size=0", String.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Override

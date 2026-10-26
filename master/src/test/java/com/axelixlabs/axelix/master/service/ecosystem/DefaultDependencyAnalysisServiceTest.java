@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.service.ecosystem;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -32,6 +33,7 @@ import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.axelixlabs.axelix.master.api.external.response.dashboard.DependenciesDashboardResponse;
+import com.axelixlabs.axelix.master.api.external.response.dashboard.DependencyLibrariesResponse;
 import com.axelixlabs.axelix.master.domain.ApplicationDependencies;
 import com.axelixlabs.axelix.master.domain.ApplicationId;
 import com.axelixlabs.axelix.master.domain.instance.Instance;
@@ -197,10 +199,12 @@ class DefaultDependencyAnalysisServiceTest {
         DependenciesDashboardResponse dashboard = subject.getDashboard();
 
         // then.
-        assertThat(dashboard.totalServices()).isZero();
-        assertThat(dashboard.servicesWithRiskyDependencies()).isZero();
-        assertThat(dashboard.servicesByStatus()).isEmpty();
-        assertThat(dashboard.trackedProjects()).isEmpty();
+        assertThat(dashboard.totalApplications()).isZero();
+        assertThat(dashboard.applicationsWithRiskyDependencies()).isZero();
+        assertThat(dashboard.applicationsByStatus()).isEmpty();
+        assertThat(dashboard.totalLibraries()).isZero();
+        assertThat(dashboard.librariesByStatus()).isEmpty();
+        assertThat(dashboard.riskyLibrariesByEcosystem()).isEmpty();
     }
 
     @Test
@@ -217,13 +221,15 @@ class DefaultDependencyAnalysisServiceTest {
 
         // when.
         DependenciesDashboardResponse dashboard = subject.getDashboard();
+        DependencyLibrariesResponse libraries =
+                subject.getLibraries(new DependencyLibrariesQuery(null, Set.of(), Set.of(), 0, 10));
 
         // then. the dashboard is built from the remaining SBOMs only.
-        assertThat(dashboard.totalServices()).isEqualTo(1);
-        assertThat(dashboard.servicesWithRiskyDependencies()).isEqualTo(1);
-        assertThat(dashboard.trackedProjects()).singleElement().satisfies(project -> {
-            assertThat(project.serviceCount()).isEqualTo(1);
-            assertThat(project.share()).isEqualTo(100.0);
+        assertThat(dashboard.totalApplications()).isEqualTo(1);
+        assertThat(dashboard.applicationsWithRiskyDependencies()).isEqualTo(1);
+        assertThat(libraries.libraries()).singleElement().satisfies(library -> {
+            assertThat(library.applicationCount()).isEqualTo(1);
+            assertThat(library.share()).isEqualTo(100.0);
         });
     }
 

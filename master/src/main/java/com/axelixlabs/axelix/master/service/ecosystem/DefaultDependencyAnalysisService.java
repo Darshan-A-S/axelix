@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -242,8 +241,9 @@ public class DefaultDependencyAnalysisService implements DependencyAnalysisServi
 
     private static Comparator<UsedLibrary> sortResults() {
         return Comparator.comparing((UsedLibrary library) -> !isRisky(library.status()))
-            .thenComparing(Comparator.comparingLong(UsedLibrary::applicationCount).reversed())
-            .thenComparing(library -> library.library().toString());
+                .thenComparing(
+                        Comparator.comparingLong(UsedLibrary::applicationCount).reversed())
+                .thenComparing(library -> library.library().toString());
     }
 
     private UsedLibrary toUsedLibrary(Library library, long applicationCount, LibrariesUsage usage) {

@@ -43,6 +43,6 @@ public class AxelixJacksonEncoder extends Jackson2JsonEncoder {
     }
 
     private static boolean isAxelixPayload(@Nullable ResolvableType elementType) {
-        return elementType != null && elementType.toClass().getName().startsWith("com.axelixlabs.axelix");
+        return elementType != null && elementType.toClass().getName().startsWith("com.axelixlabs.axelix.");
     }
 }

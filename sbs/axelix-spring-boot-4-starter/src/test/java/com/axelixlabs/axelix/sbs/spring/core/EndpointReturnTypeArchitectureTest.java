@@ -67,14 +67,15 @@ class EndpointReturnTypeArchitectureTest {
                         .or(metaAnnotatedWith(WriteOperation.class))
                         .or(metaAnnotatedWith(DeleteOperation.class)))
                 .should(returnNonGenericPayload())
-                .because("generic payloads (e.g. List<Dto>) bypass the isolated Axelix Jackson converters "
-                        + "and get serialized with the host application's Jackson configuration")
+                .because(
+                        "generic and array payloads (e.g. List<Dto>, Dto[]) bypass the isolated Axelix Jackson converters "
+                                + "and get serialized with the host application's Jackson configuration")
                 .allowEmptyShould(false)
                 .check(STARTER_CLASSES);
     }
 
     private static ArchCondition<JavaMethod> returnNonGenericPayload() {
-        return new ArchCondition<>("return a non-generic payload type") {
+        return new ArchCondition<>("return a non-generic, non-array payload type") {
             @Override
             public void check(JavaMethod method, ConditionEvents events) {
                 Type payload = method.reflect().getGenericReturnType();
@@ -82,11 +83,16 @@ class EndpointReturnTypeArchitectureTest {
                         && RESPONSE_WRAPPERS.contains(((ParameterizedType) payload).getRawType())) {
                     payload = ((ParameterizedType) payload).getActualTypeArguments()[0];
                 }
-                if (!(payload instanceof Class)) {
+                if (!(payload instanceof Class) || isObjectArray((Class<?>) payload)) {
                     events.add(SimpleConditionEvent.violated(
-                            method, method.getFullName() + " returns generic payload " + payload.getTypeName()));
+                            method,
+                            method.getFullName() + " returns generic or array payload " + payload.getTypeName()));
                 }
             }
         };
+    }
+
+    private static boolean isObjectArray(Class<?> type) {
+        return type.isArray() && !type.getComponentType().isPrimitive();
     }
 }

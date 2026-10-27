@@ -29,6 +29,7 @@ import org.springframework.util.MimeType;
  * isolating deserialization from the host application's Jackson configuration on WebFlux.
  *
  * @author Darshan A S
+ * @author Nikita Kirillov
  */
 public class AxelixJacksonDecoder extends Jackson2JsonDecoder {
 
@@ -42,20 +43,6 @@ public class AxelixJacksonDecoder extends Jackson2JsonDecoder {
     }
 
     private static boolean isAxelixPayload(@Nullable ResolvableType elementType) {
-        if (elementType == null) {
-            return false;
-        }
-        Class<?> clazz = elementType.toClass();
-        if (clazz != Object.class && clazz.getName().startsWith("com.axelixlabs.axelix")) {
-            return true;
-        }
-        if (elementType.hasGenerics()) {
-            for (ResolvableType generic : elementType.getGenerics()) {
-                if (isAxelixPayload(generic)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return elementType != null && elementType.toClass().getName().startsWith("com.axelixlabs.axelix");
     }
 }
